@@ -30,20 +30,41 @@ Then open http://localhost:5687.
 
 ## Scripts
 
-| Script              | Does                                                  |
-| ------------------- | ----------------------------------------------------- |
-| `pnpm dev`          | starts the development server on port 5687            |
-| `pnpm build`        | builds for production                                 |
-| `pnpm start`        | serves the production build on port 5687              |
-| `pnpm typecheck`    | generates route types and checks types                |
-| `pnpm lint`         | runs ESLint, including the module import rules        |
-| `pnpm format`       | formats everything with Prettier                      |
-| `pnpm format:check` | checks formatting without changing files              |
-| `pnpm knip`         | finds unused files, exports and dependencies          |
-| `pnpm check`        | runs typecheck, lint, format check and knip in one go |
+| Script               | Does                                                                    |
+| -------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`           | starts the development server on port 5687                              |
+| `pnpm build`         | builds for production                                                   |
+| `pnpm start`         | serves the production build on port 5687                                |
+| `pnpm typecheck`     | generates route types and checks types                                  |
+| `pnpm lint`          | runs ESLint, including the module import rules                          |
+| `pnpm format`        | formats everything with Prettier                                        |
+| `pnpm format:check`  | checks formatting without changing files                                |
+| `pnpm knip`          | finds unused files, exports and dependencies                            |
+| `pnpm test`          | runs the unit tests                                                     |
+| `pnpm test:browser`  | runs the component tests in a real browser                              |
+| `pnpm test:coverage` | runs the unit and component tests with a coverage report in `coverage/` |
+| `pnpm test:e2e`      | runs the end-to-end tests against a production build                    |
+| `pnpm check`         | runs typecheck, lint, format check, knip and the unit tests in one go   |
 
 Git hooks (Lefthook) format and lint staged files before a commit, check the commit message
-(Conventional Commits) and typecheck before a push.
+(Conventional Commits) and run the typecheck and unit tests before a push.
+
+## Testing
+
+| Kind       | Files                                  | Runs in                                                     |
+| ---------- | -------------------------------------- | ----------------------------------------------------------- |
+| Unit       | `*.test.ts`, next to the code          | Node                                                        |
+| Component  | `*.browser.test.tsx`, next to the code | Chromium, through Vitest Browser Mode                       |
+| End-to-end | `e2e/*.spec.ts`                        | Chromium at desktop size (1440×900), WebKit as an iPhone 17 |
+
+The component and end-to-end tests run in Playwright's browsers, installed once:
+
+```sh
+pnpm exec playwright install chromium webkit
+```
+
+`pnpm test:e2e` builds the app and serves it on port 5687. Outside CI, a server already running on that
+port (such as `pnpm dev`) is tested instead.
 
 ## License
 

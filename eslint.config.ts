@@ -7,8 +7,8 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
-// The module graph from src/modules/README.md; it must stay acyclic.
-const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
+// The module graph from src/modules/README.md; eslint.config.test.ts checks it has no cycles.
+export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   account: [],
   shelves: [],
   cards: [],
@@ -73,7 +73,14 @@ const SERVER_ONLY = {
 };
 
 export default defineConfig([
-  globalIgnores(['.private/', 'coverage/']),
+  globalIgnores([
+    '.private/',
+    'coverage/',
+    '.vitest/',
+    'test-results/',
+    'playwright-report/',
+    'blob-report/',
+  ]),
   js.configs.recommended,
   ...nextVitals,
   tseslint.configs.strictTypeChecked,
