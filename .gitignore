@@ -11,6 +11,10 @@ next-env.d.ts
 
 # testing
 /coverage
+/.vitest/
+/test-results/
+/playwright-report/
+/blob-report/
 
 # env files
 .env*
