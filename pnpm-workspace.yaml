@@ -1,5 +1,9 @@
 saveExact: true
 
 allowBuilds:
+  # Runs `lefthook install` to set up the git hooks; skips CI and never fails the install
+  lefthook: true
   # Next.js gets sharp's prebuilt binaries; its install script only builds from source
   sharp: false
+  # The native binding comes as an optional dependency; the script only checks for it
+  unrs-resolver: false

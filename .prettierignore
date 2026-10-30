@@ -1,0 +1,5 @@
+# Prettier also skips everything in .gitignore
+
+pnpm-lock.yaml
+# written by `next dev`, which rewrites it if the text differs
+AGENTS.md
