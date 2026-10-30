@@ -1,0 +1,22 @@
+# Patterns here match from the build context root.
+
+# version control and local planning docs
+.git
+.private
+
+# dependencies and build output, rebuilt inside the image
+node_modules
+.next
+out
+coverage
+*.tsbuildinfo
+
+# secrets
+.env*
+*.pem
+
+# misc
+.vercel
+.DS_Store
+npm-debug.log*
+.pnpm-debug.log*

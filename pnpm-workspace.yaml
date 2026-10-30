@@ -1,0 +1,5 @@
+saveExact: true
+
+allowBuilds:
+  # Next.js gets sharp's prebuilt binaries; its install script only builds from source
+  sharp: false
