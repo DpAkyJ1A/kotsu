@@ -30,12 +30,20 @@ Then open http://localhost:5687.
 
 ## Scripts
 
-| Script | Does |
-|---|---|
-| `pnpm dev` | starts the development server on port 5687 |
-| `pnpm build` | builds for production |
-| `pnpm start` | serves the production build on port 5687 |
-| `pnpm typecheck` | generates route types and checks types |
+| Script              | Does                                                  |
+| ------------------- | ----------------------------------------------------- |
+| `pnpm dev`          | starts the development server on port 5687            |
+| `pnpm build`        | builds for production                                 |
+| `pnpm start`        | serves the production build on port 5687              |
+| `pnpm typecheck`    | generates route types and checks types                |
+| `pnpm lint`         | runs ESLint, including the module import rules        |
+| `pnpm format`       | formats everything with Prettier                      |
+| `pnpm format:check` | checks formatting without changing files              |
+| `pnpm knip`         | finds unused files, exports and dependencies          |
+| `pnpm check`        | runs typecheck, lint, format check and knip in one go |
+
+Git hooks (Lefthook) format and lint staged files before a commit, check the commit message
+(Conventional Commits) and typecheck before a push.
 
 ## License
 
