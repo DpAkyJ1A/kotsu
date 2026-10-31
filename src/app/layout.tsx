@@ -1,10 +1,9 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
 import { cookies } from 'next/headers';
 
-const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
+import { manrope } from '@/ui/font';
 
 export const metadata: Metadata = {
   title: 'Kotsu',

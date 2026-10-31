@@ -8,12 +8,12 @@ heatmap, docs with flashcards, spreadsheets with formulas, a focus clock, and an
 ## Status
 
 Early days. The repository holds the project skeleton, the design tokens (light and dark) and the icon set,
-shown at `/tokens`; no features work yet.
+shown in Storybook (`pnpm storybook`); no features work yet.
 
 ## Tech stack
 
 Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · Lucide icons ·
-Postgres 18 (Neon) · Drizzle ORM · pnpm
+Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · pnpm
 
 ## Architecture
 
@@ -40,26 +40,27 @@ Then open http://localhost:5687. `docker compose down` stops the database and ke
 
 ## Scripts
 
-| Script               | Does                                                                         |
-| -------------------- | ---------------------------------------------------------------------------- |
-| `pnpm dev`           | starts the development server on port 5687                                   |
-| `pnpm build`         | builds for production                                                        |
-| `pnpm start`         | serves the production build on port 5687                                     |
-| `pnpm typecheck`     | generates route types and checks types                                       |
-| `pnpm lint`          | runs ESLint, including the module import rules                               |
-| `pnpm format`        | formats everything with Prettier                                             |
-| `pnpm format:check`  | checks formatting without changing files                                     |
-| `pnpm knip`          | finds unused files, exports and dependencies                                 |
-| `pnpm test`          | runs the unit tests                                                          |
-| `pnpm test:db`       | runs the database tests against the Postgres in `DATABASE_URL`               |
-| `pnpm test:browser`  | runs the component tests in a real browser                                   |
-| `pnpm test:coverage` | runs the unit, database and component tests, with a report in `coverage/`    |
-| `pnpm test:e2e`      | runs the end-to-end tests against a production build                         |
-| `pnpm test:smoke`    | runs the `@smoke` end-to-end tests against `PLAYWRIGHT_BASE_URL`             |
-| `pnpm db:generate`   | writes a migration into `drizzle/` from the schema in `src/server/db/schema` |
-| `pnpm db:migrate`    | applies the pending migrations to the database in `DATABASE_URL`             |
-| `pnpm db:studio`     | opens Drizzle Studio, a browser UI for the database                          |
-| `pnpm check`         | runs typecheck, lint, format check, knip and the unit tests in one go        |
+| Script               | Does                                                                             |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `pnpm dev`           | starts the development server on port 5687                                       |
+| `pnpm build`         | builds for production                                                            |
+| `pnpm start`         | serves the production build on port 5687                                         |
+| `pnpm typecheck`     | generates route types and checks types                                           |
+| `pnpm lint`          | runs ESLint, including the module import rules                                   |
+| `pnpm format`        | formats everything with Prettier                                                 |
+| `pnpm format:check`  | checks formatting without changing files                                         |
+| `pnpm knip`          | finds unused files, exports and dependencies                                     |
+| `pnpm test`          | runs the unit tests                                                              |
+| `pnpm test:db`       | runs the database tests against the Postgres in `DATABASE_URL`                   |
+| `pnpm test:browser`  | runs the component tests and the stories in a real browser                       |
+| `pnpm test:coverage` | runs the unit, database, component and story tests, with a report in `coverage/` |
+| `pnpm test:e2e`      | runs the end-to-end tests against a production build                             |
+| `pnpm test:smoke`    | runs the `@smoke` end-to-end tests against `PLAYWRIGHT_BASE_URL`                 |
+| `pnpm storybook`     | opens Storybook on port 6006: the UI kit, every story, light and dark            |
+| `pnpm db:generate`   | writes a migration into `drizzle/` from the schema in `src/server/db/schema`     |
+| `pnpm db:migrate`    | applies the pending migrations to the database in `DATABASE_URL`                 |
+| `pnpm db:studio`     | opens Drizzle Studio, a browser UI for the database                              |
+| `pnpm check`         | runs typecheck, lint, format check, knip and the unit tests in one go            |
 
 Git hooks (Lefthook) format and lint staged files before a commit, check the commit message
 (Conventional Commits) and run the typecheck and unit tests before a push.
@@ -71,9 +72,14 @@ Git hooks (Lefthook) format and lint staged files before a commit, check the com
 | Unit       | `*.test.ts`, next to the code          | Node                                                        |
 | Database   | `*.db.test.ts`, next to the code       | Node, against Postgres 18                                   |
 | Component  | `*.browser.test.tsx`, next to the code | Chromium, through Vitest Browser Mode                       |
+| Story      | `*.stories.tsx`, next to the code      | Chromium, through Vitest Browser Mode, once per theme       |
 | End-to-end | `e2e/*.spec.ts`                        | Chromium at desktop size (1440×900), WebKit as an iPhone 17 |
 
-The component and end-to-end tests run in Playwright's browsers, installed once:
+Every story is also a test: it has to render, pass its `play` function, if it has one, and show no
+accessibility violations (axe), in the light theme and again in the dark one. Storybook's "Run tests" button
+runs the same checks from its sidebar, in the light theme.
+
+The component, story and end-to-end tests run in Playwright's browsers, installed once:
 
 ```sh
 pnpm exec playwright install chromium webkit
@@ -86,7 +92,7 @@ back, so tests never see each other's rows.
 `pnpm test:e2e` builds the app and serves it on port 5687. Outside CI, a server already running on that
 port (such as `pnpm dev`) is tested instead. The app needs its database here too.
 
-On GitHub, every pull request runs lint and the format check, typecheck, Knip, all four kinds of tests (the
+On GitHub, every pull request runs lint and the format check, typecheck, Knip, every kind of test (the
 database and end-to-end ones with a Postgres 18 service) and a production build in parallel, and checks that
 its title follows Conventional Commits, because the squash merge makes the title the commit message. `main`
 takes changes only through a pull request with every check green.

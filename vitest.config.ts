@@ -1,7 +1,31 @@
 import { fileURLToPath } from 'node:url';
 
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { configDefaults, defineConfig } from 'vitest/config';
+import type { BrowserConfigOptions } from 'vitest/node';
+
+// Headless Chromium, for the component tests and the stories. A new object for each project, because
+// Vitest writes the project's name into the instances
+const browser = (): BrowserConfigOptions => ({
+  enabled: true,
+  provider: playwright(),
+  headless: true,
+  instances: [{ browser: 'chromium' }],
+});
+
+type Theme = 'light' | 'dark';
+
+// Storybook's "Run tests" button (it sets VITEST_STORYBOOK) names every Storybook project after the
+// .storybook folder, so two of them clash there; the button runs the light one only
+const STORY_THEMES: Theme[] =
+  process.env.VITEST_STORYBOOK === 'true' ? ['light'] : ['light', 'dark'];
+
+// Every story is a test (it renders, its play function passes, axe finds nothing), run once per theme
+const storybookProject = (theme: Theme) => ({
+  plugins: [storybookTest({ initialGlobals: { theme } })],
+  test: { name: `storybook-${theme}`, browser: browser() },
+});
 
 export default defineConfig({
   resolve: {
@@ -35,14 +59,10 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['src/**/*.browser.test.tsx'],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            headless: true,
-            instances: [{ browser: 'chromium' }],
-          },
+          browser: browser(),
         },
       },
+      ...STORY_THEMES.map(storybookProject),
     ],
     coverage: {
       provider: 'v8',

@@ -1,6 +1,8 @@
 saveExact: true
 
 allowBuilds:
+  # Storybook's bundler; the binary comes as an optional dependency, the script only checks for it
+  esbuild: false
   # Runs `lefthook install` to set up the git hooks; skips CI and never fails the install
   lefthook: true
   # Next.js gets sharp's prebuilt binaries; its install script only builds from source

@@ -1,10 +1,12 @@
 import js from '@eslint/js';
+import type { Linter } from 'eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import prettier from 'eslint-config-prettier/flat';
 import boundaries from 'eslint-plugin-boundaries';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import storybook from 'eslint-plugin-storybook';
 import tseslint from 'typescript-eslint';
 
 // The module graph from src/modules/README.md; eslint.config.test.ts checks it has no cycles.
@@ -135,6 +137,17 @@ export default defineConfig([
   {
     files: ['src/**/*.tsx'],
     rules: { 'react/jsx-no-literals': 'error' },
+  },
+  // A plain flat config at runtime, but its types turn each entry's missing keys into `key?: undefined`, which
+  // exactOptionalPropertyTypes rejects
+  storybook.configs['flat/recommended'] as unknown as Linter.Config[],
+  {
+    // A story's meta has to be the default export, and its text is sample data that users never see
+    files: ['src/**/*.stories.tsx'],
+    rules: {
+      'import/no-default-export': 'off',
+      'react/jsx-no-literals': 'off',
+    },
   },
   {
     files: ['src/**'],
