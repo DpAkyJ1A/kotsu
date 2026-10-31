@@ -13,6 +13,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+# The Postgres service of the `db` and `e2e` jobs; `build` needs it only to pass the check in src/server/env.ts
+env:
+  DATABASE_URL: postgres://kotsu:kotsu@localhost:5432/kotsu
+
 # Every job starts with the two steps anchored in `lint`
 jobs:
   lint:
@@ -54,6 +58,27 @@ jobs:
       - *setup
       - run: pnpm test
 
+  db:
+    runs-on: ubuntu-latest
+    services:
+      postgres: &postgres
+        image: postgres:18
+        env:
+          POSTGRES_USER: kotsu
+          POSTGRES_PASSWORD: kotsu
+          POSTGRES_DB: kotsu
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U kotsu -d kotsu"
+          --health-interval 2s --health-timeout 5s --health-retries 15
+    steps:
+      - *checkout
+      - *setup
+      # The command every deployment runs before its build
+      - run: pnpm db:migrate
+      # On a database of its own, migrated by vitest.db-setup.ts
+      - run: pnpm test:db
+
   browser:
     runs-on: ubuntu-latest
     steps:
@@ -71,6 +96,8 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    services:
+      postgres: *postgres
     steps:
       - *checkout
       - *setup

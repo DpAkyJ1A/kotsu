@@ -109,8 +109,15 @@ export default defineConfig([
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      // Vitest and Playwright fixtures take `{}` when they need no other fixture
+      'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
       'no-restricted-syntax': ['error', NO_ENUMS],
     },
+  },
+  {
+    // Declaration merging, the one place that needs an interface
+    files: ['**/*.d.ts'],
+    rules: { '@typescript-eslint/consistent-type-definitions': 'off' },
   },
   {
     files: ['src/**'],
@@ -153,7 +160,19 @@ export default defineConfig([
     },
   },
   {
+    // Tests are never imported by app code, so they need no `server-only` mark
+    files: ['src/modules/*/domain/**/*.test.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', NO_ENUMS, ...NO_CURRENT_TIME],
+    },
+  },
+  {
     files: ['src/server/**', 'src/modules/*/{api,loaders,mcp}.ts'],
+    ignores: [
+      'src/server/**/*.test.ts',
+      // drizzle-kit loads the schema in plain Node, where `server-only` throws
+      'src/server/db/schema/**',
+    ],
     rules: { 'no-restricted-syntax': ['error', NO_ENUMS, SERVER_ONLY] },
   },
   {

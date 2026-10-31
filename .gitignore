@@ -18,6 +18,7 @@ next-env.d.ts
 
 # env files
 .env*
+!.env.example
 
 # debug
 npm-debug.log*
