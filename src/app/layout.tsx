@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Kotsu',
+  title: 'Broken',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
