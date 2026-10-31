@@ -16,12 +16,45 @@
   --radius-xl: 0.875rem;
   --radius-2xl: 1.25rem;
 
-  /* Tooltips and popovers fade in. Opacity only, so it needs no prefers-reduced-motion variant */
+  /* Tooltips, menus and popovers fade in and close at once. Opacity only, so they need no reduced motion */
   --animate-fade-in: fade-in 150ms ease-out;
+  /* Dialogs and drawers cover the page, so they leave the way they came */
+  --animate-fade-out: fade-out 150ms ease-in;
+  /* A drawer slides in on the curve of an iOS sheet; slides turn into fades with reduced motion (below) */
+  --animate-slide-in-bottom: slide-in-bottom 300ms
+    cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-out-bottom: slide-out-bottom 200ms ease-in;
+  --animate-slide-in-right: slide-in-right 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-out-right: slide-out-right 200ms ease-in;
 
   @keyframes fade-in {
     from {
       opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes slide-in-bottom {
+    from {
+      translate: 0 100%;
+    }
+  }
+  @keyframes slide-out-bottom {
+    to {
+      translate: 0 100%;
+    }
+  }
+  @keyframes slide-in-right {
+    from {
+      translate: 100% 0;
+    }
+  }
+  @keyframes slide-out-right {
+    to {
+      translate: 100% 0;
     }
   }
 }
@@ -117,6 +150,15 @@
 
   [data-theme='dark'] {
     color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --animate-slide-in-bottom: fade-in 150ms ease-out;
+      --animate-slide-out-bottom: fade-out 150ms ease-in;
+      --animate-slide-in-right: fade-in 150ms ease-out;
+      --animate-slide-out-right: fade-out 150ms ease-in;
+    }
   }
 
   /*
