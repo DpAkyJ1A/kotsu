@@ -7,11 +7,13 @@ heatmap, docs with flashcards, spreadsheets with formulas, a focus clock, and an
 
 ## Status
 
-Early days. The repository holds the project skeleton; no features work yet.
+Early days. The repository holds the project skeleton and the design tokens, light and dark, shown at
+`/tokens`; no features work yet.
 
 ## Tech stack
 
-Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Postgres 18 (Neon) · Drizzle ORM · pnpm
+Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · Postgres 18 (Neon) ·
+Drizzle ORM · pnpm
 
 ## Architecture
 
