@@ -46,6 +46,7 @@ Then open http://localhost:5687.
 | `pnpm test:browser`  | runs the component tests in a real browser                              |
 | `pnpm test:coverage` | runs the unit and component tests with a coverage report in `coverage/` |
 | `pnpm test:e2e`      | runs the end-to-end tests against a production build                    |
+| `pnpm test:smoke`    | runs the `@smoke` end-to-end tests against `PLAYWRIGHT_BASE_URL`        |
 | `pnpm check`         | runs typecheck, lint, format check, knip and the unit tests in one go   |
 
 Git hooks (Lefthook) format and lint staged files before a commit, check the commit message
@@ -72,6 +73,16 @@ On GitHub, every pull request runs lint and the format check, typecheck, Knip, a
 a production build in parallel, and checks that its title follows Conventional Commits, because the squash
 merge makes the title the commit message. `main` takes changes only through a pull request with every check
 green.
+
+Vercel deploys a preview of every pull request and production from `main`. Once a deployment is live, the
+end-to-end tests tagged `@smoke` (read-only, desktop Chromium) run against its URL. To run them against any
+deployment yourself:
+
+```sh
+PLAYWRIGHT_BASE_URL=https://… VERCEL_AUTOMATION_BYPASS_SECRET=… pnpm test:smoke
+```
+
+The secret is needed only for previews, which sit behind Vercel's Deployment Protection.
 
 ## License
 

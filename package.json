@@ -17,6 +17,7 @@
     "test:browser": "vitest run --project browser",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:smoke": "playwright test --grep @smoke --project desktop",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm test"
   },
   "dependencies": {
