@@ -8,13 +8,14 @@ heatmap, docs with flashcards, spreadsheets with formulas, a focus clock, and an
 ## Status
 
 Early days. The repository holds the project skeleton, the design tokens (light and dark), the icon set and
-the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, chips, tooltips), shown in
-Storybook (`pnpm storybook`); no features work yet.
+the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, chips, tooltips) with its
+overlays (dialog, drawer, popover, dropdown menu, toasts with Undo), shown in Storybook (`pnpm storybook`); no
+features work yet.
 
 ## Tech stack
 
 Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · shadcn/ui on Radix ·
-Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · pnpm
+Sonner · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · pnpm
 
 ## Architecture
 
