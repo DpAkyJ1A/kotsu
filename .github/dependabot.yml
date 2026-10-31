@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # pnpm installs nothing younger than a day (`minimumReleaseAge`), so Dependabot waits as long
+    cooldown:
+      default-days: 1
+    # chore(deps): … and chore(deps-dev): …
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Majors come one per PR: they are the ones that break
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Follows the Node major in `.nvmrc` and `engines`
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # TypeScript 7 waits until typescript-eslint supports it
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ['*']
