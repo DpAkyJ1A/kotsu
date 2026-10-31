@@ -23,6 +23,8 @@ next-env.d.ts
 # debug
 npm-debug.log*
 .pnpm-debug.log*
+# written by Storybook when it fails
+*storybook.log
 
 # vercel
 .vercel

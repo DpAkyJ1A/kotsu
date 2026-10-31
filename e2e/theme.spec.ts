@@ -43,10 +43,20 @@ test('ignores an unknown theme in the cookie', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 });
 
-// A part of the page can force a theme (the clock, the theme previews in settings)
+// A part of the page can force a theme (the clock, the theme previews in settings). No page has one yet, so
+// the test adds two. It stays here, not in a story: story tests get `light-dark()` as written, and only the
+// production build rewrites it.
 test('a nested data-theme keeps its own theme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/tokens');
+  await page.goto('/');
+  await page.getByRole('main').evaluate((main) => {
+    for (const theme of ['light', 'dark']) {
+      const section = document.createElement('section');
+      section.dataset.theme = theme;
+      section.style.backgroundColor = 'var(--background)';
+      main.append(section);
+    }
+  });
 
   await expect(page.locator('section[data-theme="light"]')).toHaveCSS(
     'background-color',
