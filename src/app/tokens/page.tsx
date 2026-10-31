@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import * as icons from '@/ui/icons';
+
 export const metadata: Metadata = {
   title: 'Tokens · Kotsu',
 };
@@ -82,6 +84,11 @@ const WEIGHTS = [
   { name: '600', className: 'font-semibold' },
   { name: '700', className: 'font-bold' },
 ];
+
+const ICONS = Object.entries(icons).map(([name, Icon]) => ({
+  name: name.replace(/Icon$/, ''),
+  Icon,
+}));
 
 const SAMPLE_TEXT = 'Spanish verbs · 5 cards left';
 const SAMPLE_ACCENTS = '¿Qué aprendiste hoy? Mañana, más.';
@@ -212,6 +219,17 @@ export default function TokensPage() {
                   </li>
                 ))}
                 <li className="text-2xl font-semibold">{SAMPLE_NUMBERS}</li>
+              </ul>
+            </Group>
+
+            <Group title="icons">
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
+                {ICONS.map(({ name, Icon }) => (
+                  <li key={name} className="flex min-w-0 items-center gap-2">
+                    <Icon className="size-5" />
+                    <span className="truncate text-sm">{name}</span>
+                  </li>
+                ))}
               </ul>
             </Group>
           </section>

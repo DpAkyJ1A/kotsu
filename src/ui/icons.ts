@@ -1,0 +1,47 @@
+// Every icon Kotsu uses: Lucide icons picked to match the mockups. Import them from here, never from
+// lucide-react (lint checks it), so the set stays in one place; a screen that needs a new icon adds it here.
+//
+// An icon is a 1em square drawn in the text colour (theme.css), so it matches the text it sits in. Size and
+// colour it like text, with classes: `size-5`, `text-muted-foreground`. Without an `aria-label` it is hidden
+// from screen readers.
+export {
+  BoxIcon,
+  CalendarIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  ContrastIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  FingerprintPatternIcon,
+  FlameIcon,
+  GalleryVerticalEndIcon,
+  GlobeIcon,
+  Heading1Icon,
+  KeyIcon,
+  LibraryIcon,
+  LinkIcon,
+  ListIcon,
+  LogOutIcon,
+  MoonIcon,
+  PaletteIcon,
+  PanelLeftIcon,
+  PauseIcon,
+  PencilIcon,
+  PlayIcon,
+  PlusIcon,
+  RepeatIcon,
+  RotateCwIcon,
+  SearchIcon,
+  SettingsIcon,
+  SheetIcon,
+  SparklesIcon,
+  SquareCheckIcon,
+  SunIcon,
+  TypeIcon,
+  UserIcon,
+  XIcon,
+} from 'lucide-react';
