@@ -1,0 +1,194 @@
+/*
+ * Kotsu's design tokens. Each colour is declared once with both values, light-dark(light, dark), and
+ * resolves by `color-scheme`: `data-theme` on <html> when the user picked a theme, the system setting
+ * otherwise. Names follow shadcn/ui, so its components take the tokens as they are.
+ */
+
+@theme {
+  --radius-*: initial;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+}
+
+/* Inline, so utilities read the tokens on the element itself and a nested data-theme works */
+@theme inline {
+  --color-*: initial;
+  --shadow-*: initial;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-now: var(--now);
+  --color-flame: var(--flame);
+
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
+
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-blue: var(--blue);
+  --color-blue-foreground: var(--blue-foreground);
+  --color-amber: var(--amber);
+  --color-amber-foreground: var(--amber-foreground);
+  --color-green: var(--green);
+  --color-green-foreground: var(--green-foreground);
+  --color-pink: var(--pink);
+  --color-pink-foreground: var(--pink-foreground);
+  --color-orange: var(--orange);
+  --color-orange-foreground: var(--orange-foreground);
+  --color-red: var(--red);
+  --color-red-foreground: var(--red-foreground);
+  --color-teal: var(--teal);
+  --color-teal-foreground: var(--teal-foreground);
+  --color-slate: var(--slate);
+  --color-slate-foreground: var(--slate-foreground);
+
+  --shadow-xs: 0 1px 3px light-dark(rgb(0 0 0 / 8%), transparent);
+  --shadow-md: 0 10px 30px light-dark(rgb(24 24 27 / 10%), rgb(0 0 0 / 50%));
+  --shadow-lg: 0 14px 36px light-dark(rgb(24 24 27 / 14%), rgb(0 0 0 / 50%));
+  --shadow-xl: 0 18px 48px light-dark(rgb(24 24 27 / 18%), rgb(0 0 0 / 55%));
+}
+
+/* `dark:` follows the same rule as the tokens: a picked theme first, then the system */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme='light'], [data-theme='light'] *)) {
+      @slot;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  [data-theme='light'] {
+    color-scheme: light;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  /*
+   * Declared again on every themed element, not only on :root: for browsers without light-dark(), Next's
+   * Lightning CSS swaps it for variables that `color-scheme` sets, and a token computed once on :root
+   * would keep the root's theme inside a nested data-theme.
+   */
+  :root,
+  [data-theme] {
+    --background: light-dark(#ffffff, #121214);
+    --foreground: light-dark(#18181b, #f2f2f5);
+    --card: light-dark(#ffffff, #1a1a1e);
+    --card-foreground: var(--foreground);
+    --popover: light-dark(#ffffff, #1a1a1e);
+    --popover-foreground: var(--foreground);
+    --primary: light-dark(#6d5ef5, #8b7fff);
+    --primary-foreground: light-dark(#ffffff, #0e0e10);
+    --secondary: light-dark(#f1f1f4, rgb(255 255 255 / 6%));
+    --secondary-foreground: var(--foreground);
+    --muted: light-dark(#f1f1f4, rgb(255 255 255 / 6%));
+    --muted-foreground: light-dark(#6d6d79, #8b8b95);
+    /* The hover surface, as in shadcn/ui; Kotsu's violet is `primary` */
+    --accent: light-dark(#f1f1f4, rgb(255 255 255 / 6%));
+    --accent-foreground: var(--foreground);
+    --destructive: light-dark(#dc2626, #ff7a7a);
+    --border: light-dark(rgb(24 24 27 / 7%), rgb(255 255 255 / 7%));
+    --input: light-dark(rgb(24 24 27 / 7%), rgb(255 255 255 / 7%));
+    --ring: var(--primary);
+    --overlay: light-dark(rgb(24 24 27 / 32%), rgb(0 0 0 / 55%));
+
+    --sidebar: light-dark(#fafafb, #0d0d0f);
+    --sidebar-foreground: light-dark(#3f3f46, #c4c4cc);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+
+    /* The current-time line in the calendar and the streak flame */
+    --now: light-dark(#f0506e, #ff6b85);
+    --flame: light-dark(#ff8a3d, #ff9a55);
+
+    /* Year heatmap: 0 is a day with nothing done */
+    --heat-0: light-dark(#eff0f3, rgb(255 255 255 / 6%));
+    --heat-1: light-dark(#c9edd6, #1d3a28);
+    --heat-2: light-dark(#94dbae, #22603a);
+    --heat-3: light-dark(#4cc27d, #2f9157);
+    --heat-4: light-dark(#22a55b, #4ade80);
+
+    /* `palette_color` from the database: a pastel fill and the text on it */
+    --violet: light-dark(#f1eafe, #251c3f);
+    --violet-foreground: light-dark(#7c3aed, #c9b0ff);
+    --blue: light-dark(#e9f0ff, #1b2340);
+    --blue-foreground: light-dark(#2f5bd3, #a3bdff);
+    --amber: light-dark(#fff2e0, #32241a);
+    --amber-foreground: light-dark(#b45309, #ffc98f);
+    --green: light-dark(#e5f6ec, #15301f);
+    --green-foreground: light-dark(#157f3d, #8be3ae);
+    --pink: light-dark(#fde8ee, #361a27);
+    --pink-foreground: light-dark(#be185d, #ffa3c4);
+    --orange: light-dark(#ffe8e0, #37211a);
+    --orange-foreground: light-dark(#bf400c, #ffb08f);
+    --red: light-dark(#feebeb, #3a1c1c);
+    --red-foreground: light-dark(#b91c1c, #ffa3a3);
+    --teal: light-dark(#e0f4f1, #142f2d);
+    --teal-foreground: light-dark(#0f766e, #7ee0d2);
+    --slate: light-dark(#eef0f4, #22262e);
+    --slate-foreground: light-dark(#4b5563, #bac2cf);
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+  }
+}
