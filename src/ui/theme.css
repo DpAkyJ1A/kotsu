@@ -191,4 +191,11 @@
     font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
   }
+
+  /* Icons from src/ui/icons.ts (Lucide marks them `.lucide`) are as big as the text around them */
+  .lucide {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
 }

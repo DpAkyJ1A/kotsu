@@ -55,6 +55,14 @@ const NO_ENUMS = {
   message: 'Use a string union or an `as const` object instead of an enum.',
 };
 
+// theme.css sizes icons, so these props would lose to it or skip the tokens
+const NO_ICON_SIZE_PROPS = {
+  selector:
+    'JSXOpeningElement[name.name=/Icon$/] > JSXAttribute[name.name=/^(size|width|height|color)$/]',
+  message:
+    'Size and colour an icon with classes, like text: `size-5`, `text-primary`.',
+};
+
 const NO_CURRENT_TIME = [
   {
     selector: "NewExpression[callee.name='Date'][arguments.length=0]",
@@ -111,7 +119,7 @@ export default defineConfig([
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
       // Vitest and Playwright fixtures take `{}` when they need no other fixture
       'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
-      'no-restricted-syntax': ['error', NO_ENUMS],
+      'no-restricted-syntax': ['error', NO_ENUMS, NO_ICON_SIZE_PROPS],
     },
   },
   {
@@ -138,6 +146,23 @@ export default defineConfig([
           object: 'process',
           property: 'env',
           message: 'Read environment variables through src/server/env.ts.',
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/**'],
+    ignores: ['src/ui/icons.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['lucide-react', 'lucide-react/*'],
+              message: 'Import icons from `@/ui/icons`.',
+            },
+          ],
         },
       ],
     },
