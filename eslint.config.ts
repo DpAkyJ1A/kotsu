@@ -105,7 +105,14 @@ export default defineConfig([
   },
   {
     // eslint-config-next registers the jsx-a11y plugin but turns on only six of its rules
-    rules: { ...jsxA11y.flatConfigs.strict.rules },
+    rules: {
+      ...jsxA11y.flatConfigs.strict.rules,
+      // A <label> around one of the src/ui fields labels it, like one around an <input>
+      'jsx-a11y/label-has-associated-control': [
+        'error',
+        { controlComponents: ['Input', 'Textarea'] },
+      ],
+    },
   },
   {
     plugins: { 'simple-import-sort': simpleImportSort },
