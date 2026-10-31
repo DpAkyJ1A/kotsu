@@ -1,0 +1,29 @@
+name: Smoke
+
+# Vercel reports every deployment to GitHub. Once one is live, the read-only `@smoke` tests run against
+# its URL. Not a required check: a run for a status other than `success` is skipped, and GitHub counts a
+# skipped required check as passed.
+on: deployment_status
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # For this event the checkout is the deployed commit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          require-lockfile: true
+          cache: true
+          save-cache: false
+      - run: pnpm exec playwright install --with-deps --only-shell chromium
+      - run: pnpm test:smoke
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
