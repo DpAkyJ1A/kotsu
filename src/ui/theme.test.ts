@@ -97,6 +97,9 @@ const PAIRS = [
   ...PALETTE.map((color) => ({ text: `${color}-foreground`, surface: color })),
 ];
 
+// Surfaces a form control can sit on, for its `input` edge
+const CONTROL_SURFACES = ['background', 'card', 'popover', 'sidebar', 'muted'];
+
 test('every token has a light and a dark value', () => {
   expect(tokens.size).toBeGreaterThan(0);
   for (const name of tokens.keys()) {
@@ -115,6 +118,22 @@ describe.for<Scheme>(['light', 'dark'])('%s theme', (scheme) => {
       );
 
       expect(ratio).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  test.for(CONTROL_SURFACES)(
+    'the input edge on %s passes WCAG 1.4.11',
+    (surface) => {
+      const backdrop = over(
+        parse(resolve(surface, scheme)),
+        parse(resolve('background', scheme)),
+      );
+      const ratio = contrast(
+        over(parse(resolve('input', scheme)), backdrop),
+        backdrop,
+      );
+
+      expect(ratio).toBeGreaterThanOrEqual(3);
     },
   );
 });

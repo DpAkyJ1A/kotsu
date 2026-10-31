@@ -16,10 +16,19 @@ const browser = (): BrowserConfigOptions => ({
 
 type Theme = 'light' | 'dark';
 
-// Storybook's "Run tests" button (it sets VITEST_STORYBOOK) names every Storybook project after the
-// .storybook folder, so two of them clash there; the button runs the light one only
-const STORY_THEMES: Theme[] =
-  process.env.VITEST_STORYBOOK === 'true' ? ['light'] : ['light', 'dark'];
+// Set when the tests run from Storybook's sidebar
+const isStorybookRun = process.env.VITEST_STORYBOOK === 'true';
+
+// Storybook's "Run tests" button names every Storybook project after the .storybook folder, so two of them
+// clash there; the button runs the light one only
+const STORY_THEMES: Theme[] = isStorybookRun ? ['light'] : ['light', 'dark'];
+
+// Storybook's coverage counts only code a story can reach. To count lines in server files, Vite would load
+// them in the browser, find pg, Drizzle and next/headers halfway through, re-bundle its dependencies and
+// reload the run, which then fails
+const COVERAGE_INCLUDE = isStorybookRun
+  ? ['src/{ui,lib}/**/*.{ts,tsx}', 'src/modules/*/{ui,hooks}/**/*.{ts,tsx}']
+  : ['src/**/*.{ts,tsx}'];
 
 // Every story is a test (it renders, its play function passes, axe finds nothing), run once per theme
 const storybookProject = (theme: Theme) => ({
@@ -66,7 +75,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.{ts,tsx}'],
+      include: COVERAGE_INCLUDE,
     },
   },
 });

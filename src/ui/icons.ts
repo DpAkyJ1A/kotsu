@@ -11,6 +11,7 @@ export {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   ClockIcon,
   ContrastIcon,
   CopyIcon,
