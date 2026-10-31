@@ -1,5 +1,7 @@
 # Kotsu
 
+[![CI](https://github.com/DpAkyJ1A/kotsu/actions/workflows/ci.yml/badge.svg)](https://github.com/DpAkyJ1A/kotsu/actions/workflows/ci.yml)
+
 Open-source workspace for any goal you practise daily: a calendar with streaks and a year
 heatmap, docs with flashcards, spreadsheets with formulas, a focus clock, and an MCP server so Claude or ChatGPT can plan with you.
 
@@ -65,6 +67,11 @@ pnpm exec playwright install chromium webkit
 
 `pnpm test:e2e` builds the app and serves it on port 5687. Outside CI, a server already running on that
 port (such as `pnpm dev`) is tested instead.
+
+On GitHub, every pull request runs lint and the format check, typecheck, Knip, all three kinds of tests and
+a production build in parallel, and checks that its title follows Conventional Commits, because the squash
+merge makes the title the commit message. `main` takes changes only through a pull request with every check
+green.
 
 ## License
 
