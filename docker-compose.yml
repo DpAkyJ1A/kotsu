@@ -1,0 +1,24 @@
+# Local Postgres for development and the database tests: `docker compose up -d db`
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: kotsu
+      POSTGRES_PASSWORD: kotsu
+      POSTGRES_DB: kotsu
+    ports:
+      # 5433 on the host, so a Postgres installed on the machine can keep 5432
+      - 127.0.0.1:5433:5432
+    volumes:
+      # Postgres 18 images keep their data under /var/lib/postgresql/18, not in …/data
+      - db:/var/lib/postgresql
+    healthcheck:
+      # Over TCP: during the first start the image runs a socket-only server to create the user and database
+      test:
+        ['CMD', 'pg_isready', '-h', '127.0.0.1', '-U', 'kotsu', '-d', 'kotsu']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  db:

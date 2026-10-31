@@ -3,3 +3,5 @@
 pnpm-lock.yaml
 # written by `next dev`, which rewrites it if the text differs
 AGENTS.md
+# written by drizzle-kit, never by hand
+drizzle/*/snapshot.json
