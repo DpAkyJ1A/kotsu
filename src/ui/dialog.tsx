@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import { useTranslations } from 'next-intl';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import type { ComponentProps } from 'react';
 
@@ -37,10 +38,12 @@ export function DialogOverlay() {
 
 // It sits in the corner but comes last in the tab order, so the focus starts on the content
 export function DialogCloseButton() {
+  const t = useTranslations('ui');
+
   return (
     <DialogPrimitive.Close asChild>
       <IconButton
-        label="Close"
+        label={t('close')}
         size="sm"
         className="absolute top-3 right-3 text-muted-foreground"
       >

@@ -7,6 +7,7 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "allowJs": true,
+    "allowArbitraryExtensions": true,
     "noEmit": true,
     "incremental": true,
     "skipLibCheck": true,
@@ -31,6 +32,7 @@
     "**/*.tsx",
     "**/*.mts",
     ".storybook/*.ts",
+    ".storybook/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

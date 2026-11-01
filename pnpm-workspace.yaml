@@ -1,6 +1,12 @@
 saveExact: true
 
 allowBuilds:
+  # next-intl's file watcher for message extraction; the binary comes as an optional dependency, the script only
+  # builds from source when asked to
+  '@parcel/watcher': false
+  # next-intl's parser for message extraction; the binary comes as an optional dependency, the script only checks
+  # for it
+  '@swc/core': false
   # Storybook's bundler; the binary comes as an optional dependency, the script only checks for it
   esbuild: false
   # Runs `lefthook install` to set up the git hooks; skips CI and never fails the install

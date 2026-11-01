@@ -8,6 +8,8 @@ next-env.d.ts
 
 # typescript
 *.tsbuildinfo
+# the messages' types, written by next-intl's plugin
+/messages/*.d.json.ts
 
 # testing
 /coverage
