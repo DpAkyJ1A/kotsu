@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import { useTranslations } from 'next-intl';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
 import { CheckIcon, XIcon } from './icons';
@@ -15,10 +16,14 @@ const ICON_CLASS_NAME = 'size-4 rounded-full p-0.5 text-background';
 // or the focus is on them. An error is red in both themes, like the destructive button: inverted, it would be
 // white in the dark one. Alt+T moves the focus to them, so Undo can be reached from the keyboard
 export function Toaster(props: ToasterProps) {
+  const t = useTranslations('ui');
+
   return (
     <Sonner
       position="bottom-center"
       duration={5000}
+      // Sonner's own labels are English
+      containerAriaLabel={t('notifications')}
       icons={{
         success: (
           <CheckIcon className={cn(ICON_CLASS_NAME, 'bg-green-foreground')} />
@@ -28,6 +33,7 @@ export function Toaster(props: ToasterProps) {
       toastOptions={{
         // Sonner keeps positioning and stacking its toasts; everything they look like comes from here
         unstyled: true,
+        closeButtonAriaLabel: t('closeNotification'),
         classNames: {
           // Sonner's own stylesheet, outside any layer, resets a toast's outline, so the focus ring needs `!`
           toast:

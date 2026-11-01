@@ -138,6 +138,19 @@ export const Keyboard: Story = {
   },
 };
 
+// The kit's own words come in the user's language, here from the toolbar's language switch; the story's text is
+// sample data and stays English
+export const InRussian: Story = {
+  args: { defaultOpen: true },
+  globals: { locale: 'ru' },
+  play: async () => {
+    await expect(
+      await screen.findByRole('button', { name: 'Закрыть' }),
+    ).toBeInTheDocument();
+    await expect(document.documentElement).toHaveAttribute('lang', 'ru');
+  },
+};
+
 // A button makes the choice and closes the dialog; a click on the overlay closes it without one
 export const Pointer: Story = {
   play: async ({ args, canvas, userEvent }) => {

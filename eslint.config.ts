@@ -90,6 +90,7 @@ export default defineConfig([
     'test-results/',
     'playwright-report/',
     'blob-report/',
+    'messages/*.d.json.ts',
   ]),
   js.configs.recommended,
   ...nextVitals,
@@ -138,7 +139,8 @@ export default defineConfig([
   },
   {
     files: ['src/**'],
-    ignores: ['src/app/**'],
+    // next-intl reads the request config from the default export, as Next.js reads a page
+    ignores: ['src/app/**', 'src/i18n/request.ts'],
     rules: { 'import/no-default-export': 'error' },
   },
   {
@@ -238,6 +240,8 @@ export default defineConfig([
           type: folder,
           pattern: `src/${folder}`,
         })),
+        // The translations at the root, read only through src/i18n
+        { type: 'messages', pattern: 'messages' },
       ].map((descriptor) => ({ ...descriptor, partialMatch: false })),
     },
     rules: {
@@ -299,7 +303,7 @@ export default defineConfig([
             allow(element('ui'), element('ui', 'lib')),
             allow(element('lib'), element('lib')),
             allow(element('server'), element('server', 'lib')),
-            allow(element('i18n'), element('i18n', 'lib')),
+            allow(element('i18n'), element('i18n', 'lib', 'messages')),
           ],
         },
       ],

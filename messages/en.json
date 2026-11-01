@@ -1,0 +1,11 @@
+{
+  "home": {
+    "title": "Kotsu",
+    "tagline": "Open-source workspace for any goal you practise daily"
+  },
+  "ui": {
+    "close": "Close",
+    "notifications": "Notifications",
+    "closeNotification": "Close notification"
+  }
+}
