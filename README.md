@@ -11,12 +11,14 @@ Early days. The repository holds the project skeleton, the design tokens (light 
 the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, chips, tooltips) with its
 overlays (dialog, drawer, popover, dropdown menu, toasts with Undo) and the ⌘K command palette, shown in
 Storybook (`pnpm storybook`). The interface speaks English and Russian: the browser's language picks one until
-the user does. No features work yet.
+the user does. The server side of signing in works (a one-time code by email, sessions in Postgres, private
+pages closed to visitors); the sign-in screens come next. No features work yet.
 
 ## Tech stack
 
 Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · shadcn/ui on Radix ·
-Sonner · cmdk · next-intl · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · pnpm
+Sonner · cmdk · next-intl · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · Better Auth ·
+Resend · pnpm
 
 ## Architecture
 
@@ -32,13 +34,17 @@ Requirements: Node.js 26 (see `.nvmrc`), pnpm 12 and Docker.
 
 ```sh
 pnpm install
-cp .env.example .env
+sed "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$(openssl rand -base64 32)|" .env.example > .env
 docker compose up -d db   # Postgres 18 on localhost:5433
 pnpm db:migrate
 pnpm dev
 ```
 
-Then open http://localhost:5687. `docker compose down` stops the database and keeps its data;
+The second line copies `.env.example` to `.env` and fills in `BETTER_AUTH_SECRET` with a random key: it signs
+sessions and encrypts sign-in codes.
+
+Then open http://localhost:5687. Without `RESEND_API_KEY` in `.env`, sign-in codes are printed in the terminal
+of `pnpm dev` instead of being emailed. `docker compose down` stops the database and keeps its data;
 `docker compose down -v` deletes it.
 
 ## Scripts

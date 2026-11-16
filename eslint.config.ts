@@ -51,6 +51,7 @@ const door = (files: string[], captured?: Record<string, string>) => ({
   },
 });
 const allow = (from: object, ...to: object[]) => ({ from, allow: { to } });
+const proxyFile = { file: { categories: 'proxy' } };
 
 const NO_ENUMS = {
   selector: 'TSEnumDeclaration',
@@ -243,6 +244,10 @@ export default defineConfig([
         // The translations at the root, read only through src/i18n
         { type: 'messages', pattern: 'messages' },
       ].map((descriptor) => ({ ...descriptor, partialMatch: false })),
+      // Next.js's request proxy, the one file at the root of src/, and its test
+      'boundaries/files': [
+        { category: 'proxy', pattern: 'src/proxy{,.test}.ts' },
+      ],
     },
     rules: {
       'boundaries/no-unknown-files': 'error',
@@ -304,6 +309,7 @@ export default defineConfig([
             allow(element('lib'), element('lib')),
             allow(element('server'), element('server', 'lib')),
             allow(element('i18n'), element('i18n', 'lib', 'messages')),
+            allow(proxyFile, proxyFile),
           ],
         },
       ],

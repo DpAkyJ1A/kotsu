@@ -1,7 +1,8 @@
 import 'server-only';
 
 import { attachDatabasePool } from '@vercel/functions';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import type { EmptyRelations } from 'drizzle-orm';
+import { drizzle, type NodePgTransaction } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import { env } from '@/server/env';
@@ -13,3 +14,5 @@ const pool = new Pool({ connectionString: env.DATABASE_URL });
 attachDatabasePool(pool);
 
 export const db = drizzle({ client: pool });
+
+export type Db = typeof db | NodePgTransaction<EmptyRelations>;

@@ -13,6 +13,8 @@ updates:
       prefix: chore
       include: scope
     groups:
+      better-auth:
+        patterns: ['better-auth', '@better-auth/*']
       # Majors come one per PR: they are the ones that break
       minor-and-patch:
         update-types: [minor, patch]
