@@ -13,9 +13,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
-# The Postgres service of the `db` and `e2e` jobs; `build` needs it only to pass the check in src/server/env.ts
+# The Postgres service of the `db` and `e2e` jobs, and a session-signing secret that exists only in CI; `build`
+# needs both only to pass the check in src/server/env.ts
 env:
   DATABASE_URL: postgres://kotsu:kotsu@localhost:5432/kotsu
+  BETTER_AUTH_SECRET: ci-only-secret-that-signs-no-real-session
 
 # Every job starts with the two steps anchored in `lint`
 jobs:
@@ -102,6 +104,8 @@ jobs:
       - *checkout
       - *setup
       - run: pnpm exec playwright install --with-deps --only-shell chromium webkit
+      # Better Auth counts every request to /api/auth in its `rate_limit` table
+      - run: pnpm db:migrate
       # Builds the app and serves it itself, see `webServer` in playwright.config.ts
       - run: pnpm test:e2e
       - if: failure()
