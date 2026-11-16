@@ -9,6 +9,31 @@
     "closeNotification": "Close notification"
   },
   "auth": {
-    "signInTitle": "Sign in to Kotsu"
+    "signInTitle": "Sign in to Kotsu",
+    "signInDescription": "We'll email you a 6-digit code. New here? The same code creates your account.",
+    "email": "Email",
+    "sendCode": "Send code",
+    "codeTitle": "Check your email",
+    "codeDescription": "Enter the 6-digit code we sent to <strong>{email}</strong>.",
+    "code": "Code",
+    "signIn": "Sign in",
+    "sendNewCode": "Send a new code",
+    "newCodeSent": "A new code is on its way.",
+    "useAnotherEmail": "Use another email",
+    "signOut": "Sign out",
+    "errors": {
+      "invalidEmail": "That doesn't look like an email address.",
+      "wrongCode": "That code isn't right. Check the email and try again.",
+      "expiredCode": "This code has expired. Send a new one.",
+      "tooManyAttempts": "Too many wrong tries. Send a new code.",
+      "tooManyRequests": "Too many requests. Wait a minute and try again.",
+      "unknown": "Something went wrong. Try again."
+    }
+  },
+  "email": {
+    "signInCode": {
+      "subject": "{code} is your Kotsu code",
+      "text": "Your Kotsu sign-in code is {code}. It works for {minutes, plural, one {# minute} other {# minutes}}.\n\nIf you didn't ask for it, just ignore this email."
+    }
   }
 }

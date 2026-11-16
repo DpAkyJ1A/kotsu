@@ -8,7 +8,7 @@ test(
   async ({ page }) => {
     await page.goto('/calendar');
 
-    await expect(page).toHaveURL('/sign-in');
+    await expect(page).toHaveURL('/sign-in?next=%2Fcalendar');
     await expect(
       page.getByRole('heading', { name: 'Sign in to Kotsu' }),
     ).toBeVisible();

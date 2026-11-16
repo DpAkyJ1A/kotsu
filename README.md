@@ -11,8 +11,8 @@ Early days. The repository holds the project skeleton, the design tokens (light 
 the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, chips, tooltips) with its
 overlays (dialog, drawer, popover, dropdown menu, toasts with Undo) and the ⌘K command palette, shown in
 Storybook (`pnpm storybook`). The interface speaks English and Russian: the browser's language picks one until
-the user does. The server side of signing in works (a one-time code by email, sessions in Postgres, private
-pages closed to visitors); the sign-in screens come next. No features work yet.
+the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
+the account), and private pages open; sessions live in Postgres. No features work yet.
 
 ## Tech stack
 
@@ -44,8 +44,8 @@ The second line copies `.env.example` to `.env` and fills in `BETTER_AUTH_SECRET
 sessions and encrypts sign-in codes.
 
 Then open http://localhost:5687. Without `RESEND_API_KEY` in `.env`, sign-in codes are printed in the terminal
-of `pnpm dev` instead of being emailed. `docker compose down` stops the database and keeps its data;
-`docker compose down -v` deletes it.
+of `pnpm dev` instead of being emailed; a production build without the key can't send them. `docker compose down`
+stops the database and keeps its data; `docker compose down -v` deletes it.
 
 ## Scripts
 

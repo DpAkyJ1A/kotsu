@@ -1,11 +1,24 @@
-import { useTranslations } from 'next-intl';
+import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
-export default function SignInPage() {
-  const t = useTranslations('auth');
+import { EmailForm, toNextPath } from '@/modules/account';
+import { findCtx } from '@/server/ctx/get-ctx';
+
+export default async function SignInPage({
+  searchParams,
+}: PageProps<'/sign-in'>) {
+  const next = toNextPath((await searchParams).next);
+  if (await findCtx()) redirect(next);
+
+  const t = await getTranslations('auth');
 
   return (
-    <main className="grid min-h-dvh place-content-center p-6 text-center">
-      <h1 className="text-3xl font-bold">{t('signInTitle')}</h1>
-    </main>
+    <>
+      <header className="grid gap-2">
+        <h1 className="text-3xl font-bold">{t('signInTitle')}</h1>
+        <p className="text-muted-foreground">{t('signInDescription')}</p>
+      </header>
+      <EmailForm next={next} />
+    </>
   );
 }

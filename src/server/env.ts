@@ -6,6 +6,7 @@ const Env = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
   BETTER_AUTH_SECRET: z.string().min(32),
   RESEND_API_KEY: z.string().optional(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
 });
 
 const parsed = Env.safeParse(process.env);

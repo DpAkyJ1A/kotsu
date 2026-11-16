@@ -16,6 +16,8 @@ const ALLOWED_HOSTS = [
   'kotsu-*-dpakyj1as-projects.vercel.app',
 ];
 
+const CODE_LIFETIME_MINUTES = 5;
+
 const UNUSED_EMAIL_OTP_PATHS = [
   '/email-otp/check-verification-otp',
   '/email-otp/verify-email',
@@ -42,9 +44,15 @@ export function createAuth({ db, secret, sendSignInCode }: AuthDeps) {
     disabledPaths: UNUSED_EMAIL_OTP_PATHS,
     plugins: [
       emailOTP({
+        expiresIn: CODE_LIFETIME_MINUTES * 60,
         storeOTP: 'encrypted',
         sendVerificationOTP: async ({ email, otp, type }) => {
-          if (type === 'sign-in') await sendSignInCode({ email, otp });
+          if (type !== 'sign-in') return;
+          await sendSignInCode({
+            email,
+            otp,
+            minutesValid: CODE_LIFETIME_MINUTES,
+          });
         },
       }),
       nextCookies(),

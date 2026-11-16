@@ -23,13 +23,25 @@ export function createTestAuth(db: Db) {
   return { auth, sentCodes };
 }
 
-type AuthRequest = { path: string; body: object; cookie?: string };
+type AuthRequest = {
+  path: string;
+  body: object;
+  cookie?: string;
+  ip?: string;
+};
 
-export function post(auth: Auth, { path, body, cookie = '' }: AuthRequest) {
+export function post(auth: Auth, { path, body, cookie, ip }: AuthRequest) {
+  const headers = new Headers({
+    'content-type': 'application/json',
+    origin: ORIGIN,
+  });
+  if (cookie) headers.set('cookie', cookie);
+  if (ip) headers.set('x-forwarded-for', ip);
+
   return auth.handler(
     new Request(`${ORIGIN}/api/auth${path}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', origin: ORIGIN, cookie },
+      headers,
       body: JSON.stringify(body),
     }),
   );

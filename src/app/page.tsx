@@ -1,12 +1,18 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-export default function HomePage() {
-  const t = useTranslations('home');
+import { SignOutButton } from '@/modules/account';
+import { findCtx } from '@/server/ctx/get-ctx';
+
+export default async function HomePage() {
+  const [t, ctx] = await Promise.all([getTranslations('home'), findCtx()]);
 
   return (
-    <main className="grid min-h-dvh place-content-center gap-2 p-6 text-center">
-      <h1 className="text-3xl font-bold">{t('title')}</h1>
-      <p className="text-muted-foreground">{t('tagline')}</p>
+    <main className="grid min-h-dvh place-content-center gap-6 p-6 text-center">
+      <div className="grid gap-2">
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('tagline')}</p>
+      </div>
+      {ctx && <SignOutButton />}
     </main>
   );
 }
