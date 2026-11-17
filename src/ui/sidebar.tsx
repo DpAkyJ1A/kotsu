@@ -174,7 +174,6 @@ export function Sidebar({
             data-slot="sidebar-edge"
             aria-hidden
             className="visible absolute inset-y-0 left-full w-2"
-            onPointerEnter={handleEdgePointer}
             onPointerMove={handleEdgePointer}
           />
         )}
