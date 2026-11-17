@@ -1,6 +1,9 @@
-import { expect, type Page } from '@playwright/test';
+import { type BrowserContext, expect, type Page } from '@playwright/test';
+import { eq } from 'drizzle-orm';
 
-import { test } from './fixtures';
+import { passkey } from '@/server/db/schema/auth';
+
+import { test, type Visitor } from './fixtures';
 
 test.use({ locale: 'en-US' });
 
@@ -11,6 +14,24 @@ async function requestCode(page: Page, email: string) {
   await expect(
     page.getByRole('heading', { name: 'Check your email' }),
   ).toBeVisible();
+}
+
+async function signInWithCode(page: Page, visitor: Visitor) {
+  await requestCode(page, visitor.email);
+  await page.getByLabel('Code').fill(await visitor.readCode());
+}
+
+async function turnOnPasskey(page: Page) {
+  await page.getByRole('button', { name: 'Turn on passkey' }).click();
+  await expect(page).toHaveURL('/');
+}
+
+async function switchToAnotherDevice(context: BrowserContext) {
+  const credentials = await context.credentials.get();
+  await Promise.all(
+    credentials.map(({ id }) => context.credentials.delete(id)),
+  );
+  await context.clearCookies();
 }
 
 test.describe('with a session', () => {
@@ -24,8 +45,7 @@ test.describe('with a session', () => {
     page,
     visitor,
   }) => {
-    await requestCode(page, visitor.email);
-    await page.getByLabel('Code').fill(await visitor.readCode());
+    await signInWithCode(page, visitor);
 
     await expect(page).toHaveURL('/');
     await page.getByRole('button', { name: 'Sign out' }).click();
@@ -39,13 +59,126 @@ test.describe('with a session', () => {
     page,
     visitor,
   }) => {
-    await requestCode(page, visitor.email);
-    await page.getByLabel('Code').fill(await visitor.readCode());
+    await signInWithCode(page, visitor);
     await expect(page).toHaveURL('/');
 
     await page.goto('/sign-in');
 
     await expect(page).toHaveURL('/');
+  });
+
+  test.describe('on a device with a passkey authenticator', () => {
+    test.beforeEach(async ({ context }) => {
+      await context.credentials.install();
+    });
+
+    test('turns on a passkey after the code, then signs in with it', async ({
+      page,
+      context,
+      visitor,
+    }) => {
+      await signInWithCode(page, visitor);
+      await turnOnPasskey(page);
+
+      await context.clearCookies();
+      await page.goto('/sign-in');
+
+      await expect(page).toHaveURL('/');
+      await expect(
+        page.getByRole('button', { name: 'Sign out' }),
+      ).toBeVisible();
+      const [credential] = await context.credentials.get({ rpId: 'localhost' });
+      expect(credential?.signCount).toBe(1);
+    });
+
+    test('"Not now" goes on without a passkey', async ({
+      page,
+      context,
+      visitor,
+    }) => {
+      await signInWithCode(page, visitor);
+
+      await page.getByRole('button', { name: 'Not now' }).click();
+
+      await expect(page).toHaveURL('/');
+      expect(await context.credentials.get()).toEqual([]);
+    });
+
+    test('a device that answered the offer is not asked again', async ({
+      page,
+      visitor,
+    }) => {
+      await signInWithCode(page, visitor);
+      await page.getByRole('button', { name: 'Not now' }).click();
+      await page.getByRole('button', { name: 'Sign out' }).click();
+      await expect(page).toHaveURL('/sign-in');
+
+      await signInWithCode(page, visitor);
+
+      await expect(page).toHaveURL('/');
+      await expect(
+        page.getByRole('button', { name: 'Sign out' }),
+      ).toBeVisible();
+    });
+
+    test('a device that already holds the passkey moves on without a second one', async ({
+      page,
+      context,
+      visitor,
+    }) => {
+      await signInWithCode(page, visitor);
+      await turnOnPasskey(page);
+      await context.clearCookies();
+      await page.goto('/sign-in');
+      await expect(page).toHaveURL('/');
+
+      await page.goto('/sign-in/passkey');
+      await turnOnPasskey(page);
+
+      expect(await context.credentials.get()).toHaveLength(1);
+    });
+
+    test('another device of the same account gets a passkey of its own', async ({
+      page,
+      context,
+      visitor,
+    }) => {
+      await signInWithCode(page, visitor);
+      await turnOnPasskey(page);
+      await switchToAnotherDevice(context);
+
+      await signInWithCode(page, visitor);
+      await turnOnPasskey(page);
+      await context.clearCookies();
+      await page.goto('/sign-in');
+
+      await expect(page).toHaveURL('/');
+      await expect(
+        page.getByRole('button', { name: 'Sign out' }),
+      ).toBeVisible();
+    });
+
+    test('a passkey left on the device after the account lost it asks for the code', async ({
+      page,
+      context,
+      visitor,
+      db,
+    }) => {
+      await signInWithCode(page, visitor);
+      await turnOnPasskey(page);
+      const [credential] = await context.credentials.get();
+      await db
+        .delete(passkey)
+        .where(eq(passkey.credentialID, credential?.id ?? ''));
+      await context.clearCookies();
+
+      await page.goto('/sign-in');
+
+      await expect(page.getByRole('main').getByRole('alert')).toHaveText(
+        "That passkey didn't work. Sign in with a code instead.",
+      );
+      await expect(page).toHaveURL('/sign-in');
+    });
   });
 });
 
@@ -68,6 +201,24 @@ test('an email typed before the page is ready still gets a code', async ({
   await expect(
     page.getByRole('heading', { name: 'Check your email' }),
   ).toBeVisible();
+});
+
+test('the passkey offer without a session asks to sign in first', async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await context.addCookies([
+    {
+      name: 'better-auth.session_token',
+      value: 'expired.signature',
+      url: baseURL ?? '',
+    },
+  ]);
+
+  await page.goto('/sign-in/passkey?next=%2Fcalendar');
+
+  await expect(page).toHaveURL('/sign-in?next=%2Fcalendar');
 });
 
 test('a wrong code does not sign in', async ({ page, visitor }) => {

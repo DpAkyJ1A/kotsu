@@ -8,7 +8,7 @@ import { Pool } from 'pg';
 
 import { user, verification } from '@/server/db/schema/auth';
 
-type Visitor = { email: string; readCode: () => Promise<string> };
+export type Visitor = { email: string; readCode: () => Promise<string> };
 
 export const test = base.extend<{ visitor: Visitor }, { db: NodePgDatabase }>({
   db: [

@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
 import { expect, mocked, waitFor } from 'storybook/test';
 
-import { authClient } from '@/lib/auth-client';
+import {
+  authClient,
+  platformAuthenticatorIsAvailable,
+} from '@/lib/auth-client';
 
 import { toNextPath } from '../core/sign-in-paths';
 import { CodeForm } from './code-form';
@@ -36,6 +39,7 @@ const meta = {
   ],
   beforeEach: () => {
     mocked(authClient.signIn.emailOtp).mockResolvedValue(WRONG_CODE);
+    mocked(platformAuthenticatorIsAvailable).mockResolvedValue(false);
     mocked(authClient.emailOtp.sendVerificationOtp).mockResolvedValue({
       data: { success: true },
       error: null,
@@ -64,7 +68,28 @@ export const SignsInOnTheSixthDigit: Story = {
       email: 'ada@example.com',
       otp: '123456',
     });
-    await expect(getRouter().replace).toHaveBeenLastCalledWith('/calendar');
+    await waitFor(() =>
+      expect(getRouter().replace).toHaveBeenLastCalledWith('/calendar'),
+    );
+  },
+};
+
+export const OffersAPasskeyOnADeviceWithTouchId: Story = {
+  beforeEach: () => {
+    mocked(authClient.signIn.emailOtp).mockResolvedValue({
+      data: { token: 'session-token', user: ADA },
+      error: null,
+    });
+    mocked(platformAuthenticatorIsAvailable).mockResolvedValue(true);
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('Code'), '123456');
+
+    await waitFor(() =>
+      expect(getRouter().replace).toHaveBeenLastCalledWith(
+        '/sign-in/passkey?next=%2Fcalendar',
+      ),
+    );
   },
 };
 

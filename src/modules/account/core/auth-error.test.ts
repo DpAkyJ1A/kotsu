@@ -16,6 +16,14 @@ describe('authErrorOf', () => {
     ['expiredCode', { status: 400, code: 'OTP_EXPIRED' }],
     ['tooManyAttempts', { status: 403, code: 'TOO_MANY_ATTEMPTS' }],
     ['tooManyRequests', { status: 429 }],
+    ['passkeyFailed', { status: 401, code: 'PASSKEY_NOT_FOUND' }],
+    ['passkeyFailed', { status: 401, code: 'AUTHENTICATION_FAILED' }],
+    ['passkeyFailed', { status: 400, code: 'CHALLENGE_NOT_FOUND' }],
+    [
+      'passkeyExists',
+      { status: 400, code: 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED' },
+    ],
+    ['unknown', { status: 400, code: 'AUTH_CANCELLED' }],
     ['unknown', { status: 500 }],
     ['unknown', { status: 400, code: 'SOMETHING_NEW' }],
   ])('names %s', async (name, error) => {

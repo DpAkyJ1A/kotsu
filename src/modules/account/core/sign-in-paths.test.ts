@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { codePagePath, signInPagePath, toNextPath } from './sign-in-paths';
+import {
+  codePagePath,
+  passkeyOfferPath,
+  signInPagePath,
+  toNextPath,
+} from './sign-in-paths';
 
 describe('toNextPath', () => {
   test.each([
@@ -40,6 +45,9 @@ describe('sign-in paths', () => {
     expect(codePagePath('ada@example.com', calendar)).toBe(
       '/sign-in/code?email=ada%40example.com&next=%2Fcalendar',
     );
+    expect(passkeyOfferPath(calendar)).toBe(
+      '/sign-in/passkey?next=%2Fcalendar',
+    );
   });
 
   test('leave it out when it is the home page', () => {
@@ -47,5 +55,6 @@ describe('sign-in paths', () => {
     expect(codePagePath('ada@example.com', '/')).toBe(
       '/sign-in/code?email=ada%40example.com',
     );
+    expect(passkeyOfferPath('/')).toBe('/sign-in/passkey');
   });
 });

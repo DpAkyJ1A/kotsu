@@ -3,11 +3,15 @@ import { describe, expect } from 'vitest';
 
 import {
   cookiesFrom,
+  createPasskey,
   createTestAuth,
+  createUser,
   EMAIL,
   enterCode,
+  HOST,
   post,
   requestCode,
+  RP_ID,
   signIn,
   TEST_SECRET,
 } from '@/server/auth/testing';
@@ -95,4 +99,66 @@ describe('the auth API', () => {
 
     expect(response.status).toBe(404);
   });
+});
+
+describe('passkeys', () => {
+  test('a visitor cannot start adding a passkey', async ({ db }) => {
+    const { auth } = createTestAuth(db);
+
+    const adding = auth.api.generatePasskeyRegistrationOptions({
+      headers: new Headers({ host: HOST }),
+    });
+
+    await expect(adding).rejects.toMatchObject({ statusCode: 401 });
+  });
+
+  test('a new passkey belongs to Kotsu on this host', async ({ db }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const cookie = await signIn(auth, sentCodes);
+
+    const options = await auth.api.generatePasskeyRegistrationOptions({
+      headers: new Headers({ host: HOST, cookie }),
+    });
+
+    expect(options.rp).toEqual({ id: RP_ID, name: 'Kotsu' });
+  });
+
+  test("the device is told only about the user's own passkeys", async ({
+    db,
+  }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const cookie = await signIn(auth, sentCodes);
+    const headers = new Headers({ host: HOST, cookie });
+    const session = await auth.api.getSession({ headers });
+    const own = await createPasskey(db, session?.user.id ?? '');
+    await createPasskey(db, await createUser(db, 'bea@example.com'));
+
+    const options = await auth.api.generatePasskeyRegistrationOptions({
+      headers,
+    });
+
+    expect(options.excludeCredentials?.map(({ id }) => id)).toEqual([
+      own.credentialID,
+    ]);
+  });
+
+  test.for(['/passkey/update-passkey', '/passkey/delete-passkey'])(
+    'a passkey cannot be changed through %s until settings have it',
+    async (path, { db }) => {
+      const { auth, sentCodes } = createTestAuth(db);
+      const cookie = await signIn(auth, sentCodes);
+      const session = await auth.api.getSession({
+        headers: new Headers({ host: HOST, cookie }),
+      });
+      const { id } = await createPasskey(db, session?.user.id ?? '');
+
+      const response = await post(auth, {
+        path,
+        body: { id, name: 'Work laptop' },
+        cookie,
+      });
+
+      expect(response.status).toBe(404);
+    },
+  );
 });

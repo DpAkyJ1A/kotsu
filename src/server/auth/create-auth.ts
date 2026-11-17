@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
+import { passkey } from '@better-auth/passkey';
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import { emailOTP } from 'better-auth/plugins';
@@ -28,20 +29,27 @@ const UNUSED_EMAIL_OTP_PATHS = [
   '/email-otp/change-email',
 ];
 
+const UNUSED_PASSKEY_PATHS = [
+  '/passkey/list-user-passkeys',
+  '/passkey/update-passkey',
+  '/passkey/delete-passkey',
+];
+
 type AuthDeps = {
   db: Db;
   secret: string;
   sendSignInCode: SendSignInCode;
+  rpID: string;
 };
 
-export function createAuth({ db, secret, sendSignInCode }: AuthDeps) {
+export function createAuth({ db, secret, sendSignInCode, rpID }: AuthDeps) {
   return betterAuth({
     secret,
     baseURL: { allowedHosts: ALLOWED_HOSTS },
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     advanced: { database: { generateId: 'uuid' } },
     rateLimit: { enabled: true, storage: 'database' },
-    disabledPaths: UNUSED_EMAIL_OTP_PATHS,
+    disabledPaths: [...UNUSED_EMAIL_OTP_PATHS, ...UNUSED_PASSKEY_PATHS],
     plugins: [
       emailOTP({
         expiresIn: CODE_LIFETIME_MINUTES * 60,
@@ -55,6 +63,7 @@ export function createAuth({ db, secret, sendSignInCode }: AuthDeps) {
           });
         },
       }),
+      passkey({ rpID, rpName: 'Kotsu' }),
       nextCookies(),
     ],
   });
