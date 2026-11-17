@@ -1,12 +1,15 @@
 {
-  "home": {
-    "title": "Kotsu",
-    "tagline": "Рабочее пространство с открытым кодом для любой цели, к которой идут каждый день"
+  "nav": {
+    "calendar": "Календарь",
+    "practice": "Тренировка",
+    "clock": "Часы"
   },
   "ui": {
     "close": "Закрыть",
     "notifications": "Уведомления",
-    "closeNotification": "Закрыть уведомление"
+    "closeNotification": "Закрыть уведомление",
+    "openSidebar": "Показать боковую панель",
+    "closeSidebar": "Скрыть боковую панель"
   },
   "auth": {
     "signInTitle": "Вход в Kotsu",

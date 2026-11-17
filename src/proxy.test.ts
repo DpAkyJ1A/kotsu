@@ -5,16 +5,19 @@ import {
 import { NextRequest } from 'next/server';
 import { describe, expect, test } from 'vitest';
 
+import { REQUEST_PATH_HEADER } from '@/lib/sign-in-path';
+
 import { config, proxy } from './proxy';
 
 const ORIGIN = 'http://localhost:5687';
+const SESSION_COOKIE = 'better-auth.session_token=token.sig';
 
-function visit(path: string, cookie?: string) {
-  return proxy(
-    new NextRequest(`${ORIGIN}${path}`, {
-      headers: cookie ? { cookie } : {},
-    }),
-  );
+function visit(path: string, headers: Record<string, string> = {}) {
+  return proxy(new NextRequest(`${ORIGIN}${path}`, { headers }));
+}
+
+function forwardedPathOf(response: Response) {
+  return response.headers.get(`x-middleware-request-${REQUEST_PATH_HEADER}`);
 }
 
 function runsOn(path: string) {
@@ -29,26 +32,31 @@ describe('proxy', () => {
   });
 
   test('lets a visitor with a session cookie through', () => {
-    const response = visit('/calendar', 'better-auth.session_token=token.sig');
+    const response = visit('/calendar', { cookie: SESSION_COOKIE });
 
     expect(getRedirectUrl(response)).toBeNull();
+  });
+
+  test('tells the page which address it serves, whatever the visitor claims', () => {
+    const response = visit('/calendar?view=week', {
+      cookie: SESSION_COOKIE,
+      [REQUEST_PATH_HEADER]: '/practice',
+    });
+
+    expect(forwardedPathOf(response)).toBe('/calendar?view=week');
   });
 
   test('accepts the cookie under its https name', () => {
-    const response = visit(
-      '/calendar',
-      '__Secure-better-auth.session_token=token.sig',
-    );
+    const response = visit('/calendar', {
+      cookie: '__Secure-better-auth.session_token=token.sig',
+    });
 
     expect(getRedirectUrl(response)).toBeNull();
   });
 
-  test.each(['/', '/sign-in', '/sign-in/code'])(
-    'lets anyone open %s',
-    (path) => {
-      expect(getRedirectUrl(visit(path))).toBeNull();
-    },
-  );
+  test.each(['/sign-in', '/sign-in/code'])('lets anyone open %s', (path) => {
+    expect(getRedirectUrl(visit(path))).toBeNull();
+  });
 
   test('runs on pages only', () => {
     expect(runsOn('/calendar')).toBe(true);

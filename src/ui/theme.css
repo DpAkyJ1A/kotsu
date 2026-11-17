@@ -139,6 +139,16 @@
   }
 }
 
+@custom-variant sidebar-hidden {
+  &[data-state='closed']:not(
+      [data-peek='on']:hover,
+      :has([aria-haspopup][aria-expanded='true']),
+      :has(:focus-visible)
+    ) {
+    @slot;
+  }
+}
+
 @layer base {
   :root {
     color-scheme: light dark;

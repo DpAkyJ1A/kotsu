@@ -28,7 +28,7 @@ const WRONG_CODE = {
 const meta = {
   title: 'Account/CodeForm',
   component: CodeForm,
-  args: { email: 'ada@example.com', next: toNextPath('/calendar') },
+  args: { email: 'ada@example.com', next: toNextPath('/practice') },
   parameters: { nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
@@ -69,7 +69,7 @@ export const SignsInOnTheSixthDigit: Story = {
       otp: '123456',
     });
     await waitFor(() =>
-      expect(getRouter().replace).toHaveBeenLastCalledWith('/calendar'),
+      expect(getRouter().replace).toHaveBeenLastCalledWith('/practice'),
     );
   },
 };
@@ -87,7 +87,7 @@ export const OffersAPasskeyOnADeviceWithTouchId: Story = {
 
     await waitFor(() =>
       expect(getRouter().replace).toHaveBeenLastCalledWith(
-        '/sign-in/passkey?next=%2Fcalendar',
+        '/sign-in/passkey?next=%2Fpractice',
       ),
     );
   },

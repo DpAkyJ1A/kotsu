@@ -28,7 +28,10 @@ export async function loadCtx({
   locale,
   now,
 }: LoadCtxInput): Promise<Ctx | null> {
-  const session = await auth.api.getSession({ headers });
+  const session = await auth.api.getSession({
+    headers,
+    query: { disableRefresh: true },
+  });
   if (!session) return null;
 
   const userId = session.user.id;

@@ -6,14 +6,32 @@ test(
   'a private page sends a visitor without a session to sign-in',
   { tag: '@smoke' },
   async ({ page }) => {
-    await page.goto('/calendar');
+    await page.goto('/practice');
 
-    await expect(page).toHaveURL('/sign-in?next=%2Fcalendar');
+    await expect(page).toHaveURL('/sign-in?next=%2Fpractice');
     await expect(
       page.getByRole('heading', { name: 'Sign in to Kotsu' }),
     ).toBeVisible();
   },
 );
+
+test('a session that has ended sends the visitor to sign in and back', async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await context.addCookies([
+    {
+      name: 'better-auth.session_token',
+      value: 'ended.signature',
+      url: baseURL ?? '',
+    },
+  ]);
+
+  await page.goto('/calendar?view=week');
+
+  await expect(page).toHaveURL('/sign-in?next=%2Fcalendar%3Fview%3Dweek');
+});
 
 test(
   'the auth API answers on this host',

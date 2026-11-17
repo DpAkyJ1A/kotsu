@@ -16,11 +16,12 @@ import {
   authClient,
   platformAuthenticatorIsAvailable,
 } from '@/lib/auth-client';
+import { signInPath } from '@/lib/sign-in-path';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
 
 import { type AuthError, authErrorOf } from '../core/auth-error';
-import { passkeyOfferPath, signInPagePath } from '../core/sign-in-paths';
+import { passkeyOfferPath } from '../core/sign-in-paths';
 
 const CODE_LENGTH = 6;
 
@@ -124,7 +125,7 @@ export function CodeForm({ email, next }: CodeFormProps) {
           {t('sendNewCode')}
         </Button>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={signInPagePath(next)}>{t('useAnotherEmail')}</Link>
+          <Link href={signInPath(next)}>{t('useAnotherEmail')}</Link>
         </Button>
       </div>
     </div>

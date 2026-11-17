@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 
-import { test as base } from '@playwright/test';
+import { expect, type Page, test as base } from '@playwright/test';
 import { symmetricDecrypt } from 'better-auth/crypto';
 import { desc, eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -46,4 +46,18 @@ async function readCode(db: NodePgDatabase, codeId: string) {
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret) throw new Error('BETTER_AUTH_SECRET is not set for the e2e run');
   return symmetricDecrypt({ key: secret, data: storedCode });
+}
+
+export async function requestCode(page: Page, email: string) {
+  await page.goto('/sign-in');
+  await page.getByLabel('Email').fill(email);
+  await page.getByRole('button', { name: 'Send code' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Check your email' }),
+  ).toBeVisible();
+}
+
+export async function signInWithCode(page: Page, visitor: Visitor) {
+  await requestCode(page, visitor.email);
+  await page.getByLabel('Code').fill(await visitor.readCode());
 }

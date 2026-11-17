@@ -14,7 +14,10 @@ Storybook (`pnpm storybook`). The interface speaks English and Russian: the brow
 the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
 the account), and private pages open; sessions live in Postgres. On a device with Touch ID, Face ID or a screen
 lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
-autofill. No features work yet.
+autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name (sign out) and
+the Calendar, Practice and Clock sections, still empty pages. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
+reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. The phone layout
+comes next. No features work yet.
 
 ## Tech stack
 

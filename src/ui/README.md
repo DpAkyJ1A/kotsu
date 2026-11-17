@@ -8,6 +8,10 @@ variants through `cva` and classes merged by `cn`. A compound component (Select,
 parts from one file, as shadcn/ui does; Drawer and the command palette are a Dialog with their own content, so they
 take Dialog's other parts.
 
+The app's frame lives here too: the sidebar (`sidebar.tsx`: open or closed by its button or ⌘\ / Ctrl+\, the
+choice kept in the `sidebar` cookie from `sidebar-cookie.ts`, which the layout reads for the first paint; closed,
+it slides in from the left edge under the pointer) and the page header with the button that opens it again.
+
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.
 
