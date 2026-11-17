@@ -15,7 +15,7 @@ async function openWithTheme(page: Page, path: string, theme: string) {
 
 test('follows the system theme when none is picked', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/');
+  await page.goto('/sign-in');
 
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
@@ -24,7 +24,7 @@ test('follows the system theme when none is picked', async ({ page }) => {
 test('renders the picked theme into the HTML, so the first paint has it', async ({
   page,
 }) => {
-  const html = await openWithTheme(page, '/', 'dark');
+  const html = await openWithTheme(page, '/sign-in', 'dark');
 
   expect(html).toContain('data-theme="dark"');
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
@@ -32,13 +32,13 @@ test('renders the picked theme into the HTML, so the first paint has it', async 
 
 test('a picked theme wins over the system one', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await openWithTheme(page, '/', 'light');
+  await openWithTheme(page, '/sign-in', 'light');
 
   await expect(page.locator('body')).toHaveCSS('background-color', LIGHT);
 });
 
 test('ignores an unknown theme in the cookie', async ({ page }) => {
-  await openWithTheme(page, '/', 'sepia');
+  await openWithTheme(page, '/sign-in', 'sepia');
 
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 });
@@ -48,7 +48,7 @@ test('ignores an unknown theme in the cookie', async ({ page }) => {
 // production build rewrites it.
 test('a nested data-theme keeps its own theme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/');
+  await page.goto('/sign-in');
   await page.locator('body').evaluate((body) => {
     for (const theme of ['light', 'dark']) {
       const section = document.createElement('section');
@@ -69,7 +69,7 @@ test('a nested data-theme keeps its own theme', async ({ page }) => {
 });
 
 test('sets Manrope as the font', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/sign-in');
 
   await expect(page.locator('body')).toHaveCSS('font-family', /^Manrope,/);
 });

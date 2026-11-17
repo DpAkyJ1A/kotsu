@@ -1,11 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-  codePagePath,
-  passkeyOfferPath,
-  signInPagePath,
-  toNextPath,
-} from './sign-in-paths';
+import { codePagePath, passkeyOfferPath, toNextPath } from './sign-in-paths';
 
 describe('toNextPath', () => {
   test.each([
@@ -33,28 +28,26 @@ describe('toNextPath', () => {
     ['a relative path', 'calendar'],
     ['a script', 'javascript:alert(1)'],
   ])('falls back to the home page for %s', (_, next) => {
-    expect(toNextPath(next)).toBe('/');
+    expect(toNextPath(next)).toBe('/calendar');
   });
 });
 
 describe('sign-in paths', () => {
   test('carry the page to return to', () => {
-    const calendar = toNextPath('/calendar');
+    const practice = toNextPath('/practice');
 
-    expect(signInPagePath(calendar)).toBe('/sign-in?next=%2Fcalendar');
-    expect(codePagePath('ada@example.com', calendar)).toBe(
-      '/sign-in/code?email=ada%40example.com&next=%2Fcalendar',
+    expect(codePagePath('ada@example.com', practice)).toBe(
+      '/sign-in/code?email=ada%40example.com&next=%2Fpractice',
     );
-    expect(passkeyOfferPath(calendar)).toBe(
-      '/sign-in/passkey?next=%2Fcalendar',
+    expect(passkeyOfferPath(practice)).toBe(
+      '/sign-in/passkey?next=%2Fpractice',
     );
   });
 
   test('leave it out when it is the home page', () => {
-    expect(signInPagePath('/')).toBe('/sign-in');
-    expect(codePagePath('ada@example.com', '/')).toBe(
+    expect(codePagePath('ada@example.com', '/calendar')).toBe(
       '/sign-in/code?email=ada%40example.com',
     );
-    expect(passkeyOfferPath('/')).toBe('/sign-in/passkey');
+    expect(passkeyOfferPath('/calendar')).toBe('/sign-in/passkey');
   });
 });

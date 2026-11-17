@@ -309,7 +309,7 @@ export default defineConfig([
             allow(element('lib'), element('lib')),
             allow(element('server'), element('server', 'lib')),
             allow(element('i18n'), element('i18n', 'lib', 'messages')),
-            allow(proxyFile, proxyFile),
+            allow(proxyFile, proxyFile, element('lib')),
           ],
         },
       ],

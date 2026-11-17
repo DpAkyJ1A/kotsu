@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
-import { CodeForm, signInPagePath, toNextPath } from '@/modules/account';
+import { signInPath } from '@/lib/sign-in-path';
+import { CodeForm, toNextPath } from '@/modules/account';
 import { findCtx } from '@/server/ctx/get-ctx';
 
 export default async function CodePage({
@@ -10,7 +11,7 @@ export default async function CodePage({
   const { email, next: nextParam } = await searchParams;
   const next = toNextPath(nextParam);
   if (await findCtx()) redirect(next);
-  if (typeof email !== 'string' || !email) redirect(signInPagePath(next));
+  if (typeof email !== 'string' || !email) redirect(signInPath(next));
 
   const t = await getTranslations('auth');
 

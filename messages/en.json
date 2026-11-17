@@ -1,12 +1,15 @@
 {
-  "home": {
-    "title": "Kotsu",
-    "tagline": "Open-source workspace for any goal you practise daily"
+  "nav": {
+    "calendar": "Calendar",
+    "practice": "Practice",
+    "clock": "Clock"
   },
   "ui": {
     "close": "Close",
     "notifications": "Notifications",
-    "closeNotification": "Close notification"
+    "closeNotification": "Close notification",
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar"
   },
   "auth": {
     "signInTitle": "Sign in to Kotsu",

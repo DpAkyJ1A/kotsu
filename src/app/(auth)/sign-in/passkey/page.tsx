@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
-import { PasskeyOffer, signInPagePath, toNextPath } from '@/modules/account';
+import { signInPath } from '@/lib/sign-in-path';
+import { PasskeyOffer, toNextPath } from '@/modules/account';
 import { answerPasskeyOffer } from '@/modules/account/actions';
 import { isPasskeyOfferAnswered } from '@/modules/account/loaders';
 import { findCtx } from '@/server/ctx/get-ctx';
@@ -10,7 +11,7 @@ export default async function PasskeyPage({
   searchParams,
 }: PageProps<'/sign-in/passkey'>) {
   const next = toNextPath((await searchParams).next);
-  if (!(await findCtx())) redirect(signInPagePath(next));
+  if (!(await findCtx())) redirect(signInPath(next));
   if (await isPasskeyOfferAnswered()) redirect(next);
 
   const t = await getTranslations('auth');

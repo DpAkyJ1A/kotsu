@@ -4,6 +4,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig: NextConfig = {
   reactCompiler: true,
   typedRoutes: true,
+  redirects: () =>
+    Promise.resolve([
+      { source: '/', destination: '/calendar', permanent: false },
+    ]),
 };
 
 // Finds the request config in src/i18n/request.ts

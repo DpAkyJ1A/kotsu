@@ -8,7 +8,7 @@ import { getLocale } from 'next-intl/server';
 import { manrope } from '@/ui/font';
 
 export const metadata: Metadata = {
-  title: 'Kotsu',
+  title: { default: 'Kotsu', template: '%s · Kotsu' },
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

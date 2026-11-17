@@ -29,7 +29,7 @@ const SESSION = {
 const meta = {
   title: 'Account/EmailForm',
   component: EmailForm,
-  args: { next: '/' },
+  args: { next: '/calendar' },
   parameters: { nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
@@ -54,7 +54,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 export const SendsTheCode: Story = {
-  args: { next: toNextPath('/calendar') },
+  args: { next: toNextPath('/practice') },
   play: async ({ canvas, userEvent }) => {
     await userEvent.type(canvas.getByLabelText('Email'), 'ada@example.com');
     await userEvent.click(canvas.getByRole('button', { name: 'Send code' }));
@@ -64,7 +64,7 @@ export const SendsTheCode: Story = {
       type: 'sign-in',
     });
     await expect(getRouter().push).toHaveBeenLastCalledWith(
-      '/sign-in/code?email=ada%40example.com&next=%2Fcalendar',
+      '/sign-in/code?email=ada%40example.com&next=%2Fpractice',
     );
   },
 };
@@ -88,7 +88,7 @@ export const TooManyRequests: Story = {
 };
 
 export const SignsInWithAPasskeyFromAutofill: Story = {
-  args: { next: toNextPath('/calendar') },
+  args: { next: toNextPath('/practice') },
   beforeEach: () => {
     mocked(browserSupportsWebAuthnAutofill).mockResolvedValue(true);
     mocked(authClient.signIn.passkey).mockResolvedValue({
@@ -102,7 +102,7 @@ export const SignsInWithAPasskeyFromAutofill: Story = {
       'username webauthn',
     );
     await waitFor(() =>
-      expect(getRouter().replace).toHaveBeenLastCalledWith('/calendar'),
+      expect(getRouter().replace).toHaveBeenLastCalledWith('/practice'),
     );
     await expect(authClient.signIn.passkey).toHaveBeenCalledWith({
       autoFill: true,

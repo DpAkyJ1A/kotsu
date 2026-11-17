@@ -4,9 +4,11 @@ import type { Auth } from '@/server/auth/create-auth';
 import { createTestAuth, HOST, post, signIn } from '@/server/auth/testing';
 import { loadCtx } from '@/server/ctx/load-ctx';
 import type { Db } from '@/server/db/client';
+import { session } from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
 
 const NOW = new Date('2026-11-02T09:00:00Z');
+const DAY_MS = 24 * 60 * 60 * 1000;
 const UUID_V7 =
   /^[\da-f]{8}-[\da-f]{4}-7[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/;
 
@@ -59,6 +61,22 @@ describe('loadCtx', () => {
     await post(auth, { path: '/sign-out', body: {}, cookie });
 
     expect(await openPage(auth, db, cookie, 'en')).toBeNull();
+  });
+
+  test('leaves renewing the session to the browser, which can store the renewed cookie', async ({
+    db,
+  }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const cookie = await signIn(auth, sentCodes);
+    const twoDaysOld = new Date(Date.now() + 5 * DAY_MS);
+    await db.update(session).set({ expiresAt: twoDaysOld });
+
+    await openPage(auth, db, cookie, 'en');
+
+    const [row] = await db
+      .select({ expiresAt: session.expiresAt })
+      .from(session);
+    expect(row?.expiresAt).toEqual(twoDaysOld);
   });
 
   test('settings are created once, in the language of the first visit', async ({
