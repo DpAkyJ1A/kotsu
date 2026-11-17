@@ -13,6 +13,7 @@ import type { SendSignInCode } from './send-sign-in-code';
 
 const ALLOWED_HOSTS = [
   'localhost:*',
+  'kotsu.devazx.com',
   'usekotsu.vercel.app',
   'kotsu-*-dpakyj1as-projects.vercel.app',
 ];

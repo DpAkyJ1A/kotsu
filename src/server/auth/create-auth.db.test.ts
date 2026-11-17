@@ -21,6 +21,28 @@ import { dbTest as test } from '@/server/db/testing';
 const ANOTHER_IP = '203.0.113.7';
 
 describe('the auth API', () => {
+  test.for([
+    'kotsu.devazx.com',
+    'usekotsu.vercel.app',
+    'kotsu-git-fix-auth-dpakyj1as-projects.vercel.app',
+  ])("answers on Kotsu's host %s", async (host, { db }) => {
+    const { auth } = createTestAuth(db);
+
+    const session = auth.api.getSession({ headers: new Headers({ host }) });
+
+    await expect(session).resolves.toBeNull();
+  });
+
+  test("refuses a host that is not Kotsu's", async ({ db }) => {
+    const { auth } = createTestAuth(db);
+
+    const session = auth.api.getSession({
+      headers: new Headers({ host: 'kotsu.evil.example' }),
+    });
+
+    await expect(session).rejects.toThrow('not in the allowed hosts list');
+  });
+
   test('a wrong code does not sign in', async ({ db }) => {
     const { auth } = createTestAuth(db);
 
