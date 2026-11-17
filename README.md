@@ -18,7 +18,9 @@ autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the m
 the Calendar, Practice and Clock sections, still empty pages. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
 reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. On a phone or a
 narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
-the menu sits under your avatar at the top right of Calendar and Shelves. No features work yet.
+the menu sits under your avatar at the top right of Calendar and Shelves. ⌘K or Ctrl+K, or the search field at
+the top of the sidebar, opens the command palette: type to filter, then jump to a section or switch between the
+light and dark theme, which the next visit remembers. No features work yet.
 
 ## Tech stack
 

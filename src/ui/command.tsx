@@ -72,6 +72,7 @@ export function CommandDialogContent({
         <CommandPrimitive
           data-slot="command"
           label={title}
+          vimBindings={false}
           className="flex min-h-0 flex-col"
         >
           {children}
