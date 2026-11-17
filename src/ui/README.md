@@ -10,7 +10,9 @@ take Dialog's other parts.
 
 The app's frame lives here too: the sidebar (`sidebar.tsx`: open or closed by its button or ⌘\ / Ctrl+\, the
 choice kept in the `sidebar` cookie from `sidebar-cookie.ts`, which the layout reads for the first paint; closed,
-it slides in from the left edge under the pointer) and the page header with the button that opens it again.
+it slides in from the left edge under the pointer), the page header with the button that opens it again, and the
+tab bar (`tab-bar.tsx`) that takes the sidebar's place below the `md` breakpoint. Toasts rise above the tab bar
+through `--tab-bar-inset` from `theme.css`, its height plus the bottom safe area, `0px` on wide screens.
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

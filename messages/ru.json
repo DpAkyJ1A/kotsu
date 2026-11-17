@@ -1,8 +1,10 @@
 {
   "nav": {
     "calendar": "Календарь",
+    "shelves": "Полки",
     "practice": "Тренировка",
-    "clock": "Часы"
+    "clock": "Часы",
+    "search": "Поиск"
   },
   "ui": {
     "close": "Закрыть",

@@ -1,40 +1,16 @@
 'use client';
 
-import { cva, type VariantProps } from 'class-variance-authority';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { useTransition } from 'react';
-
-import { authClient } from '@/lib/auth-client';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/ui/dropdown-menu';
-import { ChevronDownIcon, LogOutIcon } from '@/ui/icons';
-import { toast } from '@/ui/toast';
+import { DropdownMenu, DropdownMenuTrigger } from '@/ui/dropdown-menu';
+import { ChevronDownIcon } from '@/ui/icons';
 
 import { type Account, displayName } from '../core/account';
-import { authErrorOf } from '../core/auth-error';
+import { AccountMenuContent } from './account-menu-content';
+import { Avatar } from './avatar';
 
 type AccountMenuProps = { account: Account };
 
 export function AccountMenu({ account }: AccountMenuProps) {
-  const t = useTranslations('auth');
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const name = displayName(account);
-
-  function handleSignOut() {
-    startTransition(async () => {
-      const failure = await authErrorOf(authClient.signOut());
-      if (failure) toast.error(t(`errors.${failure}`));
-      else router.replace('/sign-in');
-    });
-  }
 
   return (
     <DropdownMenu>
@@ -43,45 +19,7 @@ export function AccountMenu({ account }: AccountMenuProps) {
         <span className="truncate">{name}</span>
         <ChevronDownIcon className="text-muted-foreground" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel className="flex items-center gap-3 font-normal">
-          <Avatar name={name} size="lg" />
-          <span className="grid min-w-0">
-            <span className="truncate text-sm font-semibold text-popover-foreground">
-              {name}
-            </span>
-            <span className="truncate">{account.email}</span>
-          </span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem disabled={isPending} onSelect={handleSignOut}>
-          <LogOutIcon />
-          {t('signOut')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+      <AccountMenuContent account={account} align="start" />
     </DropdownMenu>
-  );
-}
-
-const avatarVariants = cva(
-  'grid shrink-0 place-items-center rounded-full bg-violet font-semibold text-violet-foreground',
-  {
-    variants: {
-      size: {
-        md: 'size-6 text-xs',
-        lg: 'size-9 text-sm',
-      },
-    },
-    defaultVariants: { size: 'md' },
-  },
-);
-
-type AvatarProps = VariantProps<typeof avatarVariants> & { name: string };
-
-function Avatar({ name, size }: AvatarProps) {
-  return (
-    <span aria-hidden className={avatarVariants({ size })}>
-      {Array.from(name)[0]?.toUpperCase()}
-    </span>
   );
 }

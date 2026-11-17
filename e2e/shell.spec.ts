@@ -18,7 +18,7 @@ test.skip(
 );
 test.skip(
   ({ isMobile }) => isMobile,
-  'The sidebar is for wide screens; phones get a tab bar in task 0.18',
+  'The sidebar is for wide screens; phones get the tab bar (mobile-shell.spec.ts)',
 );
 
 test.beforeEach(async ({ page, visitor }) => {

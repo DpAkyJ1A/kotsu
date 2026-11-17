@@ -8,6 +8,7 @@ import {
   type ChangeEvent,
   type SubmitEvent,
   useId,
+  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -31,7 +32,8 @@ export function CodeForm({ email, next }: CodeFormProps) {
   const t = useTranslations('auth');
   const router = useRouter();
   const messageId = useId();
-  const [code, setCode] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
+  const lastCodeRef = useRef('');
   const [error, setError] = useState<AuthError | null>(null);
   const [isNewCodeSent, setIsNewCodeSent] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -54,29 +56,34 @@ export function CodeForm({ email, next }: CodeFormProps) {
       );
       setError(failure);
       setIsNewCodeSent(!failure);
-      setCode('');
+      formRef.current?.reset();
+      lastCodeRef.current = '';
     });
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const digits = event.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH);
-    const isNewFullCode = digits.length === CODE_LENGTH && digits !== code;
-    setCode(digits);
+    const input = event.currentTarget;
+    const code = input.value.replace(/\D/g, '').slice(0, CODE_LENGTH);
+    const isNewFullCode =
+      code.length === CODE_LENGTH && code !== lastCodeRef.current;
+    input.value = code;
+    lastCodeRef.current = code;
     setError(null);
     setIsNewCodeSent(false);
-    if (isNewFullCode && !isPending) signIn(digits);
+    if (isNewFullCode && !isPending) signIn(code);
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isPending) signIn(code);
+    const code = new FormData(event.currentTarget).get('code');
+    if (typeof code === 'string' && !isPending) signIn(code);
   }
 
   const hasMessage = error !== null || isNewCodeSent;
 
   return (
     <div className="grid gap-4">
-      <form onSubmit={handleSubmit} className="grid gap-4">
+      <form ref={formRef} onSubmit={handleSubmit} className="grid gap-4">
         <label className="grid gap-1.5 text-sm font-medium">
           {t('code')}
           <Input
@@ -86,7 +93,6 @@ export function CodeForm({ email, next }: CodeFormProps) {
             pattern={`\\d{${String(CODE_LENGTH)}}`}
             required
             readOnly={isPending}
-            value={code}
             onChange={handleChange}
             className="text-center font-semibold tracking-widest tabular-nums"
             aria-invalid={error === 'wrongCode'}
@@ -107,11 +113,7 @@ export function CodeForm({ email, next }: CodeFormProps) {
             {t('newCodeSent')}
           </p>
         )}
-        <Button
-          type="submit"
-          size="lg"
-          disabled={isPending || code.length < CODE_LENGTH}
-        >
+        <Button type="submit" size="lg" disabled={isPending}>
           {t('signIn')}
         </Button>
       </form>

@@ -111,6 +111,35 @@ export const SignsInWithAPastedCode: Story = {
   },
 };
 
+export const SignsInWithACodeInPastedText: Story = {
+  beforeEach: () => {
+    mocked(authClient.signIn.emailOtp).mockResolvedValue({
+      data: { token: 'session-token', user: ADA },
+      error: null,
+    });
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByLabelText('Code'));
+    await userEvent.paste('Your Kotsu code is 123456. It works for 5 minutes.');
+
+    await expect(canvas.getByLabelText('Code')).toHaveValue('123456');
+    await expect(authClient.signIn.emailOtp).toHaveBeenLastCalledWith({
+      email: 'ada@example.com',
+      otp: '123456',
+    });
+  },
+};
+
+export const AsksForAllSixDigits: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('Code'), '123');
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }));
+
+    await expect(canvas.getByLabelText('Code')).toBeInvalid();
+    await expect(authClient.signIn.emailOtp).not.toHaveBeenCalled();
+  },
+};
+
 export const WrongCode: Story = {
   play: async ({ canvas, userEvent }) => {
     await userEvent.type(canvas.getByLabelText('Code'), '000000');

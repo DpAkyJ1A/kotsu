@@ -3,7 +3,13 @@ import { getTranslations } from 'next-intl/server';
 
 import { AccountMenu, SessionRefresh } from '@/modules/account';
 import { loadAccount } from '@/modules/account/loaders';
-import { CalendarIcon, ClockIcon, GalleryVerticalEndIcon } from '@/ui/icons';
+import {
+  CalendarIcon,
+  ClockIcon,
+  GalleryVerticalEndIcon,
+  LibraryIcon,
+  SearchIcon,
+} from '@/ui/icons';
 import {
   Sidebar,
   SidebarHeader,
@@ -14,6 +20,7 @@ import {
   SidebarTrigger,
 } from '@/ui/sidebar';
 import { SIDEBAR_COOKIE, sidebarStateFrom } from '@/ui/sidebar-cookie';
+import { TabBar, TabBarLink } from '@/ui/tab-bar';
 import { Toaster } from '@/ui/toast';
 import { TooltipProvider } from '@/ui/tooltip';
 
@@ -49,6 +56,28 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           </SidebarNav>
         </Sidebar>
         <SidebarInset>{children}</SidebarInset>
+        <TabBar>
+          <TabBarLink href="/calendar">
+            <CalendarIcon />
+            {t('calendar')}
+          </TabBarLink>
+          <TabBarLink href="/shelves">
+            <LibraryIcon />
+            {t('shelves')}
+          </TabBarLink>
+          <TabBarLink href="/practice">
+            <GalleryVerticalEndIcon />
+            {t('practice')}
+          </TabBarLink>
+          <TabBarLink href="/clock">
+            <ClockIcon />
+            {t('clock')}
+          </TabBarLink>
+          <TabBarLink href="/search">
+            <SearchIcon />
+            {t('search')}
+          </TabBarLink>
+        </TabBar>
       </SidebarProvider>
       <SessionRefresh />
       <Toaster />

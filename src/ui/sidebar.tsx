@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 
+import { isCurrentSection } from './current-section';
 import { IconButton } from './icon-button';
 import { PanelLeftIcon } from './icons';
 import { Kbd } from './kbd';
@@ -65,7 +66,9 @@ export function SidebarProvider({
   }
 
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (!isToggleShortcut(event)) return;
+    if (!isToggleShortcut(event) || !isSidebarShown(wrapperRef.current)) {
+      return;
+    }
     event.preventDefault();
     toggle();
   });
@@ -95,7 +98,7 @@ export function SidebarProvider({
         ref={wrapperRef}
         data-slot="sidebar-wrapper"
         data-state={state}
-        className="group/sidebar flex min-h-dvh"
+        className="group/sidebar flex min-h-dvh max-md:flex-col"
       >
         {children}
       </div>
@@ -116,6 +119,11 @@ function isToggleShortcut(event: KeyboardEvent) {
 
 const SIDEBAR_SELECTOR = '[data-slot="sidebar"]';
 const TRIGGER_SELECTOR = '[data-slot="sidebar-trigger"]';
+
+function isSidebarShown(wrapper: HTMLElement | null) {
+  const sidebar = wrapper?.querySelector(SIDEBAR_SELECTOR);
+  return sidebar ? getComputedStyle(sidebar).display !== 'none' : false;
+}
 
 function keyboardFocusTarget(wrapper: HTMLElement, nextState: SidebarState) {
   const focused = document.activeElement;
@@ -204,13 +212,12 @@ type SidebarLinkProps = {
 
 export function SidebarLink({ href, children }: SidebarLinkProps) {
   const pathname = usePathname();
-  const isCurrent = pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <li>
       <Link
         href={href}
-        aria-current={isCurrent ? 'page' : undefined}
+        aria-current={isCurrentSection(pathname, href) ? 'page' : undefined}
         className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=page]:bg-sidebar-accent aria-[current=page]:font-semibold aria-[current=page]:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:text-muted-foreground aria-[current=page]:[&>svg]:text-sidebar-primary"
       >
         {children}

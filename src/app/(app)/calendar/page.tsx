@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { AccountAvatarMenu } from '@/modules/account';
+import { loadAccount } from '@/modules/account/loaders';
 import { PageHeader } from '@/ui/page-header';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -9,11 +11,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CalendarPage() {
-  const t = await getTranslations('nav');
+  const [t, account] = await Promise.all([
+    getTranslations('nav'),
+    loadAccount(),
+  ]);
 
   return (
     <PageHeader>
       <h1 className="text-2xl font-bold tracking-tight">{t('calendar')}</h1>
+      <AccountAvatarMenu account={account} className="ml-auto md:hidden" />
     </PageHeader>
   );
 }

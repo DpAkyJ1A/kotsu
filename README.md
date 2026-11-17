@@ -16,8 +16,9 @@ the account), and private pages open; sessions live in Postgres. On a device wit
 lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
 autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name (sign out) and
 the Calendar, Practice and Clock sections, still empty pages. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
-reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. The phone layout
-comes next. No features work yet.
+reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. On a phone or a
+narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
+the menu sits under your avatar at the top right of Calendar and Shelves. No features work yet.
 
 ## Tech stack
 
