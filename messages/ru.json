@@ -9,6 +9,31 @@
     "closeNotification": "Закрыть уведомление"
   },
   "auth": {
-    "signInTitle": "Вход в Kotsu"
+    "signInTitle": "Вход в Kotsu",
+    "signInDescription": "Пришлём на почту код из 6 цифр. Если аккаунта ещё нет, этот же код его создаст.",
+    "email": "Почта",
+    "sendCode": "Получить код",
+    "codeTitle": "Код отправлен",
+    "codeDescription": "Письмо с кодом из 6 цифр ушло на <strong>{email}</strong>.",
+    "code": "Код",
+    "signIn": "Войти",
+    "sendNewCode": "Отправить новый код",
+    "newCodeSent": "Новый код уже в пути.",
+    "useAnotherEmail": "Другая почта",
+    "signOut": "Выйти",
+    "errors": {
+      "invalidEmail": "Это не похоже на адрес почты.",
+      "wrongCode": "Код не подходит. Стоит сверить его с письмом.",
+      "expiredCode": "Срок действия кода истёк — нужен новый.",
+      "tooManyAttempts": "Слишком много неверных попыток — нужен новый код.",
+      "tooManyRequests": "Слишком много запросов. Повторить можно через минуту.",
+      "unknown": "Что-то пошло не так. Можно попробовать ещё раз."
+    }
+  },
+  "email": {
+    "signInCode": {
+      "subject": "{code} — код для входа в Kotsu",
+      "text": "Код для входа в Kotsu: {code}. Он действует {minutes, plural, one {# минуту} few {# минуты} many {# минут} other {# минуты}}.\n\nЕсли код никто не запрашивал, письмо можно просто удалить."
+    }
   }
 }

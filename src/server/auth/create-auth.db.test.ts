@@ -14,6 +14,8 @@ import {
 import { verification } from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
 
+const ANOTHER_IP = '203.0.113.7';
+
 describe('the auth API', () => {
   test('a wrong code does not sign in', async ({ db }) => {
     const { auth } = createTestAuth(db);
@@ -38,6 +40,23 @@ describe('the auth API', () => {
     expect(await symmetricDecrypt({ key: TEST_SECRET, data: storedCode })).toBe(
       sentCodes[0],
     );
+  });
+
+  test('three wrong codes lock the code, so even the right one fails', async ({
+    db,
+  }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    await requestCode(auth);
+
+    for (let i = 0; i < 3; i++) await enterCode(auth, '000000');
+    const response = await post(auth, {
+      path: '/sign-in/email-otp',
+      body: { email: EMAIL, otp: sentCodes[0] },
+      ip: ANOTHER_IP,
+    });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'TOO_MANY_ATTEMPTS' });
   });
 
   test('a fourth code request within a minute is refused', async ({ db }) => {

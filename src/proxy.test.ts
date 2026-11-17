@@ -22,8 +22,10 @@ function runsOn(path: string) {
 }
 
 describe('proxy', () => {
-  test('sends a visitor without a session to sign-in', () => {
-    expect(getRedirectUrl(visit('/calendar'))).toBe(`${ORIGIN}/sign-in`);
+  test('sends a visitor without a session to sign-in and back', () => {
+    expect(getRedirectUrl(visit('/calendar?view=week'))).toBe(
+      `${ORIGIN}/sign-in?next=%2Fcalendar%3Fview%3Dweek`,
+    );
   });
 
   test('lets a visitor with a session cookie through', () => {
@@ -41,9 +43,12 @@ describe('proxy', () => {
     expect(getRedirectUrl(response)).toBeNull();
   });
 
-  test.each(['/', '/sign-in'])('lets anyone open %s', (path) => {
-    expect(getRedirectUrl(visit(path))).toBeNull();
-  });
+  test.each(['/', '/sign-in', '/sign-in/code'])(
+    'lets anyone open %s',
+    (path) => {
+      expect(getRedirectUrl(visit(path))).toBeNull();
+    },
+  );
 
   test('runs on pages only', () => {
     expect(runsOn('/calendar')).toBe(true);

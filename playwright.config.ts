@@ -1,4 +1,7 @@
+import nextEnv from '@next/env';
 import { defineConfig, devices } from '@playwright/test';
+
+nextEnv.loadEnvConfig(process.cwd());
 
 const LOCAL_URL = 'http://localhost:5687';
 const isCI = Boolean(process.env.CI);
@@ -38,6 +41,7 @@ export default defineConfig({
           command: 'pnpm build && pnpm start',
           url: LOCAL_URL,
           reuseExistingServer: !isCI,
+          env: { RESEND_API_KEY: '' },
         },
       }),
 });

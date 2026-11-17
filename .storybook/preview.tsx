@@ -3,10 +3,13 @@ import '@/app/globals.css';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/nextjs-vite';
 import { hasLocale } from 'next-intl';
+import { sb } from 'storybook/test';
 
 import { LOCALES } from '@/i18n/config';
 import { IntlTestProvider } from '@/i18n/testing';
 import { manrope } from '@/ui/font';
+
+sb.mock('../src/lib/auth-client.ts');
 
 const preview: Preview = {
   decorators: [

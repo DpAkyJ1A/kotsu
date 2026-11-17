@@ -10,14 +10,18 @@ import { db } from '@/server/db/client';
 
 import { loadCtx } from './load-ctx';
 
-export const getCtx = cache(async () => {
-  const ctx = await loadCtx({
+export const findCtx = cache(async () =>
+  loadCtx({
     auth,
     db,
     headers: await headers(),
     locale: await getLocale(),
     now: new Date(),
-  });
+  }),
+);
+
+export const getCtx = cache(async () => {
+  const ctx = await findCtx();
   if (!ctx) redirect('/sign-in');
   return ctx;
 });
