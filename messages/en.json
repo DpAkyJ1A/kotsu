@@ -1,8 +1,10 @@
 {
   "nav": {
     "calendar": "Calendar",
+    "shelves": "Shelves",
     "practice": "Practice",
-    "clock": "Clock"
+    "clock": "Clock",
+    "search": "Search"
   },
   "ui": {
     "close": "Close",

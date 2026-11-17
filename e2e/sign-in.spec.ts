@@ -39,6 +39,28 @@ test.describe('with a session', () => {
     ).toBeVisible();
   });
 
+  test('a code typed before the page is ready still signs in', async ({
+    page,
+    visitor,
+  }) => {
+    await requestCode(page, visitor.email);
+    const codePage = page.url();
+    const code = await visitor.readCode();
+    const codeTyped = Promise.withResolvers<string>();
+    await page.route(/\/_next\/static\/.+\.js$/, async (route) => {
+      await codeTyped.promise;
+      await route.continue();
+    });
+    await page.goto(codePage, { waitUntil: 'domcontentloaded' });
+
+    await page.getByLabel('Code').fill(code);
+    codeTyped.resolve(code);
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    await expect(page).toHaveURL('/calendar');
+  });
+
   test('a signed-in visitor skips the sign-in page', async ({
     page,
     visitor,

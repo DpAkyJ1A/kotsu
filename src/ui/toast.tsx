@@ -12,6 +12,11 @@ export { toast } from 'sonner';
 
 const ICON_CLASS_NAME = 'size-4 rounded-full p-0.5 text-background';
 
+const ABOVE_THE_TAB_BAR = {
+  offset: { bottom: 'calc(var(--tab-bar-inset) + 1.5rem)' },
+  mobileOffset: { bottom: 'calc(var(--tab-bar-inset) + 1rem)' },
+};
+
 // Sonner's toasts in Kotsu's colours: inverted, like a tooltip, on screen for 5 s, and paused while the pointer
 // or the focus is on them. An error is red in both themes, like the destructive button: inverted, it would be
 // white in the dark one. Alt+T moves the focus to them, so Undo can be reached from the keyboard
@@ -21,6 +26,7 @@ export function Toaster(props: ToasterProps) {
   return (
     <Sonner
       position="bottom-center"
+      {...ABOVE_THE_TAB_BAR}
       duration={5000}
       // Sonner's own labels are English
       containerAriaLabel={t('notifications')}

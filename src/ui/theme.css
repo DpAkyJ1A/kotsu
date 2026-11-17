@@ -16,6 +16,8 @@
   --radius-xl: 0.875rem;
   --radius-2xl: 1.25rem;
 
+  --spacing-tab-bar: 3.5rem;
+
   /* Tooltips, menus and popovers fade in and close at once. Opacity only, so they need no reduced motion */
   --animate-fade-in: fade-in 150ms ease-out;
   /* Dialogs and drawers cover the page, so they leave the way they came */
@@ -152,6 +154,13 @@
 @layer base {
   :root {
     color-scheme: light dark;
+    --tab-bar-inset: 0px;
+
+    @media (width < 48rem) {
+      --tab-bar-inset: calc(
+        var(--spacing-tab-bar) + env(safe-area-inset-bottom)
+      );
+    }
   }
 
   [data-theme='light'] {

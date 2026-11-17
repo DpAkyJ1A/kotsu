@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, screen, waitFor, within } from 'storybook/test';
+import { expect, fireEvent, screen, waitFor, within } from 'storybook/test';
 
 import { CalendarIcon, ClockIcon, GalleryVerticalEndIcon } from './icons';
 import { PageHeader } from './page-header';
@@ -59,6 +59,12 @@ function sidebarOf(canvasElement: HTMLElement) {
   return sidebar;
 }
 
+function edgeOf(canvasElement: HTMLElement) {
+  const edge = canvasElement.querySelector('[data-slot="sidebar-edge"]');
+  if (!edge) throw new Error('No edge next to the hidden sidebar');
+  return edge;
+}
+
 function pageOf(canvasElement: HTMLElement) {
   const page = canvasElement.querySelector('main');
   if (!page) throw new Error('No page next to the sidebar');
@@ -100,6 +106,20 @@ export const Closed: Story = {
   args: { defaultState: 'closed' },
   play: async ({ canvasElement }) => {
     await expect(sidebarOf(canvasElement)).not.toBeVisible();
+  },
+};
+
+export const SlidesInOnlyWhenThePointerMovesToTheEdge: Story = {
+  args: { defaultState: 'closed' },
+  play: async ({ canvasElement, userEvent }) => {
+    const sidebar = sidebarOf(canvasElement);
+    const edge = edgeOf(canvasElement);
+
+    await fireEvent.pointerOver(edge, { pointerType: 'mouse', clientX: 0 });
+    await expect(sidebar).toHaveAttribute('data-peek', 'off');
+
+    await userEvent.hover(edge);
+    await waitFor(() => expect(sidebar).toHaveAttribute('data-peek', 'on'));
   },
 };
 
