@@ -1,16 +1,9 @@
 import { describe, expect } from 'vitest';
 
-import type { Db } from '@/server/db/client';
-import { user } from '@/server/db/schema/auth';
+import { createUser } from '@/server/auth/testing';
 import { userSettings } from '@/server/db/schema/settings';
 import { dbTest as test } from '@/server/db/testing';
 import { findOrCreateSettings } from '@/server/settings';
-
-async function createUser(db: Db, email: string) {
-  const id = crypto.randomUUID();
-  await db.insert(user).values({ id, name: email, email });
-  return id;
-}
 
 describe('findOrCreateSettings', () => {
   test('two first visits at once share one row instead of failing on its key', async ({

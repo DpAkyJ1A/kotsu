@@ -11,6 +11,7 @@ import { Input } from '@/ui/input';
 
 import { type AuthError, authErrorOf } from '../core/auth-error';
 import { codePagePath } from '../core/sign-in-paths';
+import { usePasskeyAutofill } from '../hooks/use-passkey-autofill';
 
 type EmailFormProps = { next: Route };
 
@@ -20,6 +21,8 @@ export function EmailForm({ next }: EmailFormProps) {
   const errorId = useId();
   const [error, setError] = useState<AuthError | null>(null);
   const [isPending, startTransition] = useTransition();
+  const passkeyError = usePasskeyAutofill(next);
+  const shownError = error ?? passkeyError;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,15 +44,15 @@ export function EmailForm({ next }: EmailFormProps) {
         <Input
           type="email"
           name="email"
-          autoComplete="email"
+          autoComplete="username webauthn"
           required
           aria-invalid={error === 'invalidEmail'}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={shownError ? errorId : undefined}
         />
       </label>
-      {error && (
+      {shownError && (
         <p id={errorId} role="alert" className="text-sm text-destructive">
-          {t(`errors.${error}`)}
+          {t(`errors.${shownError}`)}
         </p>
       )}
       <Button type="submit" size="lg" disabled={isPending}>

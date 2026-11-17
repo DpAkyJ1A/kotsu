@@ -7,7 +7,12 @@ const Env = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   RESEND_API_KEY: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+  VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+  VERCEL_BRANCH_URL: z.string().optional(),
 });
+
+export type Env = z.infer<typeof Env>;
 
 const parsed = Env.safeParse(process.env);
 

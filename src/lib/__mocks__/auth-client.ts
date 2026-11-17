@@ -4,6 +4,18 @@ const succeeded = { data: { success: true }, error: null };
 
 export const authClient = {
   emailOtp: { sendVerificationOtp: fn(() => Promise.resolve(succeeded)) },
-  signIn: { emailOtp: fn(() => Promise.resolve(succeeded)) },
+  signIn: {
+    emailOtp: fn(() => Promise.resolve(succeeded)),
+    passkey: fn(() => Promise.resolve(succeeded)),
+  },
+  passkey: { addPasskey: fn(() => Promise.resolve(succeeded)) },
   signOut: fn(() => Promise.resolve(succeeded)),
 };
+
+export const browserSupportsWebAuthnAutofill = fn(() => Promise.resolve(false));
+
+export const platformAuthenticatorIsAvailable = fn(() =>
+  Promise.resolve(false),
+);
+
+export const WebAuthnAbortService = { cancelCeremony: fn() };

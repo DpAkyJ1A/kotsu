@@ -12,7 +12,9 @@ the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, 
 overlays (dialog, drawer, popover, dropdown menu, toasts with Undo) and the ⌘K command palette, shown in
 Storybook (`pnpm storybook`). The interface speaks English and Russian: the browser's language picks one until
 the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
-the account), and private pages open; sessions live in Postgres. No features work yet.
+the account), and private pages open; sessions live in Postgres. On a device with Touch ID, Face ID or a screen
+lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
+autofill. No features work yet.
 
 ## Tech stack
 

@@ -12,12 +12,15 @@ import {
   useTransition,
 } from 'react';
 
-import { authClient } from '@/lib/auth-client';
+import {
+  authClient,
+  platformAuthenticatorIsAvailable,
+} from '@/lib/auth-client';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
 
 import { type AuthError, authErrorOf } from '../core/auth-error';
-import { signInPagePath } from '../core/sign-in-paths';
+import { passkeyOfferPath, signInPagePath } from '../core/sign-in-paths';
 
 const CODE_LENGTH = 6;
 
@@ -39,7 +42,7 @@ export function CodeForm({ email, next }: CodeFormProps) {
       );
       setError(failure);
       setIsNewCodeSent(false);
-      if (!failure) router.replace(next);
+      if (!failure) router.replace(await pageAfterSignIn(next));
     });
   }
 
@@ -126,4 +129,11 @@ export function CodeForm({ email, next }: CodeFormProps) {
       </div>
     </div>
   );
+}
+
+async function pageAfterSignIn(next: Route) {
+  const canOfferPasskey = await platformAuthenticatorIsAvailable().catch(
+    () => false,
+  );
+  return canOfferPasskey ? passkeyOfferPath(next) : next;
 }

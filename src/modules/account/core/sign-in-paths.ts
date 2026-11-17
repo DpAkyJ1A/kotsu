@@ -26,3 +26,9 @@ export function codePagePath(email: string, next: Route): Route {
   if (next !== HOME) params.set('next', next);
   return `/sign-in/code?${params}`;
 }
+
+export function passkeyOfferPath(next: Route): Route {
+  return next === HOME
+    ? '/sign-in/passkey'
+    : `/sign-in/passkey?${new URLSearchParams({ next })}`;
+}

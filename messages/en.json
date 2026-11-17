@@ -21,12 +21,19 @@
     "newCodeSent": "A new code is on its way.",
     "useAnotherEmail": "Use another email",
     "signOut": "Sign out",
+    "passkeyTitle": "Skip the code next time?",
+    "passkeyDescription": "Turn on a passkey and sign in on this device with Touch ID, Face ID or your screen lock instead of an email code.",
+    "turnOnPasskey": "Turn on passkey",
+    "notNow": "Not now",
     "errors": {
       "invalidEmail": "That doesn't look like an email address.",
       "wrongCode": "That code isn't right. Check the email and try again.",
       "expiredCode": "This code has expired. Send a new one.",
       "tooManyAttempts": "Too many wrong tries. Send a new code.",
       "tooManyRequests": "Too many requests. Wait a minute and try again.",
+      "passkeyFailed": "That passkey didn't work. Sign in with a code instead.",
+      "passkeyExists": "This device already has a passkey for Kotsu.",
+      "passkeyNotAdded": "The passkey wasn't turned on. Try again, or skip it for now.",
       "unknown": "Something went wrong. Try again."
     }
   },

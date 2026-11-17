@@ -49,12 +49,12 @@ test('ignores an unknown theme in the cookie', async ({ page }) => {
 test('a nested data-theme keeps its own theme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/');
-  await page.getByRole('main').evaluate((main) => {
+  await page.locator('body').evaluate((body) => {
     for (const theme of ['light', 'dark']) {
       const section = document.createElement('section');
       section.dataset.theme = theme;
       section.style.backgroundColor = 'var(--background)';
-      main.append(section);
+      body.append(section);
     }
   });
 
