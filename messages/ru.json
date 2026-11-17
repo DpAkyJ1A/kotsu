@@ -4,14 +4,23 @@
     "shelves": "Полки",
     "practice": "Тренировка",
     "clock": "Часы",
-    "search": "Поиск"
+    "search": "Поиск",
+    "goTo": "Перейти",
+    "actions": "Действия"
   },
   "ui": {
     "close": "Закрыть",
     "notifications": "Уведомления",
     "closeNotification": "Закрыть уведомление",
     "openSidebar": "Показать боковую панель",
-    "closeSidebar": "Скрыть боковую панель"
+    "closeSidebar": "Скрыть боковую панель",
+    "search": "Поиск",
+    "commandPalette": "Поиск и команды",
+    "searchPlaceholder": "Поиск или команда",
+    "results": "Результаты",
+    "noResults": "Ничего не найдено",
+    "toggleTheme": "Сменить тему",
+    "themeKeywords": "тёмная темная светлая dark light"
   },
   "auth": {
     "signInTitle": "Вход в Kotsu",

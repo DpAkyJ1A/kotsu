@@ -4,14 +4,23 @@
     "shelves": "Shelves",
     "practice": "Practice",
     "clock": "Clock",
-    "search": "Search"
+    "search": "Search",
+    "goTo": "Go to",
+    "actions": "Actions"
   },
   "ui": {
     "close": "Close",
     "notifications": "Notifications",
     "closeNotification": "Close notification",
     "openSidebar": "Open sidebar",
-    "closeSidebar": "Close sidebar"
+    "closeSidebar": "Close sidebar",
+    "search": "Search",
+    "commandPalette": "Search and commands",
+    "searchPlaceholder": "Search or run a command",
+    "results": "Results",
+    "noResults": "No results",
+    "toggleTheme": "Toggle theme",
+    "themeKeywords": "dark light"
   },
   "auth": {
     "signInTitle": "Sign in to Kotsu",

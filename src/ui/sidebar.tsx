@@ -22,6 +22,7 @@ import { isCurrentSection } from './current-section';
 import { IconButton } from './icon-button';
 import { PanelLeftIcon } from './icons';
 import { Kbd } from './kbd';
+import { isApplePlatform, isShortcut } from './shortcut';
 import { sidebarCookie, type SidebarState } from './sidebar-cookie';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
@@ -66,7 +67,10 @@ export function SidebarProvider({
   }
 
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (!isToggleShortcut(event) || !isSidebarShown(wrapperRef.current)) {
+    if (
+      !isShortcut(event, 'Backslash') ||
+      !isSidebarShown(wrapperRef.current)
+    ) {
       return;
     }
     event.preventDefault();
@@ -103,17 +107,6 @@ export function SidebarProvider({
         {children}
       </div>
     </SidebarContext>
-  );
-}
-
-function isToggleShortcut(event: KeyboardEvent) {
-  return (
-    (event.metaKey || event.ctrlKey) &&
-    !event.altKey &&
-    !event.shiftKey &&
-    event.code === 'Backslash' &&
-    !event.repeat &&
-    !event.defaultPrevented
   );
 }
 
@@ -252,7 +245,7 @@ export function SidebarTrigger() {
 }
 
 function ToggleShortcut() {
-  const isApple = /Mac|iPhone|iPad/.test(navigator.userAgent);
+  const isApple = isApplePlatform(navigator.userAgent);
   return <Kbd>{isApple ? '⌘\\' : 'Ctrl \\'}</Kbd>;
 }
 
