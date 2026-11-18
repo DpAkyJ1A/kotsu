@@ -9,6 +9,7 @@ import { emailOTP } from 'better-auth/plugins';
 import type { Db } from '@/server/db/client';
 import * as schema from '@/server/db/schema/auth';
 
+import { passkeyName } from './passkey-name';
 import type { SendSignInCode } from './send-sign-in-code';
 
 const ALLOWED_HOSTS = [
@@ -30,12 +31,6 @@ const UNUSED_EMAIL_OTP_PATHS = [
   '/email-otp/change-email',
 ];
 
-const UNUSED_PASSKEY_PATHS = [
-  '/passkey/list-user-passkeys',
-  '/passkey/update-passkey',
-  '/passkey/delete-passkey',
-];
-
 type AuthDeps = {
   db: Db;
   secret: string;
@@ -50,7 +45,7 @@ export function createAuth({ db, secret, sendSignInCode, rpID }: AuthDeps) {
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     advanced: { database: { generateId: 'uuid' } },
     rateLimit: { enabled: true, storage: 'database' },
-    disabledPaths: [...UNUSED_EMAIL_OTP_PATHS, ...UNUSED_PASSKEY_PATHS],
+    disabledPaths: UNUSED_EMAIL_OTP_PATHS,
     plugins: [
       emailOTP({
         expiresIn: CODE_LIFETIME_MINUTES * 60,
@@ -64,7 +59,19 @@ export function createAuth({ db, secret, sendSignInCode, rpID }: AuthDeps) {
           });
         },
       }),
-      passkey({ rpID, rpName: 'Kotsu' }),
+      passkey({
+        rpID,
+        rpName: 'Kotsu',
+        registration: {
+          afterVerification: ({ ctx, verification }) => {
+            const name = passkeyName({
+              aaguid: verification.registrationInfo?.aaguid,
+              userAgent: ctx.headers?.get('user-agent'),
+            });
+            return name === undefined ? undefined : { name };
+          },
+        },
+      }),
       nextCookies(),
     ],
   });

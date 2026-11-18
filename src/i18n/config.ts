@@ -14,6 +14,7 @@ export const formats = {
     dayShort: { weekday: 'short', month: 'short', day: 'numeric' },
     // Oct 28 — when a token was created
     monthDay: { month: 'short', day: 'numeric' },
+    monthDayYear: { month: 'short', day: 'numeric', year: 'numeric' },
     // 17:00 and 09:05: with `hour: 'numeric'` Russian would drop the zero (9:05) and English keep it
     time: { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' },
   },

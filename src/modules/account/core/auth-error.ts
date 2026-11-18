@@ -6,6 +6,7 @@ export type AuthError =
   | 'tooManyRequests'
   | 'passkeyFailed'
   | 'passkeyExists'
+  | 'sessionNotFresh'
   | 'unknown';
 
 type FailedRequest = { status: number; code?: string | undefined };
@@ -23,6 +24,7 @@ const ERROR_BY_CODE: Partial<Record<string, AuthError>> = {
   AUTHENTICATION_FAILED: 'passkeyFailed',
   CHALLENGE_NOT_FOUND: 'passkeyFailed',
   ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED: 'passkeyExists',
+  SESSION_NOT_FRESH: 'sessionNotFresh',
 };
 
 export async function authErrorOf(

@@ -1,6 +1,8 @@
 import { symmetricDecrypt } from 'better-auth/crypto';
+import { eq } from 'drizzle-orm';
 import { describe, expect } from 'vitest';
 
+import type { Auth } from '@/server/auth/create-auth';
 import {
   cookiesFrom,
   createPasskey,
@@ -15,10 +17,20 @@ import {
   signIn,
   TEST_SECRET,
 } from '@/server/auth/testing';
-import { verification } from '@/server/db/schema/auth';
+import { passkey, session, verification } from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
 
 const ANOTHER_IP = '203.0.113.7';
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function daysAgo(days: number) {
+  return new Date(Date.now() - days * DAY_MS);
+}
+
+async function userIdOf(auth: Auth, headers: Headers) {
+  const current = await auth.api.getSession({ headers });
+  return current?.user.id ?? '';
+}
 
 describe('the auth API', () => {
   test.for([
@@ -151,8 +163,7 @@ describe('passkeys', () => {
     const { auth, sentCodes } = createTestAuth(db);
     const cookie = await signIn(auth, sentCodes);
     const headers = new Headers({ host: HOST, cookie });
-    const session = await auth.api.getSession({ headers });
-    const own = await createPasskey(db, session?.user.id ?? '');
+    const own = await createPasskey(db, await userIdOf(auth, headers));
     await createPasskey(db, await createUser(db, 'bea@example.com'));
 
     const options = await auth.api.generatePasskeyRegistrationOptions({
@@ -164,23 +175,80 @@ describe('passkeys', () => {
     ]);
   });
 
+  test('adding a passkey takes a sign-in from the last day', async ({ db }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const staleCookie = await signIn(auth, sentCodes);
+    await db.update(session).set({ createdAt: daysAgo(2) });
+
+    const adding = auth.api.generatePasskeyRegistrationOptions({
+      headers: new Headers({ host: HOST, cookie: staleCookie }),
+    });
+    await expect(adding).rejects.toMatchObject({
+      statusCode: 403,
+      body: { code: 'SESSION_NOT_FRESH' },
+    });
+
+    const freshCookie = await signIn(auth, sentCodes);
+    const options = await auth.api.generatePasskeyRegistrationOptions({
+      headers: new Headers({ host: HOST, cookie: freshCookie }),
+    });
+    expect(options.rp.id).toBe(RP_ID);
+  });
+
+  test("the list holds only the user's own passkeys", async ({ db }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const headers = new Headers({
+      host: HOST,
+      cookie: await signIn(auth, sentCodes),
+    });
+    const own = await createPasskey(db, await userIdOf(auth, headers));
+    await createPasskey(db, await createUser(db, 'bea@example.com'));
+
+    const passkeys = await auth.api.listPasskeys({ headers });
+
+    expect(passkeys.map(({ id }) => id)).toEqual([own.id]);
+  });
+
+  test('a passkey is renamed and removed by its owner', async ({ db }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const cookie = await signIn(auth, sentCodes);
+    const headers = new Headers({ host: HOST, cookie });
+    const { id } = await createPasskey(db, await userIdOf(auth, headers));
+
+    await post(auth, {
+      path: '/passkey/update-passkey',
+      body: { id, name: '  Work laptop ' },
+      cookie,
+    });
+    expect(await auth.api.listPasskeys({ headers })).toMatchObject([
+      { id, name: 'Work laptop' },
+    ]);
+
+    await post(auth, { path: '/passkey/delete-passkey', body: { id }, cookie });
+    expect(await auth.api.listPasskeys({ headers })).toEqual([]);
+  });
+
   test.for(['/passkey/update-passkey', '/passkey/delete-passkey'])(
-    'a passkey cannot be changed through %s until settings have it',
+    "someone else's passkey cannot be changed through %s",
     async (path, { db }) => {
       const { auth, sentCodes } = createTestAuth(db);
       const cookie = await signIn(auth, sentCodes);
-      const session = await auth.api.getSession({
-        headers: new Headers({ host: HOST, cookie }),
-      });
-      const { id } = await createPasskey(db, session?.user.id ?? '');
+      const beaId = await createUser(db, 'bea@example.com');
+      const { id } = await createPasskey(db, beaId);
 
       const response = await post(auth, {
         path,
-        body: { id, name: 'Work laptop' },
+        body: { id, name: 'Mine now' },
         cookie,
       });
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(401);
+      expect(
+        await db
+          .select({ name: passkey.name })
+          .from(passkey)
+          .where(eq(passkey.id, id)),
+      ).toEqual([{ name: null }]);
     },
   );
 });

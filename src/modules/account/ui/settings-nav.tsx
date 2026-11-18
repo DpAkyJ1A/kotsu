@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import { PaletteIcon, UserIcon } from '@/ui/icons';
+import { FingerprintPatternIcon, PaletteIcon, UserIcon } from '@/ui/icons';
 
 import {
   settingsPagePath,
@@ -14,6 +14,7 @@ import { SignOutButton } from './sign-out-button';
 const SECTION_ICONS = {
   account: UserIcon,
   appearance: PaletteIcon,
+  security: FingerprintPatternIcon,
 } satisfies Record<SettingsSection, typeof UserIcon>;
 
 const ITEM_CLASS_NAME =

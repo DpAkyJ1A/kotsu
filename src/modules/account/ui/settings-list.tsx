@@ -2,7 +2,11 @@ import { cn } from 'cn';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { ChevronRightIcon, PaletteIcon } from '@/ui/icons';
+import {
+  ChevronRightIcon,
+  FingerprintPatternIcon,
+  PaletteIcon,
+} from '@/ui/icons';
 
 import { type Account, displayName } from '../core/account';
 import { LANGUAGE_NAMES } from '../core/language-names';
@@ -55,6 +59,18 @@ export function SettingsList({ account, settings }: SettingsListProps) {
                 language: LANGUAGE_NAMES[settings.locale],
               })}
             </span>
+            <ChevronRightIcon className="text-muted-foreground" />
+          </Link>
+        </li>
+      </ul>
+      <ul className={GROUP_CLASS_NAME}>
+        <li>
+          <Link
+            href={settingsPagePath('security')}
+            className={cn(ROW_CLASS_NAME, 'h-12')}
+          >
+            <FingerprintPatternIcon className="text-muted-foreground" />
+            <span className="flex-1">{t('sections.security.title')}</span>
             <ChevronRightIcon className="text-muted-foreground" />
           </Link>
         </li>

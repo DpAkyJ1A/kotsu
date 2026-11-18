@@ -7,12 +7,15 @@ import {
 } from './settings-sections';
 
 describe('settingsSectionFrom', () => {
-  test.each(['account', 'appearance'] as const)('knows %s', (section) => {
-    expect(settingsSectionFrom(section)).toBe(section);
-  });
+  test.each(['account', 'appearance', 'security'] as const)(
+    'knows %s',
+    (section) => {
+      expect(settingsSectionFrom(section)).toBe(section);
+    },
+  );
 
   test.each([
-    ['a section that does not exist yet', 'passkeys'],
+    ['a section that does not exist yet', 'billing'],
     ['another case', 'Account'],
     ['an empty value', ''],
     ['no value', null],

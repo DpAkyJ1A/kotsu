@@ -23,6 +23,7 @@ describe('authErrorOf', () => {
       'passkeyExists',
       { status: 400, code: 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED' },
     ],
+    ['sessionNotFresh', { status: 403, code: 'SESSION_NOT_FRESH' }],
     ['unknown', { status: 400, code: 'AUTH_CANCELLED' }],
     ['unknown', { status: 500 }],
     ['unknown', { status: 400, code: 'SOMETHING_NEW' }],
