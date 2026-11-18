@@ -7,6 +7,7 @@ export type AuthError =
   | 'passkeyFailed'
   | 'passkeyExists'
   | 'sessionNotFresh'
+  | 'googleFailed'
   | 'unknown';
 
 type FailedRequest = { status: number; code?: string | undefined };

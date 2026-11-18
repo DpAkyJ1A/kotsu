@@ -7,6 +7,7 @@ export const authClient = {
   signIn: {
     emailOtp: fn(() => Promise.resolve(succeeded)),
     passkey: fn(() => Promise.resolve(succeeded)),
+    social: fn(() => Promise.resolve(succeeded)),
   },
   passkey: {
     addPasskey: fn(() => Promise.resolve(succeeded)),

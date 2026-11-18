@@ -23,6 +23,8 @@
   "auth": {
     "signInTitle": "Sign in to Kotsu",
     "signInDescription": "We'll email you a 6-digit code. New here? The same code creates your account.",
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
     "email": "Email",
     "sendCode": "Send code",
     "codeTitle": "Check your email",
@@ -47,6 +49,7 @@
       "passkeyExists": "This device already has a passkey for Kotsu.",
       "passkeyNotAdded": "The passkey wasn't turned on. Try again, or skip it for now.",
       "sessionNotFresh": "Confirm it's you to go on.",
+      "googleFailed": "Couldn't sign in with Google. Try again, or sign in with your email.",
       "unknown": "Something went wrong. Try again."
     }
   },

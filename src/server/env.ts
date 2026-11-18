@@ -6,6 +6,8 @@ const Env = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
   BETTER_AUTH_SECRET: z.string().min(32),
   RESEND_API_KEY: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
   VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
   VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),

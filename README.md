@@ -12,7 +12,8 @@ the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, 
 overlays (dialog, drawer, popover, dropdown menu, toasts with Undo) and the ⌘K command palette, shown in
 Storybook (`pnpm storybook`). The interface speaks English and Russian: the browser's language picks one until
 the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
-the account), and private pages open; sessions live in Postgres. On a device with Touch ID, Face ID or a screen
+the account), and private pages open; sessions live in Postgres. Continue with Google does the same in one step, and
+lands in the account of the same email if it was made with a code. On a device with Touch ID, Face ID or a screen
 lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
 autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name and the
 Calendar, Practice and Clock sections, still empty pages. The menu switches the theme (light, dark, or Auto to follow
@@ -59,7 +60,10 @@ The second line copies `.env.example` to `.env` and fills in `BETTER_AUTH_SECRET
 sessions and encrypts sign-in codes.
 
 Then open http://localhost:5687. Without `RESEND_API_KEY` in `.env`, sign-in codes are printed in the terminal
-of `pnpm dev` instead of being emailed; a production build without the key can't send them. `docker compose down`
+of `pnpm dev` instead of being emailed; a production build without the key can't send them. Continue with Google
+shows only with both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` set: an OAuth client of type Web application from
+the Google Cloud Console whose redirect URI is `http://localhost:5687/api/auth/callback/google` (and the same path on
+your own domain). `docker compose down`
 stops the database and keeps its data; `docker compose down -v` deletes it.
 
 ## Scripts

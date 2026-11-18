@@ -6,9 +6,11 @@ import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import { emailOTP } from 'better-auth/plugins';
 
+import { signInPath } from '@/lib/sign-in-path';
 import type { Db } from '@/server/db/client';
 import * as schema from '@/server/db/schema/auth';
 
+import type { GoogleClient } from './google-client';
 import { passkeyName } from './passkey-name';
 import type { SendSignInCode } from './send-sign-in-code';
 
@@ -36,9 +38,16 @@ type AuthDeps = {
   secret: string;
   sendSignInCode: SendSignInCode;
   rpID: string;
+  google: GoogleClient | undefined;
 };
 
-export function createAuth({ db, secret, sendSignInCode, rpID }: AuthDeps) {
+export function createAuth({
+  db,
+  secret,
+  sendSignInCode,
+  rpID,
+  google,
+}: AuthDeps) {
   return betterAuth({
     secret,
     baseURL: { allowedHosts: ALLOWED_HOSTS },
@@ -46,6 +55,16 @@ export function createAuth({ db, secret, sendSignInCode, rpID }: AuthDeps) {
     advanced: { database: { generateId: 'uuid' } },
     rateLimit: { enabled: true, storage: 'database' },
     disabledPaths: UNUSED_EMAIL_OTP_PATHS,
+    onAPIError: { errorURL: signInPath(null) },
+    socialProviders: google
+      ? { google: { ...google, prompt: 'select_account' } }
+      : {},
+    account: { encryptOAuthTokens: true },
+    databaseHooks: {
+      user: {
+        create: { before: (newUser) => Promise.resolve(newUser.emailVerified) },
+      },
+    },
     plugins: [
       emailOTP({
         expiresIn: CODE_LIFETIME_MINUTES * 60,

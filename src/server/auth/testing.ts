@@ -9,6 +9,10 @@ export const TEST_SECRET = 'test-secret-with-at-least-32-characters';
 export const RP_ID = 'localhost';
 export const HOST = `${RP_ID}:5687`;
 export const EMAIL = 'ada@example.com';
+export const GOOGLE = {
+  clientId: 'kotsu-test.apps.googleusercontent.com',
+  clientSecret: 'test-google-secret',
+};
 
 const ORIGIN = `http://${HOST}`;
 
@@ -22,6 +26,7 @@ export function createTestAuth(db: Db) {
       return Promise.resolve();
     },
     rpID: RP_ID,
+    google: GOOGLE,
   });
   return { auth, sentCodes };
 }
