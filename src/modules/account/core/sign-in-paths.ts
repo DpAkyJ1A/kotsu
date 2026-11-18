@@ -6,6 +6,8 @@ type SearchParam = string | string[] | undefined;
 
 const ANY_ORIGIN = 'http://kotsu.invalid';
 
+export const SIGN_IN_CANCELLED = 'access_denied';
+
 export function toNextPath(next: SearchParam): Route {
   if (typeof next !== 'string' || !next.startsWith('/')) return HOME_PATH;
 

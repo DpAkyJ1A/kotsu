@@ -13,16 +13,13 @@ import {
   useTransition,
 } from 'react';
 
-import {
-  authClient,
-  platformAuthenticatorIsAvailable,
-} from '@/lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 import { signInPath } from '@/lib/sign-in-path';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
 
 import { type AuthError, authErrorOf } from '../core/auth-error';
-import { passkeyOfferPath } from '../core/sign-in-paths';
+import { pageAfterSignIn } from '../hooks/page-after-sign-in';
 
 const CODE_LENGTH = 6;
 
@@ -132,11 +129,4 @@ export function CodeForm({ email, next }: CodeFormProps) {
       </div>
     </div>
   );
-}
-
-async function pageAfterSignIn(next: Route) {
-  const canOfferPasskey = await platformAuthenticatorIsAvailable().catch(
-    () => false,
-  );
-  return canOfferPasskey ? passkeyOfferPath(next) : next;
 }
