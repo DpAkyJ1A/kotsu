@@ -8,7 +8,18 @@ export const authClient = {
     emailOtp: fn(() => Promise.resolve(succeeded)),
     passkey: fn(() => Promise.resolve(succeeded)),
   },
-  passkey: { addPasskey: fn(() => Promise.resolve(succeeded)) },
+  passkey: {
+    addPasskey: fn(() => Promise.resolve(succeeded)),
+    updatePasskey: fn(() => Promise.resolve(succeeded)),
+    deletePasskey: fn(() => Promise.resolve(succeeded)),
+  },
+  useListPasskeys: fn(() => ({
+    data: [],
+    error: null,
+    isPending: false,
+    isRefetching: false,
+    refetch: fn(() => Promise.resolve()),
+  })),
   signOut: fn(() => Promise.resolve(succeeded)),
   updateUser: fn(() => Promise.resolve(succeeded)),
 };

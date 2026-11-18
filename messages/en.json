@@ -46,6 +46,7 @@
       "passkeyFailed": "That passkey didn't work. Sign in with a code instead.",
       "passkeyExists": "This device already has a passkey for Kotsu.",
       "passkeyNotAdded": "The passkey wasn't turned on. Try again, or skip it for now.",
+      "sessionNotFresh": "Confirm it's you to go on.",
       "unknown": "Something went wrong. Try again."
     }
   },
@@ -69,6 +70,7 @@
     "email": "Email",
     "save": "Save",
     "nameSaved": "Name saved.",
+    "cancel": "Cancel",
     "appearanceSummary": "{theme} · {language}",
     "toggleTheme": "Toggle theme",
     "themeKeywords": "dark light",
@@ -80,7 +82,40 @@
       "appearance": {
         "title": "Appearance",
         "description": "How the app looks and how your days are counted."
+      },
+      "security": {
+        "title": "Sign-in & passkeys",
+        "description": "Sign in with Touch ID, Face ID or your screen lock instead of an email code."
       }
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "loading": "Loading your passkeys…",
+      "loadFailed": "Couldn't load your passkeys.",
+      "tryAgain": "Try again",
+      "empty": "No passkeys yet.",
+      "unnamed": "Passkey",
+      "added": "Added {date, date, monthDayYear}",
+      "addedSynced": "Added {date, date, monthDayYear} · <synced>Synced</synced>",
+      "aboutSynced": "What “Synced” means",
+      "syncedHint": "Your password manager keeps this passkey on every device signed in to the same account, so it works there too.",
+      "add": "Add passkey",
+      "passkeyAdded": "Passkey added.",
+      "notAdded": "The passkey wasn't added. Try again.",
+      "confirmTitle": "Confirm it's you",
+      "confirmDescription": "To add a passkey, enter a code we'll email to <strong>{email}</strong>.",
+      "codeSent": "Enter the code we sent to <strong>{email}</strong>.",
+      "confirm": "Confirm",
+      "confirmed": "Confirmed. Now add your passkey.",
+      "rename": "Rename {name}",
+      "renameTitle": "Rename passkey",
+      "notRenamed": "The passkey wasn't renamed. Try again.",
+      "remove": "Remove {name}",
+      "removeTitle": "Remove “{name}”?",
+      "removeDescription": "You can still sign in with an email code.",
+      "removeFromPasswordManager": "Your password manager keeps it until you delete it there too.",
+      "removeConfirm": "Remove",
+      "notRemoved": "The passkey wasn't removed. Try again."
     }
   },
   "errors": {

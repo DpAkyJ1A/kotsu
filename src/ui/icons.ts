@@ -23,6 +23,7 @@ export {
   GalleryVerticalEndIcon,
   GlobeIcon,
   Heading1Icon,
+  InfoIcon,
   KeyIcon,
   LibraryIcon,
   LinkIcon,

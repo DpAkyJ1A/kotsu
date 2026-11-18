@@ -1,7 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, mocked, screen, spyOn, waitFor } from 'storybook/test';
+import {
+  expect,
+  fn,
+  mocked,
+  screen,
+  spyOn,
+  waitFor,
+  waitForElementToBeRemoved,
+} from 'storybook/test';
 
+import { authClient } from '@/lib/auth-client';
 import { toast, Toaster } from '@/ui/toast';
+import { TooltipProvider } from '@/ui/tooltip';
 
 import { updateSettingsAction } from '../actions';
 import type { Settings } from '../core/settings';
@@ -29,10 +39,10 @@ const meta = {
   parameters: onPage({}),
   decorators: [
     (Story) => (
-      <>
+      <TooltipProvider>
         <Story />
         <Toaster />
-      </>
+      </TooltipProvider>
     ),
   ],
   beforeEach: () => {
@@ -79,6 +89,48 @@ export const OpensOnTheSectionInTheAddress: Story = {
 
 export const OnTheAccountSection: Story = {
   parameters: onPage({ settings: 'account' }),
+};
+
+export const OnTheSignInSection: Story = {
+  parameters: onPage({ settings: 'security' }),
+  beforeEach: () => {
+    mocked(authClient.useListPasskeys).mockReturnValue({
+      data: [
+        {
+          id: '0193b1c2-7d4e-7000-8000-000000000001',
+          name: 'Google Password Manager',
+          publicKey: 'public-key',
+          userId: '0193b1c2-7d4e-7000-8000-000000000000',
+          credentialID: 'credential-one',
+          counter: 3,
+          deviceType: 'multiDevice',
+          backedUp: true,
+          createdAt: new Date('2026-11-16T09:00:00Z'),
+        },
+      ],
+      error: null,
+      isPending: false,
+      isRefetching: false,
+      refetch: fn(() => Promise.resolve()),
+    });
+  },
+  play: async ({ userEvent }) => {
+    const dialog = await settingsDialog();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Remove Google Password Manager' }),
+    );
+    const removal = await screen.findByRole('dialog', {
+      name: 'Remove “Google Password Manager”?',
+    });
+
+    await userEvent.keyboard('{Escape}');
+
+    await waitForElementToBeRemoved(removal);
+    await expect(dialog).toBeVisible();
+    await expect(
+      screen.getByRole('button', { name: 'Sign-in & passkeys' }),
+    ).toHaveAttribute('aria-current', 'true');
+  },
 };
 
 export const InRussian: Story = {
