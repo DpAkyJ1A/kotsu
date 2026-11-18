@@ -14,13 +14,15 @@ Storybook (`pnpm storybook`). The interface speaks English and Russian: the brow
 the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
 the account), and private pages open; sessions live in Postgres. On a device with Touch ID, Face ID or a screen
 lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
-autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name (sign out) and
-the Calendar, Practice and Clock sections, still empty pages. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
+autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name and the
+Calendar, Practice and Clock sections, still empty pages. The menu switches the theme (light, dark, or Auto to follow
+the system) and the language at once, and saves both to the account, so they follow you to another device; it also
+signs you out. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
 reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. On a phone or a
 narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
 the menu sits under your avatar at the top right of Calendar and Shelves. ⌘K or Ctrl+K, or the search field at
 the top of the sidebar, opens the command palette: type to filter, then jump to a section or switch between the
-light and dark theme, which the next visit remembers. No features work yet.
+light and dark theme. No features work yet.
 
 ## Tech stack
 

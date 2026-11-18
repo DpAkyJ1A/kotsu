@@ -18,9 +18,7 @@
     "commandPalette": "Search and commands",
     "searchPlaceholder": "Search or run a command",
     "results": "Results",
-    "noResults": "No results",
-    "toggleTheme": "Toggle theme",
-    "themeKeywords": "dark light"
+    "noResults": "No results"
   },
   "auth": {
     "signInTitle": "Sign in to Kotsu",
@@ -50,6 +48,20 @@
       "passkeyNotAdded": "The passkey wasn't turned on. Try again, or skip it for now.",
       "unknown": "Something went wrong. Try again."
     }
+  },
+  "settings": {
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Auto",
+    "language": "Language",
+    "toggleTheme": "Toggle theme",
+    "themeKeywords": "dark light"
+  },
+  "errors": {
+    "VALIDATION": "That couldn't be saved. Reload the page and try again.",
+    "INTERNAL": "Something went wrong. Try again.",
+    "OFFLINE": "You're offline. Try again once you're back online."
   },
   "email": {
     "signInCode": {

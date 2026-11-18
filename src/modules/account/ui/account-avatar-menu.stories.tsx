@@ -6,7 +6,16 @@ import { AccountAvatarMenu } from './account-avatar-menu';
 const meta = {
   title: 'Account/AccountAvatarMenu',
   component: AccountAvatarMenu,
-  args: { account: { name: '', email: 'ada@example.com' } },
+  args: {
+    account: { name: '', email: 'ada@example.com' },
+    settings: {
+      theme: 'system',
+      locale: 'en',
+      dayEndsAt: '04:00',
+      weekStart: 'monday',
+      timeFormat: 'h24',
+    },
+  },
   parameters: { nextjs: { appDirectory: true } },
   globals: { viewport: { value: 'mobile2' } },
   decorators: [
@@ -30,7 +39,7 @@ export const WithoutAName: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'ada' }));
 
     await expect(await screen.findByRole('menu')).toHaveTextContent(
-      'ada@example.comSign out',
+      'ada@example.comLightDarkAutoEnglishРусскийSign out',
     );
   },
 };

@@ -4,12 +4,13 @@ import { DropdownMenu, DropdownMenuTrigger } from '@/ui/dropdown-menu';
 import { ChevronDownIcon } from '@/ui/icons';
 
 import { type Account, displayName } from '../core/account';
+import type { Settings } from '../core/settings';
 import { AccountMenuContent } from './account-menu-content';
 import { Avatar } from './avatar';
 
-type AccountMenuProps = { account: Account };
+type AccountMenuProps = { account: Account; settings: Settings };
 
-export function AccountMenu({ account }: AccountMenuProps) {
+export function AccountMenu({ account, settings }: AccountMenuProps) {
   const name = displayName(account);
 
   return (
@@ -19,7 +20,7 @@ export function AccountMenu({ account }: AccountMenuProps) {
         <span className="truncate">{name}</span>
         <ChevronDownIcon className="text-muted-foreground" />
       </DropdownMenuTrigger>
-      <AccountMenuContent account={account} align="start" />
+      <AccountMenuContent account={account} settings={settings} align="start" />
     </DropdownMenu>
   );
 }

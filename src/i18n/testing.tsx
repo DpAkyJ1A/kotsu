@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import en from '../../messages/en.json';
 import ru from '../../messages/ru.json';
-import { asMessages, formats, TIME_ZONE } from './config';
+import { asMessages, DEFAULT_TIME_ZONE, formats } from './config';
 
 // Every language at once: fine for stories and tests, while the app loads one per request (request.ts)
 const MESSAGES: Record<Locale, Messages> = {
@@ -27,7 +27,7 @@ export function IntlTestProvider({
     <NextIntlClientProvider
       locale={locale}
       messages={MESSAGES[locale]}
-      timeZone={TIME_ZONE}
+      timeZone={DEFAULT_TIME_ZONE}
       formats={formats}
     >
       {children}

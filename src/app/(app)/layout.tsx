@@ -1,8 +1,12 @@
 import { cookies, headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
-import { AccountMenu, SessionRefresh } from '@/modules/account';
-import { loadAccount } from '@/modules/account/loaders';
+import {
+  AccountMenu,
+  SessionRefresh,
+  ToggleThemeCommand,
+} from '@/modules/account';
+import { loadAccount, loadSettings } from '@/modules/account/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
 import {
@@ -25,12 +29,12 @@ import {
 import { SIDEBAR_COOKIE, sidebarStateFrom } from '@/ui/sidebar-cookie';
 import { TabBar, TabBarLink } from '@/ui/tab-bar';
 import { Toaster } from '@/ui/toast';
-import { ToggleThemeCommand } from '@/ui/toggle-theme-command';
 import { TooltipProvider } from '@/ui/tooltip';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
-  const [account, cookieStore, headerStore, t] = await Promise.all([
+  const [account, settings, cookieStore, headerStore, t] = await Promise.all([
     loadAccount(),
+    loadSettings(),
     cookies(),
     headers(),
     getTranslations('nav'),
@@ -43,7 +47,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
       <SidebarProvider defaultState={sidebarState}>
         <Sidebar>
           <SidebarHeader>
-            <AccountMenu account={account} />
+            <AccountMenu account={account} settings={settings} />
             <SidebarTrigger />
           </SidebarHeader>
           <CommandPalette isApple={isApple}>

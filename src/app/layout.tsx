@@ -5,23 +5,30 @@ import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 
+import { THEME_COOKIE, themeAttribute, themeFrom } from '@/lib/theme-cookie';
+import { findCtx } from '@/server/ctx/get-ctx';
 import { manrope } from '@/ui/font';
-import { THEME_COOKIE, themeFrom } from '@/ui/theme-cookie';
 
 export const metadata: Metadata = {
   title: { default: 'Kotsu', template: '%s · Kotsu' },
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
-  // Set only when the user picked a theme; without it the CSS follows the system
-  const theme = themeFrom((await cookies()).get(THEME_COOKIE)?.value);
-  // Picked in src/i18n/request.ts
-  const locale = await getLocale();
+  const [ctx, cookieStore, locale] = await Promise.all([
+    findCtx(),
+    cookies(),
+    getLocale(),
+  ]);
+  const theme =
+    ctx?.settings.theme ?? themeFrom(cookieStore.get(THEME_COOKIE)?.value);
 
   return (
-    <html lang={locale} className={manrope.variable} data-theme={theme}>
+    <html
+      lang={locale}
+      className={manrope.variable}
+      data-theme={themeAttribute(theme)}
+    >
       <body>
-        {/* Gives Client Components the language, messages, time zone and formats of the request */}
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

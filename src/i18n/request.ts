@@ -1,9 +1,9 @@
-import { cookies, headers } from 'next/headers';
 import type { Locale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 
-import { asMessages, formats, LOCALE_COOKIE, TIME_ZONE } from './config';
-import { pickLocale } from './pick-locale';
+import { findCtx, findVisitorLocale } from '@/server/ctx/get-ctx';
+
+import { asMessages, DEFAULT_TIME_ZONE, formatsFor } from './config';
 
 // One import per language, so a request loads only its own messages
 const MESSAGES = {
@@ -14,15 +14,13 @@ const MESSAGES = {
 // What next-intl renders a request with: Server Components read it directly, the root layout's
 // NextIntlClientProvider passes it on to Client Components
 export default getRequestConfig(async () => {
-  const locale = pickLocale({
-    cookie: (await cookies()).get(LOCALE_COOKIE)?.value,
-    acceptLanguage: (await headers()).get('accept-language'),
-  });
+  const settings = (await findCtx())?.settings;
+  const locale = settings?.locale ?? (await findVisitorLocale());
 
   return {
     locale,
     messages: asMessages((await MESSAGES[locale]()).default),
-    timeZone: TIME_ZONE,
-    formats,
+    timeZone: settings?.timezone ?? DEFAULT_TIME_ZONE,
+    formats: formatsFor(settings?.timeFormat),
   };
 });

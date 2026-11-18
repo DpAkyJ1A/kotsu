@@ -1,6 +1,10 @@
 import { hasLocale, type Locale } from 'next-intl';
 
-import { DEFAULT_LOCALE, LOCALES } from './config';
+import { LOCALES } from './user-settings';
+
+export const LOCALE_COOKIE = 'locale';
+
+const DEFAULT_LOCALE = 'en';
 
 type PickLocaleOptions = {
   cookie: string | undefined;

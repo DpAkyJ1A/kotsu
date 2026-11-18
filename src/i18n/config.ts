@@ -1,17 +1,11 @@
 import type { AbstractIntlMessages, Formats, Messages } from 'next-intl';
 
-export const LOCALES = ['en', 'ru'] as const;
+import type { TimeFormat } from '@/lib/user-settings';
 
-export const DEFAULT_LOCALE = 'en';
-
-// Set only when the user picked a language; without it the browser's languages decide
-export const LOCALE_COOKIE = 'locale';
-
-// The default of `user_settings.timezone`. Fixed, so the server and the browser format a date the same way
-export const TIME_ZONE = 'UTC';
+export const DEFAULT_TIME_ZONE = 'UTC';
 
 // Named date formats, from the mockups: `format.dateTime(date, 'dayLong')` in code, `{date, date, dayLong}` in a
-// message. Times are 24-hour in every language, the default of `user_settings.time_format`
+// message
 export const formats = {
   dateTime: {
     // Wednesday, October 28 — the day view's heading
@@ -24,6 +18,17 @@ export const formats = {
     time: { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' },
   },
 } satisfies Formats;
+
+const TWELVE_HOUR_TIME = {
+  hour: 'numeric',
+  minute: '2-digit',
+  hourCycle: 'h12',
+} as const;
+
+export function formatsFor(timeFormat: TimeFormat | undefined): Formats {
+  if (timeFormat !== 'h12') return formats;
+  return { dateTime: { ...formats.dateTime, time: TWELVE_HOUR_TIME } };
+}
 
 // `Messages` is typed from the English file down to its exact text, which is how a message's arguments get their
 // types, so no other language's file matches it. They all have the same keys: messages.test.ts checks that

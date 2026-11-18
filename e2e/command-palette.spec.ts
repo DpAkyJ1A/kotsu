@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-import { signInWithCode, test } from './fixtures';
+import { settingsSaved, signInWithCode, test } from './fixtures';
 
 test.use({ locale: 'en-US' });
 
@@ -57,15 +57,18 @@ test('the search field in the sidebar opens the palette', async ({
   await expect(paletteOf(page)).toBeHidden();
 });
 
-test('the palette flips the theme, and the pick outlives a reload', async ({
+test('the palette flips the theme and saves it to the account', async ({
   page,
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
 
+  const saved = settingsSaved(page);
   await runFromPalette(page, 'Toggle theme');
   await expect(page.locator('body')).toHaveCSS('background-color', LIGHT);
+  await saved;
 
+  await page.context().clearCookies({ name: 'theme' });
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('body')).toHaveCSS('background-color', LIGHT);
