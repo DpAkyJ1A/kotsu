@@ -10,6 +10,7 @@ export const authClient = {
   },
   passkey: { addPasskey: fn(() => Promise.resolve(succeeded)) },
   signOut: fn(() => Promise.resolve(succeeded)),
+  updateUser: fn(() => Promise.resolve(succeeded)),
 };
 
 export const browserSupportsWebAuthnAutofill = fn(() => Promise.resolve(false));

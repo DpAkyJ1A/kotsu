@@ -50,13 +50,38 @@
     }
   },
   "settings": {
+    "title": "Настройки",
     "theme": "Тема",
     "light": "Светлая",
     "dark": "Тёмная",
     "system": "Авто",
     "language": "Язык",
+    "languageDescription": "Язык интерфейса. Тексты твоих доков он не меняет.",
+    "dayEndsAt": "Конец дня",
+    "dayEndsAtDescription": "Отметки после полуночи идут в счёт прошлого дня.",
+    "weekStart": "Начало недели",
+    "monday": "Понедельник",
+    "sunday": "Воскресенье",
+    "timeFormat": "Формат времени",
+    "h24": "24 ч",
+    "h12": "12 ч",
+    "name": "Имя",
+    "email": "Почта",
+    "save": "Сохранить",
+    "nameSaved": "Имя сохранено.",
+    "appearanceSummary": "{theme} · {language}",
     "toggleTheme": "Сменить тему",
-    "themeKeywords": "тёмная темная светлая dark light"
+    "themeKeywords": "тёмная темная светлая dark light",
+    "sections": {
+      "account": {
+        "title": "Аккаунт",
+        "description": "Твоё имя и почта, с которой ты входишь."
+      },
+      "appearance": {
+        "title": "Оформление",
+        "description": "Как выглядит приложение и как считаются твои дни."
+      }
+    }
   },
   "errors": {
     "VALIDATION": "Не получилось сохранить. Обнови страницу и попробуй ещё раз.",

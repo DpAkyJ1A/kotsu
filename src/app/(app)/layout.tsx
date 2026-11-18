@@ -3,7 +3,9 @@ import { getTranslations } from 'next-intl/server';
 
 import {
   AccountMenu,
+  OpenSettingsCommand,
   SessionRefresh,
+  SettingsDialog,
   ToggleThemeCommand,
 } from '@/modules/account';
 import { loadAccount, loadSettings } from '@/modules/account/loaders';
@@ -68,6 +70,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
                 <ClockIcon />
                 {t('clock')}
               </CommandPaletteLink>
+              <OpenSettingsCommand />
             </CommandGroup>
             <CommandGroup heading={t('actions')}>
               <ToggleThemeCommand />
@@ -112,6 +115,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           </TabBarLink>
         </TabBar>
       </SidebarProvider>
+      <SettingsDialog account={account} settings={settings} />
       <SessionRefresh />
       <Toaster />
     </TooltipProvider>

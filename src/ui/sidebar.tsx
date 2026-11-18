@@ -11,8 +11,6 @@ import {
   type PointerEvent,
   type ReactNode,
   use,
-  useEffect,
-  useEffectEvent,
   useRef,
   useState,
 } from 'react';
@@ -22,9 +20,10 @@ import { isCurrentSection } from './current-section';
 import { IconButton } from './icon-button';
 import { PanelLeftIcon } from './icons';
 import { Kbd } from './kbd';
-import { isApplePlatform, isShortcut } from './shortcut';
+import { isApplePlatform } from './shortcut';
 import { sidebarCookie, type SidebarState } from './sidebar-cookie';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { useShortcut } from './use-shortcut';
 
 type SidebarContextValue = {
   state: SidebarState;
@@ -66,26 +65,11 @@ export function SidebarProvider({
     triggerToFocus?.focus();
   }
 
-  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (
-      !isShortcut(event, 'Backslash') ||
-      !isSidebarShown(wrapperRef.current)
-    ) {
-      return;
-    }
+  useShortcut('Backslash', (event) => {
+    if (!isSidebarShown(wrapperRef.current)) return;
     event.preventDefault();
     toggle();
   });
-
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => {
-      handleKeyDown(event);
-    };
-    document.addEventListener('keydown', listener);
-    return () => {
-      document.removeEventListener('keydown', listener);
-    };
-  }, []);
 
   return (
     <SidebarContext

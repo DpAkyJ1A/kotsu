@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fn, type UserEventObject } from 'storybook/test';
 
+import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { ContrastIcon, MoonIcon, SunIcon } from './icons';
 import { SegmentedControl, SegmentedControlItem } from './segmented-control';
 
@@ -51,6 +52,22 @@ export const WithIcons: Story = {
 // Stretched to its container, as on a phone: the segments share the width
 export const FullWidth: Story = {
   args: { className: 'w-full' },
+};
+
+export const InADialog: Story = {
+  globals: { theme: 'dark' },
+  render: (args) => (
+    <Dialog open>
+      <DialogContent aria-describedby={undefined}>
+        <DialogTitle>Practice</DialogTitle>
+        <SegmentedControl {...args}>
+          <SegmentedControlItem value="day">Day</SegmentedControlItem>
+          <SegmentedControlItem value="week">Week</SegmentedControlItem>
+          <SegmentedControlItem value="month">Month</SegmentedControlItem>
+        </SegmentedControl>
+      </DialogContent>
+    </Dialog>
+  ),
 };
 
 // Radix picks the segment that the focus moves to only while an arrow key is down. A real key stays down for

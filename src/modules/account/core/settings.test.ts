@@ -20,6 +20,7 @@ describe('UpdateSettingsInput', () => {
 
   test.each([
     ['a day that ends after 06:00', { dayEndsAt: '06:01' }],
+    ['a day that ends between the hours', { dayEndsAt: '04:30' }],
     ['a time without minutes', { dayEndsAt: '4' }],
     ['a time with seconds', { dayEndsAt: '04:00:00' }],
     ['a language Kotsu does not speak', { locale: 'de' }],

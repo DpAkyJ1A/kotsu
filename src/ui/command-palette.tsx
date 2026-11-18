@@ -8,8 +8,6 @@ import {
   createContext,
   type ReactNode,
   use,
-  useEffect,
-  useEffectEvent,
   useState,
 } from 'react';
 
@@ -24,7 +22,7 @@ import {
 } from './command';
 import { SearchIcon } from './icons';
 import { Kbd } from './kbd';
-import { isShortcut } from './shortcut';
+import { useShortcut } from './use-shortcut';
 
 const ClosePaletteContext = createContext<(() => void) | null>(null);
 
@@ -43,21 +41,10 @@ export function CommandPalette({ isApple, children }: CommandPaletteProps) {
   const t = useTranslations('ui');
   const [open, setOpen] = useState(false);
 
-  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (!isShortcut(event, 'KeyK')) return;
+  useShortcut('KeyK', (event) => {
     event.preventDefault();
     setOpen((current) => !current);
   });
-
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => {
-      handleKeyDown(event);
-    };
-    document.addEventListener('keydown', listener);
-    return () => {
-      document.removeEventListener('keydown', listener);
-    };
-  }, []);
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>

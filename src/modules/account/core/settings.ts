@@ -14,20 +14,30 @@ import {
 export type Settings = {
   theme: Theme;
   locale: Locale;
-  dayEndsAt: string;
+  dayEndsAt: DayEndTime;
   weekStart: WeekStart;
   timeFormat: TimeFormat;
 };
 
-const LATEST_DAY_END = '06:00';
+export const DAY_END_TIMES = [
+  '00:00',
+  '01:00',
+  '02:00',
+  '03:00',
+  '04:00',
+  '05:00',
+  '06:00',
+] as const;
+
+export const DayEndsAt = z.enum(DAY_END_TIMES);
+
+export type DayEndTime = z.infer<typeof DayEndsAt>;
 
 export const UpdateSettingsInput = z
   .strictObject({
     theme: z.enum(THEMES),
     locale: z.enum(LOCALES),
-    dayEndsAt: z.iso
-      .time({ precision: -1 })
-      .refine((time) => time <= LATEST_DAY_END),
+    dayEndsAt: DayEndsAt,
     weekStart: z.enum(WEEK_STARTS),
     timeFormat: z.enum(TIME_FORMATS),
   })

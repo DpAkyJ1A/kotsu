@@ -8,7 +8,7 @@ heatmap, docs with flashcards, spreadsheets with formulas, a focus clock, and an
 ## Status
 
 Early days. The repository holds the project skeleton, the design tokens (light and dark), the icon set and
-the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, chips, tooltips) with its
+the basic UI kit (buttons, fields, select, switch, checkbox, segmented control, radio cards, chips, tooltips) with its
 overlays (dialog, drawer, popover, dropdown menu, toasts with Undo) and the ⌘K command palette, shown in
 Storybook (`pnpm storybook`). The interface speaks English and Russian: the browser's language picks one until
 the user does. Signing in works: enter your email, type the 6-digit code from the email (the first code creates
@@ -17,12 +17,14 @@ lock, Kotsu then offers that device a passkey once, and the next sign-in picks i
 autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name and the
 Calendar, Practice and Clock sections, still empty pages. The menu switches the theme (light, dark, or Auto to follow
 the system) and the language at once, and saves both to the account, so they follow you to another device; it also
-signs you out. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
+signs you out and opens Settings. Settings (⌘, or Ctrl+, from anywhere) open over the current page: Account changes
+your name, Appearance picks the theme from three previews, the language, the hour your day ends, the first day of
+the week and 12- or 24-hour time. ⌘\ or Ctrl+\ hides the sidebar, the choice survives a
 reload, and a hidden sidebar slides in while the pointer rests on the left edge of the window. On a phone or a
 narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
-the menu sits under your avatar at the top right of Calendar and Shelves. ⌘K or Ctrl+K, or the search field at
-the top of the sidebar, opens the command palette: type to filter, then jump to a section or switch between the
-light and dark theme. No features work yet.
+your avatar at the top right of Calendar and Shelves leads to the Settings screen, where each section is a page of
+its own. ⌘K or Ctrl+K, or the search field at the top of the sidebar, opens the command palette: type to filter,
+then jump to a section, open Settings or switch between the light and dark theme. No features work yet.
 
 ## Tech stack
 

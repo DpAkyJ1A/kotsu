@@ -23,9 +23,10 @@ function tabBarOf(page: Page) {
   return page.getByRole('navigation');
 }
 
-function avatarButtonOf(page: Page, email: string) {
-  const [emailName = ''] = email.split('@');
-  return page.getByRole('main').getByRole('button', { name: emailName });
+async function signOutInSettings(page: Page) {
+  await page.getByRole('main').getByRole('link', { name: 'Settings' }).click();
+  await expect(page).toHaveURL('/settings');
+  await page.getByRole('button', { name: 'Sign out' }).click();
 }
 
 function edgesOf(locator: Locator) {
@@ -95,10 +96,8 @@ test('⌘\\ or Ctrl+\\ on a narrow window leaves the sidebar as it was', async (
   await expect(page.locator('aside')).toBeVisible();
 });
 
-test('signs out from the menu under the avatar', async ({ page, visitor }) => {
-  await avatarButtonOf(page, visitor.email).click();
-  await expect(page.getByRole('menu')).toContainText(visitor.email);
-  await page.getByRole('menuitem', { name: 'Sign out' }).click();
+test('signs out in the settings behind the avatar', async ({ page }) => {
+  await signOutInSettings(page);
 
   await expect(page).toHaveURL('/sign-in');
 });
@@ -106,13 +105,11 @@ test('signs out from the menu under the avatar', async ({ page, visitor }) => {
 for (const viewport of [PHONE, SMALL_TABLET]) {
   test(`a toast shows above the tab bar ${String(viewport.width)}px wide`, async ({
     page,
-    visitor,
   }) => {
     await page.setViewportSize(viewport);
     await page.route('**/api/auth/sign-out', (route) => route.abort());
 
-    await avatarButtonOf(page, visitor.email).click();
-    await page.getByRole('menuitem', { name: 'Sign out' }).click();
+    await signOutInSettings(page);
 
     const toast = page.locator('[data-sonner-toast]', {
       hasText: 'Something went wrong. Try again.',

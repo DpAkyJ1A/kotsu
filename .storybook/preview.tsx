@@ -5,6 +5,7 @@ import type { Preview } from '@storybook/nextjs-vite';
 import { hasLocale } from 'next-intl';
 import { sb } from 'storybook/test';
 
+import { DEFAULT_TIME_ZONE } from '@/i18n/config';
 import { IntlTestProvider } from '@/i18n/testing';
 import { LOCALES } from '@/lib/user-settings';
 import { manrope } from '@/ui/font';
@@ -21,12 +22,16 @@ const preview: Preview = {
       attributeName: 'data-theme',
     }),
     // The language switch in the toolbar gives the components that language's messages and sets lang on <html>,
-    // as the root layout does
+    // as the root layout does; a story can pin a `timeZone` global
     (Story, { globals }) => {
       const locale = hasLocale(LOCALES, globals.locale) ? globals.locale : 'en';
+      const timeZone =
+        typeof globals.timeZone === 'string'
+          ? globals.timeZone
+          : DEFAULT_TIME_ZONE;
       document.documentElement.lang = locale;
       return (
-        <IntlTestProvider locale={locale}>
+        <IntlTestProvider locale={locale} timeZone={timeZone}>
           <Story />
         </IntlTestProvider>
       );
