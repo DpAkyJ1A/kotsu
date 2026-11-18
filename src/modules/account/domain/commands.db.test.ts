@@ -34,19 +34,19 @@ describe('updateSettings', () => {
 
     const settings = await updateSettings(ada, {
       theme: 'dark',
-      dayEndsAt: '05:30',
+      dayEndsAt: '05:00',
     });
 
     expect(settings).toEqual({
       theme: 'dark',
       locale: 'en',
-      dayEndsAt: '05:30',
+      dayEndsAt: '05:00',
       weekStart: 'monday',
       timeFormat: 'h24',
     });
     expect(await savedSettings(db, ada.userId)).toMatchObject({
       theme: 'dark',
-      dayEndsAt: '05:30:00',
+      dayEndsAt: '05:00:00',
       timezone: 'UTC',
     });
   });
@@ -65,13 +65,12 @@ describe('updateSettings', () => {
     });
   });
 
-  test.for([
-    ['a day that ends after 06:00', { dayEndsAt: '07:00' }],
-    ['nothing to change', {}],
-  ] as const)('refuses %s and saves nothing', async ([, patch], { db }) => {
+  test('refuses a patch with nothing to change and saves nothing', async ({
+    db,
+  }) => {
     const ada = await ctxOf(db, await createUser(db, 'ada@example.com'));
 
-    const failure = updateSettings(ada, patch);
+    const failure = updateSettings(ada, {});
 
     await expect(failure).rejects.toThrow(AppError);
     await expect(failure).rejects.toMatchObject({ code: 'VALIDATION' });

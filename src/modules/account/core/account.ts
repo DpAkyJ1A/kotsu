@@ -4,6 +4,10 @@ export type Account = {
 };
 
 export function displayName({ name, email }: Account) {
-  const [emailName = email] = email.split('@');
-  return name.trim() || emailName;
+  return name.trim() || emailName(email);
+}
+
+export function emailName(email: string) {
+  const [beforeAt = email] = email.split('@');
+  return beforeAt;
 }

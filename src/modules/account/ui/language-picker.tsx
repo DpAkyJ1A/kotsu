@@ -1,7 +1,6 @@
 'use client';
 
 import { type Locale, useTranslations } from 'next-intl';
-import { startTransition, useOptimistic } from 'react';
 
 import { LOCALES } from '@/lib/user-settings';
 import {
@@ -9,36 +8,29 @@ import {
   DropdownMenuSegmentedItem,
 } from '@/ui/dropdown-menu';
 
-import { useUpdateSettings } from '../hooks/use-update-settings';
-
-const LANGUAGE_NAMES = {
-  en: 'English',
-  ru: 'Русский',
-} satisfies Record<Locale, string>;
+import { LANGUAGE_NAMES } from '../core/language-names';
+import { useOptimisticSetting } from '../hooks/use-optimistic-setting';
 
 type LanguagePickerProps = { locale: Locale };
 
 export function LanguagePicker({ locale }: LanguagePickerProps) {
   const t = useTranslations('settings');
-  const updateSettings = useUpdateSettings();
-  const [shownLocale, setShownLocale] = useOptimistic(locale);
-
-  function handlePick(picked: Locale) {
-    startTransition(async () => {
-      setShownLocale(picked);
-      await updateSettings({ locale: picked });
-    });
-  }
+  const language = useOptimisticSetting(locale, (picked) => ({
+    locale: picked,
+  }));
 
   return (
-    <DropdownMenuSegmentedGroup aria-label={t('language')} value={shownLocale}>
+    <DropdownMenuSegmentedGroup
+      aria-label={t('language')}
+      value={language.shown}
+    >
       {LOCALES.map((option) => (
         <DropdownMenuSegmentedItem
           key={option}
           value={option}
           lang={option}
           onSelect={() => {
-            handlePick(option);
+            language.pick(option);
           }}
         >
           {LANGUAGE_NAMES[option]}

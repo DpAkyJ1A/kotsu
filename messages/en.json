@@ -50,13 +50,38 @@
     }
   },
   "settings": {
+    "title": "Settings",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
     "system": "Auto",
     "language": "Language",
+    "languageDescription": "Interface language. Your docs stay as you wrote them.",
+    "dayEndsAt": "Day ends at",
+    "dayEndsAtDescription": "Ticks after midnight still count for the day before.",
+    "weekStart": "Week starts on",
+    "monday": "Monday",
+    "sunday": "Sunday",
+    "timeFormat": "Time format",
+    "h24": "24 h",
+    "h12": "12 h",
+    "name": "Name",
+    "email": "Email",
+    "save": "Save",
+    "nameSaved": "Name saved.",
+    "appearanceSummary": "{theme} · {language}",
     "toggleTheme": "Toggle theme",
-    "themeKeywords": "dark light"
+    "themeKeywords": "dark light",
+    "sections": {
+      "account": {
+        "title": "Account",
+        "description": "Your name and the email you sign in with."
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "How the app looks and how your days are counted."
+      }
+    }
   },
   "errors": {
     "VALIDATION": "That couldn't be saved. Reload the page and try again.",

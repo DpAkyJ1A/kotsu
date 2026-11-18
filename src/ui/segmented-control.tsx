@@ -14,7 +14,7 @@ export function SegmentedControl({
     <RadioGroupPrimitive.Root
       data-slot="segmented-control"
       className={cn(
-        'inline-grid auto-cols-fr grid-flow-col gap-0.5 rounded-md bg-muted p-0.5',
+        'inline-grid auto-cols-fr grid-flow-col gap-0.5 rounded-md bg-muted p-0.5 dark:in-data-[slot=dialog-content]:bg-background dark:in-data-[slot=drawer-content]:bg-background',
         className,
       )}
       {...props}

@@ -17,7 +17,8 @@ palette (`command-palette.tsx`) is part of the frame too: its search field sits 
 from anywhere, and the layout fills it with items that close it as they run (`CommandPaletteLink` goes to a page).
 `apply-theme.ts` shows a picked theme on the page at once, without the colours drifting through their transitions, and
 tells which theme is on the page (`useAppliedTheme` follows `data-theme` on `<html>`). What counts as a shortcut press
-and whether to show ⌘ or Ctrl lives in `shortcut.ts`.
+and whether to show ⌘ or Ctrl lives in `shortcut.ts`; `useShortcut` binds one to the document. `RadioCards` picks one
+value out of a few shown as pictures (the theme previews in Settings).
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

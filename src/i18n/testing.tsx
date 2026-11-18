@@ -14,6 +14,7 @@ const MESSAGES: Record<Locale, Messages> = {
 
 type IntlTestProviderProps = {
   locale?: Locale;
+  timeZone?: string;
   children: ReactNode;
 };
 
@@ -21,13 +22,14 @@ type IntlTestProviderProps = {
 // render without a request
 export function IntlTestProvider({
   locale = 'en',
+  timeZone = DEFAULT_TIME_ZONE,
   children,
 }: IntlTestProviderProps) {
   return (
     <NextIntlClientProvider
       locale={locale}
       messages={MESSAGES[locale]}
-      timeZone={DEFAULT_TIME_ZONE}
+      timeZone={timeZone}
       formats={formats}
     >
       {children}

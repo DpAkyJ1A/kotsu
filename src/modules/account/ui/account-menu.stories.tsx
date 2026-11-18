@@ -256,3 +256,23 @@ export const SignOutFailsOffline: Story = {
     await expect(getRouter().replace).not.toHaveBeenCalled();
   },
 };
+
+export const OpensSettingsOverThePage: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const pushState = spyOn(history, 'pushState').mockImplementation(
+      () => undefined,
+    );
+
+    await userEvent.click(canvas.getByRole('button', { name: 'ada' }));
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Settings' }),
+    );
+
+    await expect(pushState).toHaveBeenCalledOnce();
+    await expect(pushState).toHaveBeenLastCalledWith(
+      null,
+      '',
+      expect.stringMatching(/[?&]settings=account$/),
+    );
+  },
+};

@@ -9,6 +9,10 @@ test.skip(
     browserName === 'webkit' && baseURL?.startsWith('http://') === true,
   'WebKit drops the Secure session cookie on plain http, as the local and CI servers are',
 );
+test.skip(
+  ({ isMobile }) => isMobile,
+  'The menu under the name is for wide screens; phones pick these in Settings (settings-screen.spec.ts)',
+);
 
 const LIGHT = 'rgb(255, 255, 255)';
 const DARK = 'rgb(18, 18, 20)';
