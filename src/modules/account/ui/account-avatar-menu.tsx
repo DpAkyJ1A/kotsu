@@ -5,13 +5,19 @@ import { cn } from 'cn';
 import { DropdownMenu, DropdownMenuTrigger } from '@/ui/dropdown-menu';
 
 import { type Account, displayName } from '../core/account';
+import type { Settings } from '../core/settings';
 import { AccountMenuContent } from './account-menu-content';
 import { Avatar } from './avatar';
 
-type AccountAvatarMenuProps = { account: Account; className?: string };
+type AccountAvatarMenuProps = {
+  account: Account;
+  settings: Settings;
+  className?: string;
+};
 
 export function AccountAvatarMenu({
   account,
+  settings,
   className,
 }: AccountAvatarMenuProps) {
   const name = displayName(account);
@@ -27,7 +33,7 @@ export function AccountAvatarMenu({
       >
         <Avatar name={name} size="lg" />
       </DropdownMenuTrigger>
-      <AccountMenuContent account={account} align="end" />
+      <AccountMenuContent account={account} settings={settings} align="end" />
     </DropdownMenu>
   );
 }

@@ -309,6 +309,11 @@ export default defineConfig([
             allow(element('lib'), element('lib')),
             allow(element('server'), element('server', 'lib')),
             allow(element('i18n'), element('i18n', 'lib', 'messages')),
+            // next-intl's request config takes the language, time zone and time format from the user's settings
+            allow(
+              { element: { type: 'i18n', fileInternalPath: 'request.ts' } },
+              element('server'),
+            ),
             allow(proxyFile, proxyFile, element('lib')),
           ],
         },

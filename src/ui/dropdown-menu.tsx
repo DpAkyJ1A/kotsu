@@ -114,6 +114,43 @@ export function DropdownMenuRadioItem({
   );
 }
 
+export function DropdownMenuSegmentedGroup({
+  className,
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
+  return (
+    <DropdownMenuPrimitive.RadioGroup
+      data-slot="dropdown-menu-segmented-group"
+      className={cn(
+        'my-1 grid auto-cols-fr grid-flow-col gap-0.5 rounded-md bg-muted p-0.5 dark:bg-background',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DropdownMenuSegmentedItem({
+  className,
+  onSelect,
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+  return (
+    <DropdownMenuPrimitive.RadioItem
+      data-slot="dropdown-menu-segmented-item"
+      onSelect={(event) => {
+        event.preventDefault();
+        onSelect?.(event);
+      }}
+      className={cn(
+        'flex h-7 cursor-default items-center justify-center gap-1.5 rounded-sm px-2 text-xs font-medium whitespace-nowrap text-muted-foreground outline-hidden transition-colors select-none focus-visible:outline-2 focus-visible:outline-ring aria-checked:bg-background aria-checked:text-foreground aria-checked:shadow-xs data-highlighted:text-foreground dark:aria-checked:bg-muted',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 export function DropdownMenuLabel({
   className,
   ...props

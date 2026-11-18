@@ -9,6 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSegmentedGroup,
+  DropdownMenuSegmentedItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -64,27 +66,27 @@ function NameMenu({
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel>Theme</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
+          <DropdownMenuSegmentedGroup
+            aria-label="Theme"
             value={theme}
             onValueChange={(value) => {
               setTheme(value);
               onThemeChange(value);
             }}
           >
-            <DropdownMenuRadioItem value="light">
+            <DropdownMenuSegmentedItem value="light">
               <SunIcon />
               Light
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="dark">
+            </DropdownMenuSegmentedItem>
+            <DropdownMenuSegmentedItem value="dark">
               <MoonIcon />
               Dark
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="auto">
+            </DropdownMenuSegmentedItem>
+            <DropdownMenuSegmentedItem value="auto">
               <ContrastIcon />
               Auto
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
+            </DropdownMenuSegmentedItem>
+          </DropdownMenuSegmentedGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onOpenSettings}>
             <SettingsIcon />
@@ -130,8 +132,6 @@ export const Open: Story = {
   args: { defaultOpen: true },
 };
 
-// Enter opens the menu on its first item; arrows and a first letter move, Tab stays inside, Enter picks and
-// closes, and Escape closes without a pick; each time the focus goes back to the trigger
 export const Keyboard: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const trigger = canvas.getByRole('button', { name: /Sam Lee/ });
@@ -149,9 +149,12 @@ export const Keyboard: Story = {
     await expect(radio('Dark')).toHaveFocus();
 
     await userEvent.keyboard('{Enter}');
-    await expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await expect(radio('Dark')).toBeChecked();
+    await expect(radio('Dark')).toHaveFocus();
     await expect(args.onThemeChange).toHaveBeenCalledOnce();
     await expect(args.onThemeChange).toHaveBeenLastCalledWith('dark');
+    await userEvent.keyboard('{Escape}');
+    await expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await expect(trigger).toHaveFocus();
 
     await userEvent.keyboard('{Enter}');

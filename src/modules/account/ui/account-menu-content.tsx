@@ -16,15 +16,20 @@ import { toast } from '@/ui/toast';
 
 import { type Account, displayName } from '../core/account';
 import { authErrorOf } from '../core/auth-error';
+import type { Settings } from '../core/settings';
 import { Avatar } from './avatar';
+import { LanguagePicker } from './language-picker';
+import { ThemePicker } from './theme-picker';
 
 type AccountMenuContentProps = {
   account: Account;
+  settings: Settings;
   align: 'start' | 'end';
 };
 
 export function AccountMenuContent({
   account,
+  settings,
   align,
 }: AccountMenuContentProps) {
   const t = useTranslations('auth');
@@ -51,6 +56,9 @@ export function AccountMenuContent({
           <span className="truncate">{account.email}</span>
         </span>
       </DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <ThemePicker theme={settings.theme} />
+      <LanguagePicker locale={settings.locale} />
       <DropdownMenuSeparator />
       <DropdownMenuItem disabled={isPending} onSelect={handleSignOut}>
         <LogOutIcon />

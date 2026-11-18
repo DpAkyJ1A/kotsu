@@ -9,12 +9,19 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import {
+  LOCALES,
+  THEMES,
+  TIME_FORMATS,
+  WEEK_STARTS,
+} from '@/lib/user-settings';
+
 import { user } from './auth';
 
-export const theme = pgEnum('theme', ['light', 'dark', 'system']);
-export const locale = pgEnum('locale', ['en', 'ru']);
-export const weekStart = pgEnum('week_start', ['monday', 'sunday']);
-export const timeFormat = pgEnum('time_format', ['h24', 'h12']);
+export const theme = pgEnum('theme', THEMES);
+export const locale = pgEnum('locale', LOCALES);
+export const weekStart = pgEnum('week_start', WEEK_STARTS);
+export const timeFormat = pgEnum('time_format', TIME_FORMATS);
 
 export const userSettings = pgTable(
   'user_settings',

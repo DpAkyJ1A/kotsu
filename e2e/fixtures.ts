@@ -61,3 +61,9 @@ export async function signInWithCode(page: Page, visitor: Visitor) {
   await requestCode(page, visitor.email);
   await page.getByLabel('Code').fill(await visitor.readCode());
 }
+
+export function settingsSaved(page: Page) {
+  return page.waitForResponse(
+    (response) => response.request().headers()['next-action'] !== undefined,
+  );
+}

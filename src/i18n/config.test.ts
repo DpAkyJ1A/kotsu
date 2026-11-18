@@ -1,11 +1,15 @@
-import { createFormatter, type Locale } from 'next-intl';
+import { createFormatter, type Formats, type Locale } from 'next-intl';
 import { describe, expect, test } from 'vitest';
 
-import { formats, TIME_ZONE } from './config';
+import { DEFAULT_TIME_ZONE, formats, formatsFor } from './config';
 
 // What `useFormatter()` and `getFormatter()` return in the app for a language
-const formatter = (locale: Locale) =>
-  createFormatter({ locale, timeZone: TIME_ZONE, formats });
+const formatter = (locale: Locale, timeFormats: Formats = formats) =>
+  createFormatter({
+    locale,
+    timeZone: DEFAULT_TIME_ZONE,
+    formats: timeFormats,
+  });
 
 // Tuesday, 3 November 2026
 const EVENING = new Date('2026-11-03T18:05:00Z');
@@ -31,6 +35,31 @@ describe('date formats', () => {
       expect(formatter(locale).dateTime(MORNING, 'time')).toBe('09:05');
     },
   );
+});
+
+describe('time format setting', () => {
+  test.each(['en', 'ru'] as const)(
+    '12-hour time in %s has AM and PM and no leading zero',
+    (locale) => {
+      const format = formatter(locale, formatsFor('h12'));
+
+      expect(format.dateTime(EVENING, 'time')).toBe('6:05 PM');
+      expect(format.dateTime(MORNING, 'time')).toBe('9:05 AM');
+    },
+  );
+
+  test.each(['h24', undefined] as const)(
+    '%s keeps the 24-hour time',
+    (timeFormat) => {
+      expect(formatsFor(timeFormat)).toBe(formats);
+    },
+  );
+
+  test('the other formats stay as they are in 12-hour time', () => {
+    const format = formatter('en', formatsFor('h12'));
+
+    expect(format.dateTime(EVENING, 'dayLong')).toBe('Tuesday, November 3');
+  });
 });
 
 // Russian groups digits and spaces off the percent sign with a no-break space, so text assertions need `\u00a0`

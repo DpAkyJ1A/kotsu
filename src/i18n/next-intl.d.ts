@@ -1,5 +1,7 @@
+import type { LOCALES } from '@/lib/user-settings';
+
 import type messages from '../../messages/en.json';
-import type { formats, LOCALES } from './config';
+import type { formats } from './config';
 
 // Types next-intl's API with Kotsu's languages, message keys and their arguments, and format names:
 // `useTranslations('home')('nope')` or `format.dateTime(date, 'nope')` fails the typecheck

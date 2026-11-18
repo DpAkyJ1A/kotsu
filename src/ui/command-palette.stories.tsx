@@ -1,10 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
-import { expect, screen, waitFor } from 'storybook/test';
+import { expect, fn, screen, waitFor } from 'storybook/test';
 
 import { CommandGroup } from './command';
-import { CommandPalette, CommandPaletteLink } from './command-palette';
-import { CalendarIcon, ClockIcon, GalleryVerticalEndIcon } from './icons';
+import {
+  CommandPalette,
+  CommandPaletteItem,
+  CommandPaletteLink,
+} from './command-palette';
+import {
+  CalendarIcon,
+  ClockIcon,
+  GalleryVerticalEndIcon,
+  PanelLeftIcon,
+} from './icons';
 import { PageHeader } from './page-header';
 import {
   Sidebar,
@@ -14,12 +23,15 @@ import {
   SidebarTrigger,
 } from './sidebar';
 import type { SidebarState } from './sidebar-cookie';
-import { ToggleThemeCommand } from './toggle-theme-command';
 import { TooltipProvider } from './tooltip';
 
-type ShellProps = { isApple: boolean; sidebarState: SidebarState };
+type ShellProps = {
+  isApple: boolean;
+  sidebarState: SidebarState;
+  onAction: () => void;
+};
 
-function Shell({ isApple, sidebarState }: ShellProps) {
+function Shell({ isApple, sidebarState, onAction }: ShellProps) {
   return (
     <TooltipProvider>
       <SidebarProvider defaultState={sidebarState}>
@@ -46,7 +58,10 @@ function Shell({ isApple, sidebarState }: ShellProps) {
               </CommandPaletteLink>
             </CommandGroup>
             <CommandGroup heading="Actions">
-              <ToggleThemeCommand />
+              <CommandPaletteItem onSelect={onAction}>
+                <PanelLeftIcon />
+                Toggle sidebar
+              </CommandPaletteItem>
             </CommandGroup>
           </CommandPalette>
         </Sidebar>
@@ -63,18 +78,10 @@ function Shell({ isApple, sidebarState }: ShellProps) {
 const meta = {
   title: 'Components/CommandPalette',
   component: Shell,
-  args: { isApple: true, sidebarState: 'open' },
+  args: { isApple: true, sidebarState: 'open', onAction: fn() },
   parameters: {
     layout: 'fullscreen',
     nextjs: { appDirectory: true, navigation: { pathname: '/calendar' } },
-  },
-  beforeEach: () => {
-    const root = document.documentElement;
-    const { theme } = root.dataset;
-    return () => {
-      if (theme) root.dataset.theme = theme;
-      document.cookie = 'theme=; path=/; max-age=0';
-    };
   },
 } satisfies Meta<typeof Shell>;
 
@@ -170,26 +177,12 @@ export const LeavesAHiddenSidebarHidden: Story = {
   },
 };
 
-export const FlipsTheThemeAtOnce: Story = {
-  play: async ({ canvas, userEvent }) => {
-    const root = document.documentElement;
-    const trigger = canvas.getByRole('button', { name: 'Search' });
-    const flipped = root.dataset.theme === 'dark' ? 'light' : 'dark';
-
+export const RunsAnAction: Story = {
+  play: async ({ args, userEvent }) => {
     await userEvent.keyboard('{Meta>}k{/Meta}');
-    await userEvent.keyboard('dark{Enter}');
+    await userEvent.keyboard('sidebar{Enter}');
 
-    await expect(root).toHaveAttribute('data-theme', flipped);
-    await expect(
-      trigger
-        .getAnimations()
-        .filter(
-          (animation) =>
-            animation instanceof CSSTransition &&
-            animation.transitionProperty === 'color',
-        ),
-    ).toEqual([]);
-    await expect(document.cookie).toContain(`theme=${flipped}`);
     await isClosed();
+    await expect(args.onAction).toHaveBeenCalledOnce();
   },
 };
