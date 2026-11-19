@@ -10,16 +10,10 @@ import { signInPath } from '@/lib/sign-in-path';
 import type { Db } from '@/server/db/client';
 import * as schema from '@/server/db/schema/auth';
 
+import type { Deployment } from './deployment';
 import type { GoogleClient } from './google-client';
 import { passkeyName } from './passkey-name';
 import type { SendSignInCode } from './send-sign-in-code';
-
-const ALLOWED_HOSTS = [
-  'localhost:*',
-  'kotsu.devazx.com',
-  'usekotsu.vercel.app',
-  'kotsu-*-dpakyj1as-projects.vercel.app',
-];
 
 const CODE_LIFETIME_MINUTES = 5;
 
@@ -37,7 +31,7 @@ type AuthDeps = {
   db: Db;
   secret: string;
   sendSignInCode: SendSignInCode;
-  rpID: string;
+  deployment: Deployment;
   google: GoogleClient | undefined;
 };
 
@@ -45,14 +39,18 @@ export function createAuth({
   db,
   secret,
   sendSignInCode,
-  rpID,
+  deployment,
   google,
 }: AuthDeps) {
   return betterAuth({
     secret,
-    baseURL: { allowedHosts: ALLOWED_HOSTS },
+    baseURL: deployment.baseURL,
     database: drizzleAdapter(db, { provider: 'pg', schema }),
-    advanced: { database: { generateId: 'uuid' } },
+    advanced: {
+      disableOriginCheck: false,
+      database: { generateId: 'uuid' },
+      ipAddress: { trustedProxies: deployment.trustedProxies },
+    },
     rateLimit: { enabled: true, storage: 'database' },
     disabledPaths: UNUSED_EMAIL_OTP_PATHS,
     onAPIError: { errorURL: signInPath(null) },
@@ -82,7 +80,7 @@ export function createAuth({
         },
       }),
       passkey({
-        rpID,
+        rpID: deployment.rpID,
         rpName: 'Kotsu',
         registration: {
           afterVerification: ({ ctx, verification }) => {

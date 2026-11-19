@@ -17,9 +17,9 @@ test-results
 playwright-report
 blob-report
 
-# secrets
-.env*
-*.pem
+# secrets, the self-hosting .env included
+**/.env*
+**/*.pem
 
 # misc
 .vercel

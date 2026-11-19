@@ -1,0 +1,59 @@
+# Kotsu with its own Postgres: fill in .env from .env.example, then `docker compose up -d` in this folder
+name: kotsu-self-host
+
+x-database-url: &database-url postgres://kotsu:${POSTGRES_PASSWORD:?set it in .env}@postgres:5432/kotsu
+
+services:
+  app:
+    build: ..
+    image: kotsu
+    # Built here, never pulled from a registry
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set it in .env}
+      APP_URL: ${APP_URL:?set it in .env}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      SIGN_IN_CODES_IN_LOG: ${SIGN_IN_CODES_IN_LOG:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      # Only this machine reaches it: the internet comes in through your HTTPS proxy
+      - 127.0.0.1:3000:3000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    image: kotsu
+    pull_policy: never
+    command: ['node', 'migrate.ts']
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kotsu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .env}
+      POSTGRES_DB: kotsu
+    volumes:
+      # Postgres 18 images keep their data under /var/lib/postgresql/18, not in …/data
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      # Over TCP: during the first start the image runs a socket-only server to create the user and database
+      test:
+        ['CMD', 'pg_isready', '-h', '127.0.0.1', '-U', 'kotsu', '-d', 'kotsu']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres:
