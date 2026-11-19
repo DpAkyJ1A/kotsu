@@ -21,6 +21,8 @@ export const authClient = {
     isRefetching: false,
     refetch: fn(() => Promise.resolve()),
   })),
+  linkSocial: fn(() => Promise.resolve(succeeded)),
+  unlinkAccount: fn(() => Promise.resolve(succeeded)),
   signOut: fn(() => Promise.resolve(succeeded)),
   updateUser: fn(() => Promise.resolve(succeeded)),
 };

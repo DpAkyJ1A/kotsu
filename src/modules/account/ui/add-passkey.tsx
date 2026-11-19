@@ -55,6 +55,7 @@ export function AddPasskey({ email }: AddPasskeyProps) {
       </div>
       {step === 'confirm' && (
         <ConfirmWithCode
+          purpose="addPasskey"
           email={email}
           onConfirmed={handleConfirmed}
           onCancel={() => {

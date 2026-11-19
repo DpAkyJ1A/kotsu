@@ -59,7 +59,10 @@ export function createAuth({
     socialProviders: google
       ? { google: { ...google, prompt: 'select_account' } }
       : {},
-    account: { encryptOAuthTokens: true },
+    account: {
+      encryptOAuthTokens: true,
+      accountLinking: { allowUnlinkingAll: true },
+    },
     databaseHooks: {
       user: {
         create: { before: (newUser) => Promise.resolve(newUser.emailVerified) },

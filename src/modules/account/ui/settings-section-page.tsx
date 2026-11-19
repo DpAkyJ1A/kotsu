@@ -5,6 +5,7 @@ import { ChevronLeftIcon } from '@/ui/icons';
 import { PageHeader } from '@/ui/page-header';
 
 import type { Account } from '../core/account';
+import type { GoogleLink } from '../core/google-link';
 import type { Settings } from '../core/settings';
 import {
   SETTINGS_SECTIONS,
@@ -17,12 +18,14 @@ type SettingsSectionPageProps = {
   section: SettingsSection;
   account: Account;
   settings: Settings;
+  googleLink: GoogleLink;
 };
 
 export function SettingsSectionPage({
   section,
   account,
   settings,
+  googleLink,
 }: SettingsSectionPageProps) {
   const t = useTranslations('settings');
 
@@ -66,6 +69,7 @@ export function SettingsSectionPage({
               section={section}
               account={account}
               settings={settings}
+              googleLink={googleLink}
             />
           </section>
         </div>

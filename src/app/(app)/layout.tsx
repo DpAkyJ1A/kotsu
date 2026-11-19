@@ -8,7 +8,11 @@ import {
   SettingsDialog,
   ToggleThemeCommand,
 } from '@/modules/account';
-import { loadAccount, loadSettings } from '@/modules/account/loaders';
+import {
+  loadAccount,
+  loadGoogleLink,
+  loadSettings,
+} from '@/modules/account/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
 import {
@@ -34,13 +38,15 @@ import { Toaster } from '@/ui/toast';
 import { TooltipProvider } from '@/ui/tooltip';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
-  const [account, settings, cookieStore, headerStore, t] = await Promise.all([
-    loadAccount(),
-    loadSettings(),
-    cookies(),
-    headers(),
-    getTranslations('nav'),
-  ]);
+  const [account, settings, googleLink, cookieStore, headerStore, t] =
+    await Promise.all([
+      loadAccount(),
+      loadSettings(),
+      loadGoogleLink(),
+      cookies(),
+      headers(),
+      getTranslations('nav'),
+    ]);
   const sidebarState = sidebarStateFrom(cookieStore.get(SIDEBAR_COOKIE)?.value);
   const isApple = isApplePlatform(headerStore.get('user-agent') ?? '');
 
@@ -115,7 +121,11 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           </TabBarLink>
         </TabBar>
       </SidebarProvider>
-      <SettingsDialog account={account} settings={settings} />
+      <SettingsDialog
+        account={account}
+        settings={settings}
+        googleLink={googleLink}
+      />
       <SessionRefresh />
       <Toaster />
     </TooltipProvider>

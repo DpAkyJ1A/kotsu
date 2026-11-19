@@ -3,7 +3,11 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { settingsSectionFrom, SettingsSectionPage } from '@/modules/account';
-import { loadAccount, loadSettings } from '@/modules/account/loaders';
+import {
+  loadAccount,
+  loadGoogleLink,
+  loadSettings,
+} from '@/modules/account/loaders';
 
 type SectionParams = PageProps<'/settings/[section]'>['params'];
 
@@ -24,10 +28,11 @@ export async function generateMetadata({
 export default async function SettingsSectionRoute({
   params,
 }: PageProps<'/settings/[section]'>) {
-  const [section, account, settings] = await Promise.all([
+  const [section, account, settings, googleLink] = await Promise.all([
     sectionOf(params),
     loadAccount(),
     loadSettings(),
+    loadGoogleLink(),
   ]);
 
   return (
@@ -35,6 +40,7 @@ export default async function SettingsSectionRoute({
       section={section}
       account={account}
       settings={settings}
+      googleLink={googleLink}
     />
   );
 }

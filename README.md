@@ -22,7 +22,8 @@ signs you out and opens Settings. Settings (⌘, or Ctrl+, from anywhere) open o
 your name, Appearance picks the theme from three previews, the language, the hour your day ends, the first day of
 the week and 12- or 24-hour time, and Sign-in & passkeys lists your passkeys, each named after its password manager
 or the browser and system it was added on: rename one, remove one (the browser then drops it from its password manager
-where it can), or add another from any authenticator; a sign-in older than a day asks for an emailed code first.
+where it can), or add another from any authenticator; a sign-in older than a day asks for an emailed code first. Where Google
+sign-in is on, the same section connects the Google account of your email or disconnects it (email codes keep working).
 ⌘\ or Ctrl+\ hides the sidebar, the choice survives a reload, and a hidden sidebar slides in while the pointer rests
 on the left edge of the window. On a phone or a
 narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
