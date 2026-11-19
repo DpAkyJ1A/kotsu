@@ -28,6 +28,9 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.25",
     "@better-auth/passkey": "1.7.25",
+    "@dnd-kit/abstract": "0.5.3",
+    "@dnd-kit/dom": "0.5.3",
+    "@dnd-kit/react": "0.5.3",
     "@simplewebauthn/browser": "13.3.0",
     "@vercel/functions": "3.11.3",
     "better-auth": "1.7.25",
@@ -46,6 +49,7 @@
     "resend": "6.38.1",
     "server-only": "0.0.1",
     "sonner": "2.0.8",
+    "uuid": "14.0.3",
     "zod": "4.6.7"
   },
   "devDependencies": {

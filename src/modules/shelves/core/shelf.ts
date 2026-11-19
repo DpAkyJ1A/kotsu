@@ -8,11 +8,14 @@ export type Shelf = {
   color: PaletteColor;
 };
 
+export const SHELF_NAME_MAX_LENGTH = 80;
+
 const ShelfId = z.uuid();
-const ShelfName = z.string().trim().min(1).max(80);
+const ShelfName = z.string().trim().min(1).max(SHELF_NAME_MAX_LENGTH);
 const ShelfColor = z.enum(PALETTE_COLORS);
 
 export const CreateShelfInput = z.strictObject({
+  id: z.uuidv7().optional(),
   name: ShelfName,
   color: ShelfColor.optional(),
 });

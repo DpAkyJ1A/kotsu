@@ -29,12 +29,16 @@ on the left edge of the window. On a phone or a
 narrow window the sidebar gives way to a tab bar at the bottom (Calendar, Shelves, Practice, Clock, Search), and
 your avatar at the top right of Calendar and Shelves leads to the Settings screen, where each section is a page of
 its own. ⌘K or Ctrl+K, or the search field at the top of the sidebar, opens the command palette: type to filter,
-then jump to a section, open Settings or switch between the light and dark theme. No features work yet.
+then jump to a section, open Settings or switch between the light and dark theme. Shelves work too: under the sections
+the sidebar lists your shelves, and on a phone the Shelves tab does. The + makes one (type a name, Enter), each shelf
+gets its own colour, and its ⋯ menu renames it, recolours it or deletes it, with Undo for five seconds. Drag a shelf to
+reorder (on a phone, press and hold it first; from the keyboard, Tab to its move handle, then Space and the arrows). A
+shelf opens its own page, still empty: docs and sheets come next.
 
 ## Tech stack
 
 Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · shadcn/ui on Radix ·
-Sonner · cmdk · next-intl · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · Better Auth ·
+Sonner · cmdk · dnd-kit · next-intl · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · Better Auth ·
 Resend · pnpm
 
 ## Architecture

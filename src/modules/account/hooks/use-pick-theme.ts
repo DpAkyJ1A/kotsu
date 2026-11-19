@@ -1,16 +1,17 @@
 import { useTranslations } from 'next-intl';
 
+import { runAction } from '@/lib/run-action';
 import type { Theme } from '@/lib/user-settings';
 import { appliedTheme, applyTheme } from '@/ui/apply-theme';
 import { toast } from '@/ui/toast';
 
-import { saveSettings } from './save-settings';
+import { updateSettingsAction } from '../actions';
 
 export function usePickTheme() {
   const t = useTranslations('errors');
 
   async function saveTheme(theme: Theme) {
-    const failure = await saveSettings({ theme });
+    const failure = await runAction(updateSettingsAction, { theme });
     if (failure === 'OFFLINE') saveOnceOnline(theme);
     else if (failure) toast.error(t(failure));
   }

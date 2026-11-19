@@ -19,7 +19,7 @@ import { shelfDto } from './dto';
 
 export const createShelf = command(
   CreateShelfInput,
-  async (ctx, { name, color }): Promise<Shelf> => {
+  async (ctx, { id, name, color }): Promise<Shelf> => {
     const shelves = await ctx.db
       .select({ color: shelf.color, position: shelf.position })
       .from(shelf)
@@ -28,6 +28,7 @@ export const createShelf = command(
     const [created] = await ctx.db
       .insert(shelf)
       .values({
+        id,
         userId: ctx.userId,
         name,
         color: color ?? leastUsedColor(shelves.map((other) => other.color)),

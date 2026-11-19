@@ -13,6 +13,8 @@ import {
   loadGoogleLink,
   loadSettings,
 } from '@/modules/account/loaders';
+import { ShelfNav, ShelvesProvider } from '@/modules/shelves';
+import { loadShelves } from '@/modules/shelves/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
 import {
@@ -38,11 +40,12 @@ import { Toaster } from '@/ui/toast';
 import { TooltipProvider } from '@/ui/tooltip';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
-  const [account, settings, googleLink, cookieStore, headerStore, t] =
+  const [account, settings, googleLink, shelves, cookieStore, headerStore, t] =
     await Promise.all([
       loadAccount(),
       loadSettings(),
       loadGoogleLink(),
+      loadShelves(),
       cookies(),
       headers(),
       getTranslations('nav'),
@@ -52,75 +55,78 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
 
   return (
     <TooltipProvider>
-      <SidebarProvider defaultState={sidebarState}>
-        <Sidebar>
-          <SidebarHeader>
-            <AccountMenu account={account} settings={settings} />
-            <SidebarTrigger />
-          </SidebarHeader>
-          <CommandPalette isApple={isApple}>
-            <CommandGroup heading={t('goTo')}>
-              <CommandPaletteLink href="/calendar">
+      <ShelvesProvider shelves={shelves}>
+        <SidebarProvider defaultState={sidebarState}>
+          <Sidebar>
+            <SidebarHeader>
+              <AccountMenu account={account} settings={settings} />
+              <SidebarTrigger />
+            </SidebarHeader>
+            <CommandPalette isApple={isApple}>
+              <CommandGroup heading={t('goTo')}>
+                <CommandPaletteLink href="/calendar">
+                  <CalendarIcon />
+                  {t('calendar')}
+                </CommandPaletteLink>
+                <CommandPaletteLink href="/shelves">
+                  <LibraryIcon />
+                  {t('shelves')}
+                </CommandPaletteLink>
+                <CommandPaletteLink href="/practice">
+                  <GalleryVerticalEndIcon />
+                  {t('practice')}
+                </CommandPaletteLink>
+                <CommandPaletteLink href="/clock">
+                  <ClockIcon />
+                  {t('clock')}
+                </CommandPaletteLink>
+                <OpenSettingsCommand />
+              </CommandGroup>
+              <CommandGroup heading={t('actions')}>
+                <ToggleThemeCommand />
+              </CommandGroup>
+            </CommandPalette>
+            <SidebarNav>
+              <SidebarLink href="/calendar">
                 <CalendarIcon />
                 {t('calendar')}
-              </CommandPaletteLink>
-              <CommandPaletteLink href="/shelves">
-                <LibraryIcon />
-                {t('shelves')}
-              </CommandPaletteLink>
-              <CommandPaletteLink href="/practice">
+              </SidebarLink>
+              <SidebarLink href="/practice">
                 <GalleryVerticalEndIcon />
                 {t('practice')}
-              </CommandPaletteLink>
-              <CommandPaletteLink href="/clock">
+              </SidebarLink>
+              <SidebarLink href="/clock">
                 <ClockIcon />
                 {t('clock')}
-              </CommandPaletteLink>
-              <OpenSettingsCommand />
-            </CommandGroup>
-            <CommandGroup heading={t('actions')}>
-              <ToggleThemeCommand />
-            </CommandGroup>
-          </CommandPalette>
-          <SidebarNav>
-            <SidebarLink href="/calendar">
+              </SidebarLink>
+            </SidebarNav>
+            <ShelfNav />
+          </Sidebar>
+          <SidebarInset>{children}</SidebarInset>
+          <TabBar>
+            <TabBarLink href="/calendar">
               <CalendarIcon />
               {t('calendar')}
-            </SidebarLink>
-            <SidebarLink href="/practice">
+            </TabBarLink>
+            <TabBarLink href="/shelves">
+              <LibraryIcon />
+              {t('shelves')}
+            </TabBarLink>
+            <TabBarLink href="/practice">
               <GalleryVerticalEndIcon />
               {t('practice')}
-            </SidebarLink>
-            <SidebarLink href="/clock">
+            </TabBarLink>
+            <TabBarLink href="/clock">
               <ClockIcon />
               {t('clock')}
-            </SidebarLink>
-          </SidebarNav>
-        </Sidebar>
-        <SidebarInset>{children}</SidebarInset>
-        <TabBar>
-          <TabBarLink href="/calendar">
-            <CalendarIcon />
-            {t('calendar')}
-          </TabBarLink>
-          <TabBarLink href="/shelves">
-            <LibraryIcon />
-            {t('shelves')}
-          </TabBarLink>
-          <TabBarLink href="/practice">
-            <GalleryVerticalEndIcon />
-            {t('practice')}
-          </TabBarLink>
-          <TabBarLink href="/clock">
-            <ClockIcon />
-            {t('clock')}
-          </TabBarLink>
-          <TabBarLink href="/search">
-            <SearchIcon />
-            {t('search')}
-          </TabBarLink>
-        </TabBar>
-      </SidebarProvider>
+            </TabBarLink>
+            <TabBarLink href="/search">
+              <SearchIcon />
+              {t('search')}
+            </TabBarLink>
+          </TabBar>
+        </SidebarProvider>
+      </ShelvesProvider>
       <SettingsDialog
         account={account}
         settings={settings}

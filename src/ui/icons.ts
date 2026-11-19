@@ -22,6 +22,7 @@ export {
   FlameIcon,
   GalleryVerticalEndIcon,
   GlobeIcon,
+  GripVerticalIcon,
   Heading1Icon,
   InfoIcon,
   KeyIcon,

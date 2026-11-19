@@ -8,6 +8,40 @@
     "goTo": "Go to",
     "actions": "Actions"
   },
+  "shelves": {
+    "newShelf": "New shelf",
+    "name": "Shelf name",
+    "options": "Options for {name}",
+    "rename": "Rename",
+    "colour": "Colour",
+    "delete": "Delete",
+    "deleted": "{name} deleted",
+    "undo": "Undo",
+    "empty": "No shelves yet",
+    "emptyHint": "A shelf keeps docs and sheets on one topic together.",
+    "emptyShelf": "Nothing on this shelf yet",
+    "emptyShelfHint": "Docs and sheets will live here.",
+    "colours": {
+      "violet": "Violet",
+      "blue": "Blue",
+      "amber": "Amber",
+      "green": "Green",
+      "pink": "Pink",
+      "orange": "Orange",
+      "red": "Red",
+      "teal": "Teal",
+      "slate": "Slate"
+    },
+    "move": {
+      "handle": "Move {name}",
+      "roleDescription": "draggable",
+      "instructions": "Press Space to pick the shelf up, the up and down arrows to move it, Space again to drop it, or Escape to cancel.",
+      "pickedUp": "Picked up {name}. Position {position, number} of {count, number}.",
+      "movedTo": "{name}: position {position, number} of {count, number}.",
+      "dropped": "{name} dropped at position {position, number} of {count, number}.",
+      "cancelled": "Move cancelled. {name} is back at position {position, number} of {count, number}."
+    }
+  },
   "ui": {
     "close": "Close",
     "notifications": "Notifications",

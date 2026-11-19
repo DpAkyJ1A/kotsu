@@ -1,4 +1,7 @@
+import { randomUUID } from 'node:crypto';
+
 import { eq } from 'drizzle-orm';
+import { v7 as uuidv7 } from 'uuid';
 import { describe, expect } from 'vitest';
 
 import { createUser } from '@/server/auth/testing';
@@ -82,6 +85,29 @@ describe('createShelf', () => {
     const created = await createShelf(ada, { name: 'Running' });
 
     expect(created.color).toBe('blue');
+  });
+
+  test('keeps the id the browser made for the shelf it already shows', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = uuidv7();
+
+    const created = await createShelf(ada, { id, name: 'Spanish' });
+
+    expect(created.id).toBe(id);
+    expect(await listShelves(ada)).toEqual([created]);
+  });
+
+  test('refuses an id made by the browser that is not a uuid v7', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+
+    await expect(
+      createShelf(ada, { id: randomUUID(), name: 'Spanish' }),
+    ).rejects.toMatchObject({ code: 'VALIDATION' });
+    expect(await listShelves(ada)).toEqual([]);
   });
 
   test('allows two shelves with the same name', async ({ db }) => {

@@ -6,7 +6,8 @@ words or rules: a component that knows about shelves or cards belongs to a modul
 Components are built on Radix primitives (`radix-ui`), toasts on Sonner, the command palette's list on cmdk, with
 variants through `cva` and classes merged by `cn`. A compound component (Select, Dialog, DropdownMenu) exports its
 parts from one file, as shadcn/ui does; Drawer and the command palette are a Dialog with their own content, so they
-take Dialog's other parts.
+take Dialog's other parts. DropdownMenu has two rows that pick without closing the menu: segmented buttons (the
+theme) and round colour swatches with a check on the picked one.
 
 The app's frame lives here too: the sidebar (`sidebar.tsx`: open or closed by its button or ⌘\ / Ctrl+\, the
 choice kept in the `sidebar` cookie from `sidebar-cookie.ts`, which the layout reads for the first paint; closed,
@@ -18,7 +19,8 @@ from anywhere, and the layout fills it with items that close it as they run (`Co
 `apply-theme.ts` shows a picked theme on the page at once, without the colours drifting through their transitions, and
 tells which theme is on the page (`useAppliedTheme` follows `data-theme` on `<html>`). What counts as a shortcut press
 and whether to show ⌘ or Ctrl lives in `shortcut.ts`; `useShortcut` binds one to the document. `RadioCards` picks one
-value out of a few shown as pictures (the theme previews in Settings).
+value out of a few shown as pictures (the theme previews in Settings). `useActionMutation` wraps a Server Action for a component:
+it runs it, and when it fails shows the error code's message (`errors.*`) in a toast.
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

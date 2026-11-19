@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-import { settingsSaved, signInWithCode, test } from './fixtures';
+import { actionAnswered, signInWithCode, test } from './fixtures';
 
 test.use({ locale: 'en-US', colorScheme: 'light' });
 
@@ -29,7 +29,7 @@ function accountButtonOf(page: Page, email: string) {
 
 async function pickInMenu(page: Page, email: string, option: string) {
   await accountButtonOf(page, email).click();
-  const saved = settingsSaved(page);
+  const saved = actionAnswered(page);
   await page.getByRole('menuitemradio', { name: option }).click();
   await saved;
   await page.keyboard.press('Escape');
@@ -121,7 +121,7 @@ test('a theme picked offline stays on the page and is saved once back online', a
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
   await expect(page.getByRole('menuitemradio', { name: 'Dark' })).toBeChecked();
 
-  const saved = settingsSaved(page);
+  const saved = actionAnswered(page);
   await page.context().setOffline(false);
   await saved;
   await page.reload();
