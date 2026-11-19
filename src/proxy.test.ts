@@ -54,9 +54,12 @@ describe('proxy', () => {
     expect(getRedirectUrl(response)).toBeNull();
   });
 
-  test.each(['/sign-in', '/sign-in/code'])('lets anyone open %s', (path) => {
-    expect(getRedirectUrl(visit(path))).toBeNull();
-  });
+  test.each(['/sign-in', '/sign-in/code', '/privacy'])(
+    'lets anyone open %s',
+    (path) => {
+      expect(getRedirectUrl(visit(path))).toBeNull();
+    },
+  );
 
   test('runs on pages only', () => {
     expect(runsOn('/calendar')).toBe(true);

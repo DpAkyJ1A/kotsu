@@ -6,6 +6,7 @@ export { EmailForm } from './ui/email-form';
 export { GoogleSignIn } from './ui/google-sign-in';
 export { OpenSettingsCommand } from './ui/open-settings-command';
 export { PasskeyOffer } from './ui/passkey-offer';
+export { PrivacyPolicy } from './ui/privacy-policy';
 export { SessionRefresh } from './ui/session-refresh';
 export { SettingsAvatarLink } from './ui/settings-avatar-link';
 export { SettingsDialog } from './ui/settings-dialog';
