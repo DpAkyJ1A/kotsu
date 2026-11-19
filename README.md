@@ -38,7 +38,8 @@ reorder (on a phone, press and hold it first; from the keyboard, Tab to its move
 shelf opens its own page, still empty: docs and sheets come next. Kotsu also installs as an app: Chrome offers it in the
 address bar, an iPhone adds it with Share → Add to Home Screen, and it opens in a window of its own, without the
 browser's bars, its title bar in the colours of the theme you picked. And it runs on your own server: one Docker
-Compose command starts the app with its database (see [Self-hosting](#self-hosting)).
+Compose command starts the app with its database (see [Self-hosting](#self-hosting)). The privacy policy at `/privacy`
+opens without an account, in English and Russian, and the sign-in page links to it.
 
 ## Tech stack
 
@@ -189,6 +190,11 @@ kotsu.example.com {
 
 To run the image without Compose, start `node migrate.ts` in it once per update before the server, with the same
 `DATABASE_URL`; the server itself is the image's default command.
+
+The privacy policy at `/privacy` is the one of kotsu.devazx.com: it names who runs that copy and the services it runs
+on (Vercel, Neon, Resend). A copy of your own needs its own: the text is under `privacy` in `messages/en.json` and
+`messages/ru.json`, the address, the operator, the contact and the date at the top of
+[`privacy-policy.tsx`](src/modules/account/ui/privacy-policy.tsx).
 
 ## License
 

@@ -95,6 +95,63 @@
       "sessionNotFresh": "Confirm it's you to go on.",
       "googleFailed": "Couldn't sign in with Google. Try again, or sign in with your email.",
       "unknown": "Something went wrong. Try again."
+    },
+    "privacyPolicy": "Privacy policy"
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "updated": "Last updated {date}",
+    "home": "Kotsu",
+    "scope": "This policy covers Kotsu at {site}. Kotsu is open source, so anyone can run a copy: a copy at another address is run by its owner, and their rules apply there.",
+    "operator": {
+      "title": "Who runs Kotsu",
+      "text": "Kotsu is run by {name}, a private individual responsible for your data here (the controller, in GDPR terms). Write to <contact>{email}</contact> with any question or request about it."
+    },
+    "data": {
+      "title": "What Kotsu keeps",
+      "account": "<strong>Your account:</strong> your email address and name. If you continue with Google, also your profile picture, your Google account ID and the sign-in tokens Google issues. Kotsu asks Google for nothing more, so those tokens can't open your mail, files or anything else in your Google account.",
+      "content": "<strong>What you make:</strong> your shelves, docs, cards, sheets, events and practice history, and your settings, such as the language, theme and time zone.",
+      "signIn": "<strong>Sign-in records:</strong> your sessions, with the IP address and browser of each sign-in; your passkeys (a public key and a device name: your fingerprint or face never leaves your device); one-time sign-in codes; counts of requests from each IP address.",
+      "none": "No analytics, no ads, no tracking. Kotsu never sells your data."
+    },
+    "use": {
+      "title": "What for",
+      "purposes": "Only to run Kotsu: to sign you in, to keep and show what you make, to email you sign-in codes, and to stop people guessing codes or breaking into accounts.",
+      "basis": "Under the GDPR, this rests on our agreement: Kotsu can't do what you use it for without this data (Article 6(1)(b)). Sign-in records also serve Kotsu's legitimate interest in keeping accounts safe (Article 6(1)(f))."
+    },
+    "sharing": {
+      "title": "Who else gets it",
+      "intro": "Only the services Kotsu runs on, each for its own part:",
+      "vercel": "<strong>Vercel</strong> hosts the app;",
+      "neon": "<strong>Neon</strong> hosts the database;",
+      "resend": "<strong>Resend</strong> delivers the sign-in emails, so it sees your email address and the code;",
+      "google": "<strong>Google</strong>, only if you continue with Google: it tells Kotsu who you are.",
+      "abroad": "These are US companies, so your data may be processed in the United States, under their data protection terms. Nobody else gets your data unless the law requires it."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "intro": "Kotsu sets only the cookies it needs to work:",
+      "signIn": "<strong>sign-in</strong> keeps you signed in for 7 days and renews while you use Kotsu; a few more last minutes while you sign in with Google or a passkey;",
+      "choices": "<strong>your choices</strong> (the theme, the language, whether the sidebar is open and whether you've answered the passkey offer) last a year.",
+      "none": "No advertising or tracking cookies, and none from other sites."
+    },
+    "retention": {
+      "title": "How long",
+      "account": "Your account and what you make: until you delete your account.",
+      "signIn": "A sign-in code works for 5 minutes, a session for 7 days without a visit. Your sessions, passkeys and Google link are deleted with your account."
+    },
+    "rights": {
+      "title": "Your rights",
+      "text": "You can ask to see your data, get a copy, correct it or delete it, and object to or limit how Kotsu uses it. Write to <contact>{email}</contact> from the address you sign in with; you'll get an answer within a month.",
+      "complaint": "You can also complain to the data protection authority of the country you live in."
+    },
+    "deletion": {
+      "title": "Deleting your account",
+      "text": "Settings will get a button for it. Until then, write to <contact>{email}</contact> from the address you sign in with, and your account and everything in it will be deleted within a month."
+    },
+    "changes": {
+      "title": "Changes",
+      "text": "When this policy changes, so does the date at the top."
     }
   },
   "settings": {

@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { REQUEST_PATH_HEADER, signInPath } from '@/lib/sign-in-path';
 
-const PUBLIC_PAGES = ['/sign-in', '/sign-in/code'];
+const PUBLIC_PAGES = ['/sign-in', '/sign-in/code', '/privacy'];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

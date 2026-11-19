@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
@@ -38,6 +39,14 @@ export default async function SignInPage({
         )}
         <EmailForm next={next} />
       </div>
+      <footer className="text-center text-sm">
+        <Link
+          href="/privacy"
+          className="rounded-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {t('privacyPolicy')}
+        </Link>
+      </footer>
     </>
   );
 }
