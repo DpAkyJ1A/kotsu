@@ -1,0 +1,324 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "350ea30f-cb28-4bd0-9ea9-fb1568e6ecff",
+  "prevIds": [
+    "83bd998b-e893-42c4-875d-56dc5a5562f0"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "palette_color"
+      ],
+      "writes": [
+        "s|enum|public.palette_color",
+        "n|enum|public.palette_color",
+        "e|enum|public.palette_color",
+        "n|type|public.palette_color"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "shelf"
+      ],
+      "writes": [
+        "s|tbl|public.shelf",
+        "n|tbl|public.shelf",
+        "e|tbl|public.shelf",
+        "n|rel|public.shelf",
+        "n|type|public.shelf",
+        "n|rel|public.shelf_pkey",
+        "n|rel|public.shelf_id_user_id_unique"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.palette_color"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "shelf",
+        "shelf_user_id_position_idx"
+      ],
+      "writes": [
+        "s|idx|public.shelf_user_id_position_idx",
+        "n|idx|public.shelf_user_id_position_idx",
+        "e|idx|public.shelf_user_id_position_idx",
+        "n|rel|public.shelf_user_id_position_idx"
+      ],
+      "reads": [
+        "n|tbl|public.shelf",
+        "n|sch|public",
+        "n|col|public.shelf.user_id",
+        "n|col|public.shelf.position"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "shelf"
+      ],
+      "writes": [
+        "s|fk|public.shelf.shelf_user_id_user_id_fkey",
+        "n|fk|public.shelf.shelf_user_id_user_id_fkey",
+        "e|fk|public.shelf.shelf_user_id_user_id_fkey",
+        "n|con|public.shelf.shelf_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.shelf",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.shelf.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "shelf",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "palette_color",
+        "values": [
+          "violet",
+          "blue",
+          "amber",
+          "green",
+          "pink",
+          "orange",
+          "red",
+          "teal",
+          "slate"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "color",
+        "type": "palette_color",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "position",
+        "type": "text collate \"C\"",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "shelf_user_id_position_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "position",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "shelf_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "shelf_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "shelf_id_user_id_unique",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "user_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "shelf",
+        "name": "shelf_name_length",
+        "value": "char_length(\"name\") between 1 and 80",
+        "entityType": "checks"
+      }
+    }
+  ]
+}
