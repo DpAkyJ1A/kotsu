@@ -138,7 +138,7 @@
     "retention": {
       "title": "How long",
       "account": "Your account and what you make: until you delete your account.",
-      "signIn": "A sign-in code works for 5 minutes, a session for 7 days without a visit. Your sessions, passkeys and Google link are deleted with your account."
+      "signIn": "A sign-in code works for 5 minutes, a session for 7 days without a visit, and a count of requests from an IP address is kept for a minute. Once expired, they're deleted automatically. Your sessions, passkeys and Google link are deleted with your account."
     },
     "rights": {
       "title": "Your rights",

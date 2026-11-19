@@ -10,6 +10,7 @@ import { signInPath } from '@/lib/sign-in-path';
 import type { Db } from '@/server/db/client';
 import * as schema from '@/server/db/schema/auth';
 
+import { deleteExpiredSignInRows } from './delete-expired-sign-in-rows';
 import type { Deployment } from './deployment';
 import type { GoogleClient } from './google-client';
 import { passkeyName } from './passkey-name';
@@ -64,6 +65,14 @@ export function createAuth({
     databaseHooks: {
       user: {
         create: { before: (newUser) => Promise.resolve(newUser.emailVerified) },
+      },
+      session: {
+        create: {
+          after: () =>
+            deleteExpiredSignInRows(db, new Date()).catch((error: unknown) => {
+              console.error(error);
+            }),
+        },
       },
     },
     plugins: [
