@@ -193,6 +193,9 @@ importers:
       drizzle-orm:
         specifier: 1.0.0-rc.5
         version: 1.0.0-rc.5(@types/pg@8.23.1)(pg@8.23.1)(zod@4.6.7)
+      fractional-indexing:
+        specifier: 4.0.0
+        version: 4.0.0
       lucide-react:
         specifier: 1.73.0
         version: 1.73.0(@types/react@19.3.0)(react@19.3.1)
@@ -4269,6 +4272,10 @@ packages:
     resolution: {integrity: sha512-TeCC10lP8KCgoX+Fe5lryILIT0/Dy+nP0OSVnsuB5CwXoLuOdqxCYlPFF1inR8S/zTy1ec7TjhS2TeRKWzzImA==}
     engines: {node: '>=18.14.0'}
     hasBin: true
+
+  fractional-indexing@4.0.0:
+    resolution: {integrity: sha512-Nr2P1Yyaj2sy1Qdt/wI3GcByxrUdbSKg5+cGvw8f18hT2SkQt6V72iOjBpk7IO3UkzBsdlGRs2a4z6dLrJprgw==}
+    engines: {node: ^14.13.1 || >=16.0.0}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -9808,6 +9815,8 @@ snapshots:
     dependencies:
       fd-package-json: 2.0.0
       package-manager-detector: 1.9.0
+
+  fractional-indexing@4.0.0: {}
 
   fsevents@2.3.3:
     optional: true

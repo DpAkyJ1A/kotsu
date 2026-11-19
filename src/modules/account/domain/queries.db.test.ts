@@ -1,20 +1,13 @@
 import { describe, expect } from 'vitest';
 
 import { createGoogleAccount, createUser } from '@/server/auth/testing';
-import type { Ctx } from '@/server/ctx/load-ctx';
-import type { Db } from '@/server/db/client';
+import { ctxOf } from '@/server/ctx/testing';
 import { account } from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
-import { findOrCreateSettings } from '@/server/settings';
 
 import { findAccount, findGoogleLink } from './queries';
 
 const NOW = new Date('2026-11-17T09:00:00Z');
-
-async function ctxOf(db: Db, userId: string): Promise<Ctx> {
-  const settings = await findOrCreateSettings(db, { userId, locale: 'en' });
-  return { userId, db, now: NOW, settings };
-}
 
 describe('findAccount', () => {
   test("gives the signed-in user's name and email, not another user's", async ({
@@ -23,7 +16,7 @@ describe('findAccount', () => {
     await createUser(db, 'ada@example.com');
     const bea = await createUser(db, 'bea@example.com');
 
-    const account = await findAccount(await ctxOf(db, bea));
+    const account = await findAccount(await ctxOf(db, bea, NOW));
 
     expect(account).toEqual({
       name: 'bea@example.com',
@@ -45,11 +38,11 @@ describe('findGoogleLink', () => {
       accountId: 'bea-on-github',
     });
 
-    expect(await findGoogleLink(await ctxOf(db, ada))).toEqual({
+    expect(await findGoogleLink(await ctxOf(db, ada, NOW))).toEqual({
       status: 'connected',
       accountIds: [adasGoogle],
     });
-    expect(await findGoogleLink(await ctxOf(db, bea))).toEqual({
+    expect(await findGoogleLink(await ctxOf(db, bea, NOW))).toEqual({
       status: 'notConnected',
     });
   });
@@ -61,7 +54,7 @@ describe('findGoogleLink', () => {
     const first = await createGoogleAccount(db, ada);
     const second = await createGoogleAccount(db, ada);
 
-    expect(await findGoogleLink(await ctxOf(db, ada))).toEqual({
+    expect(await findGoogleLink(await ctxOf(db, ada, NOW))).toEqual({
       status: 'connected',
       accountIds: [first, second],
     });

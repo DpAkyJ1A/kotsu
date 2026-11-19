@@ -140,6 +140,7 @@
   },
   "errors": {
     "VALIDATION": "That couldn't be saved. Reload the page and try again.",
+    "NOT_FOUND": "That's no longer here. Reload the page.",
     "INTERNAL": "Something went wrong. Try again.",
     "OFFLINE": "You're offline. Try again once you're back online."
   },
