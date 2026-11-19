@@ -8,5 +8,3 @@ export const CompleteOnboardingInput = z.strictObject({
   templateId: z.enum(TEMPLATE_IDS),
   timezone: TimeZone.catch('UTC'),
 });
-
-export type CompleteOnboarding = z.input<typeof CompleteOnboardingInput>;

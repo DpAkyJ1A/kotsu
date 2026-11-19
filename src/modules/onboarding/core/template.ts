@@ -7,6 +7,6 @@ export const TEMPLATE_IDS = [
 
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
-export type Template = { shelves: readonly string[] };
+type Template = { shelves: readonly string[] };
 
 export type Templates = Record<TemplateId, Template>;
