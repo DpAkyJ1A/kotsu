@@ -17,7 +17,7 @@ export function TabBar({
     <nav
       data-slot="tab-bar"
       className={cn(
-        'sticky bottom-0 z-30 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden',
+        'sticky bottom-0 z-30 border-t bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden',
         className,
       )}
       {...props}

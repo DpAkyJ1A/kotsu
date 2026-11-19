@@ -55,6 +55,21 @@ test('a theme picked in the menu shows at once and follows the account to anothe
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
 });
 
+test('the installed app window takes the colour of the picked theme', async ({
+  page,
+  visitor,
+}) => {
+  const windowOnLightSystem = page.locator(
+    'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+  );
+
+  await pickInMenu(page, visitor.email, 'Dark');
+  await expect(windowOnLightSystem).toHaveAttribute('content', '#121214');
+
+  await page.reload();
+  await expect(windowOnLightSystem).toHaveAttribute('content', '#121214');
+});
+
 test('Auto hands the theme back to the system', async ({ page, visitor }) => {
   await pickInMenu(page, visitor.email, 'Dark');
   await pickInMenu(page, visitor.email, 'Auto');

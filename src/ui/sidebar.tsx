@@ -133,14 +133,14 @@ export function Sidebar({
     <>
       <div
         data-slot="sidebar-gap"
-        className="w-60 shrink-0 transition-[width] duration-200 ease-out group-data-[state=closed]/sidebar:w-0 motion-reduce:duration-0 max-md:hidden"
+        className="w-[calc(15rem+env(safe-area-inset-left))] shrink-0 transition-[width] duration-200 ease-out group-data-[state=closed]/sidebar:w-[env(safe-area-inset-left)] motion-reduce:duration-0 max-md:hidden"
       />
       <aside
         data-slot="sidebar"
         data-state={state}
         data-peek={canPeek ? 'on' : 'off'}
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-60 flex-col gap-4 border-r bg-sidebar p-3 text-sm text-sidebar-foreground transition-[translate,top,bottom,border-radius,box-shadow] duration-200 ease-out data-[peek=on]:inset-y-2 data-[peek=on]:rounded-r-2xl data-[peek=on]:border-y data-[peek=on]:shadow-xl data-[peek=on]:transition-[translate,box-shadow] motion-reduce:duration-0 max-md:hidden sidebar-hidden:invisible sidebar-hidden:-translate-x-full sidebar-hidden:shadow-none sidebar-hidden:transition-[translate,visibility,box-shadow]',
+          'fixed inset-y-0 left-0 z-40 flex w-[calc(15rem+env(safe-area-inset-left))] flex-col gap-4 border-r bg-sidebar p-3 pl-[calc(0.75rem+env(safe-area-inset-left))] text-sm text-sidebar-foreground transition-[translate,top,bottom,border-radius,box-shadow] duration-200 ease-out data-[peek=on]:inset-y-2 data-[peek=on]:rounded-r-2xl data-[peek=on]:border-y data-[peek=on]:shadow-xl data-[peek=on]:transition-[translate,box-shadow] motion-reduce:duration-0 max-md:hidden sidebar-hidden:invisible sidebar-hidden:-translate-x-full sidebar-hidden:shadow-none sidebar-hidden:transition-[translate,visibility,box-shadow]',
           className,
         )}
         {...props}
@@ -237,7 +237,10 @@ export function SidebarInset({ className, ...props }: ComponentProps<'main'>) {
   return (
     <main
       data-slot="sidebar-inset"
-      className={cn('min-w-0 flex-1', className)}
+      className={cn(
+        'min-w-0 flex-1 pr-[env(safe-area-inset-right)] max-md:pl-[env(safe-area-inset-left)]',
+        className,
+      )}
       {...props}
     />
   );

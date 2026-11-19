@@ -65,4 +65,15 @@ describe('proxy', () => {
     expect(runsOn('/_next/static/chunks/main.js')).toBe(false);
     expect(runsOn('/favicon.ico')).toBe(false);
   });
+
+  test.each(['/manifest.webmanifest', '/icon/192', '/apple-icon/180?a1b2c3'])(
+    'leaves %s open to anyone, so the browser can install the app',
+    (path) => {
+      expect(runsOn(path)).toBe(false);
+    },
+  );
+
+  test('still guards a page whose name starts like an icon', () => {
+    expect(runsOn('/icons')).toBe(true);
+  });
 });
