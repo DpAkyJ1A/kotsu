@@ -1,6 +1,7 @@
 import type { Locale } from 'next-intl';
 import { z } from 'zod';
 
+import { TimeZone } from '@/lib/time-zone';
 import {
   LOCALES,
   type Theme,
@@ -45,3 +46,5 @@ export const UpdateSettingsInput = z
   .refine((patch) => Object.values(patch).some((value) => value !== undefined));
 
 export type SettingsPatch = z.input<typeof UpdateSettingsInput>;
+
+export const MarkOnboardedInput = z.strictObject({ timezone: TimeZone });

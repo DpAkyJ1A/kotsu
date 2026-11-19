@@ -7,6 +7,7 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import { session, user, verification } from '@/server/db/schema/auth';
+import { userSettings } from '@/server/db/schema/settings';
 
 export const WITHOUT_GOOGLE_URL = 'http://localhost:5688';
 
@@ -14,7 +15,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type Visitor = { email: string; readCode: () => Promise<string> };
 
-export const test = base.extend<{ visitor: Visitor }, { db: NodePgDatabase }>({
+export const test = base.extend<
+  { onboarded: boolean; visitor: Visitor },
+  { db: NodePgDatabase }
+>({
+  onboarded: [true, { option: true }],
   db: [
     async ({}, use) => {
       const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -23,10 +28,11 @@ export const test = base.extend<{ visitor: Visitor }, { db: NodePgDatabase }>({
     },
     { scope: 'worker' },
   ],
-  visitor: async ({ db, page }, provide) => {
+  visitor: async ({ db, page, onboarded }, provide) => {
     const email = `ada+${randomUUID()}@example.com`;
     const codeId = `sign-in-otp-${email}`;
     await page.setExtraHTTPHeaders({ 'x-forwarded-for': randomIp() });
+    if (onboarded) await createOnboardedAccount(db, email);
 
     await provide({ email, readCode: () => readCode(db, codeId) });
 
@@ -34,6 +40,17 @@ export const test = base.extend<{ visitor: Visitor }, { db: NodePgDatabase }>({
     await db.delete(verification).where(eq(verification.identifier, codeId));
   },
 });
+
+async function createOnboardedAccount(db: NodePgDatabase, email: string) {
+  const [created] = await db
+    .insert(user)
+    .values({ name: '', email, emailVerified: true })
+    .returning({ id: user.id });
+  if (!created) throw new Error(`No user ${email}`);
+  await db
+    .insert(userSettings)
+    .values({ userId: created.id, onboardedAt: new Date() });
+}
 
 function randomIp() {
   return [10, randomInt(256), randomInt(256), randomInt(1, 255)].join('.');

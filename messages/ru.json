@@ -42,6 +42,16 @@
       "cancelled": "Перемещение отменено. Полка {name} снова на месте {position, number} из {count, number}."
     }
   },
+  "onboarding": {
+    "title": "С чего начнём?",
+    "templates": {
+      "language": "Учить язык",
+      "course": "Пройти курс",
+      "jobSearch": "Поиск работы и рост",
+      "blank": "С чистого листа"
+    },
+    "continue": "Продолжить"
+  },
   "ui": {
     "close": "Закрыть",
     "notifications": "Уведомления",

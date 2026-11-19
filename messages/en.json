@@ -42,6 +42,16 @@
       "cancelled": "Move cancelled. {name} is back at position {position, number} of {count, number}."
     }
   },
+  "onboarding": {
+    "title": "Pick a starting point",
+    "templates": {
+      "language": "Learn a language",
+      "course": "Study a course",
+      "jobSearch": "Job search & growth",
+      "blank": "Start blank"
+    },
+    "continue": "Continue"
+  },
   "ui": {
     "close": "Close",
     "notifications": "Notifications",

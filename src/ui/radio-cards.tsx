@@ -38,6 +38,7 @@ export function RadioCard({
     >
       <span
         aria-hidden
+        data-slot="radio-card-picture"
         className="block aspect-video overflow-hidden rounded-lg border-2 transition-colors group-hover:border-input group-aria-checked:border-primary"
       >
         {picture}

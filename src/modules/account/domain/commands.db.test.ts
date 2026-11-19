@@ -8,7 +8,7 @@ import { userSettings } from '@/server/db/schema/settings';
 import { dbTest as test } from '@/server/db/testing';
 import { AppError } from '@/server/domain';
 
-import { updateSettings } from './commands';
+import { markOnboarded, updateSettings } from './commands';
 
 const NOW = new Date('2026-11-18T09:00:00Z');
 
@@ -69,5 +69,60 @@ describe('updateSettings', () => {
     await expect(failure).rejects.toThrow(AppError);
     await expect(failure).rejects.toMatchObject({ code: 'VALIDATION' });
     expect(await savedSettings(db, ada.userId)).toEqual(ada.settings);
+  });
+});
+
+describe('markOnboarded', () => {
+  test('records the time zone and the time of onboarding, and says it did', async ({
+    db,
+  }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+
+    const marked = await markOnboarded(ada, { timezone: 'Europe/Madrid' });
+
+    expect(marked).toBe(true);
+    expect(await savedSettings(db, ada.userId)).toMatchObject({
+      timezone: 'Europe/Madrid',
+      onboardedAt: NOW,
+    });
+  });
+
+  test('a second time changes nothing and says so', async ({ db }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+    await markOnboarded(ada, { timezone: 'Europe/Madrid' });
+
+    const marked = await markOnboarded(
+      { ...ada, now: new Date('2026-11-19T09:00:00Z') },
+      { timezone: 'Asia/Tokyo' },
+    );
+
+    expect(marked).toBe(false);
+    expect(await savedSettings(db, ada.userId)).toMatchObject({
+      timezone: 'Europe/Madrid',
+      onboardedAt: NOW,
+    });
+  });
+
+  test('marks the signed-in user, never another user', async ({ db }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+    const bea = await ctxOf(db, await createUser(db, 'bea@example.com'), NOW);
+
+    await markOnboarded(bea, { timezone: 'Asia/Tokyo' });
+
+    expect(await savedSettings(db, ada.userId)).toMatchObject({
+      timezone: 'UTC',
+      onboardedAt: null,
+    });
+  });
+
+  test('refuses a time zone that does not exist', async ({ db }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+
+    await expect(
+      markOnboarded(ada, { timezone: 'Mars/Olympus_Mons' }),
+    ).rejects.toMatchObject({ code: 'VALIDATION' });
+    expect(await savedSettings(db, ada.userId)).toMatchObject({
+      onboardedAt: null,
+    });
   });
 });

@@ -1,11 +1,11 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { userSettings } from '@/server/db/schema/settings';
 import { command } from '@/server/domain';
 
-import { UpdateSettingsInput } from '../core/settings';
+import { MarkOnboardedInput, UpdateSettingsInput } from '../core/settings';
 import { toSettingsDto } from './dto';
 
 export const updateSettings = command(
@@ -18,5 +18,22 @@ export const updateSettings = command(
       .returning();
     if (!settings) throw new Error(`No settings for user ${ctx.userId}`);
     return toSettingsDto(settings);
+  },
+);
+
+export const markOnboarded = command(
+  MarkOnboardedInput,
+  async (ctx, { timezone }) => {
+    const marked = await ctx.db
+      .update(userSettings)
+      .set({ timezone, onboardedAt: ctx.now })
+      .where(
+        and(
+          eq(userSettings.userId, ctx.userId),
+          isNull(userSettings.onboardedAt),
+        ),
+      )
+      .returning({ userId: userSettings.userId });
+    return marked.length > 0;
   },
 );

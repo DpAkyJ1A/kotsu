@@ -1,6 +1,8 @@
 import { cookies, headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
+import { REQUEST_PATH_HEADER } from '@/lib/sign-in-path';
 import {
   AccountMenu,
   OpenSettingsCommand,
@@ -13,6 +15,8 @@ import {
   loadGoogleLink,
   loadSettings,
 } from '@/modules/account/loaders';
+import { onboardingPath } from '@/modules/onboarding';
+import { isOnboarded } from '@/modules/onboarding/loaders';
 import { ShelfNav, ShelvesProvider } from '@/modules/shelves';
 import { loadShelves } from '@/modules/shelves/loaders';
 import { CommandGroup } from '@/ui/command';
@@ -40,6 +44,10 @@ import { Toaster } from '@/ui/toast';
 import { TooltipProvider } from '@/ui/tooltip';
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
+  if (!(await isOnboarded())) {
+    redirect(onboardingPath((await headers()).get(REQUEST_PATH_HEADER)));
+  }
+
   const [account, settings, googleLink, shelves, cookieStore, headerStore, t] =
     await Promise.all([
       loadAccount(),
