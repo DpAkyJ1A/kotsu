@@ -12,6 +12,7 @@ import { manrope } from '@/ui/font';
 
 sb.mock('../src/lib/auth-client.ts');
 sb.mock('../src/modules/account/actions.ts');
+sb.mock('../src/modules/onboarding/actions.ts');
 sb.mock('../src/modules/shelves/actions.ts');
 
 const preview: Preview = {

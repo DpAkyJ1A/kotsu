@@ -21,6 +21,9 @@ shell, opens over the current page from `?settings=<section>`: ⌘, / Ctrl+, , t
 steps back, or drops the parameter when the page was loaded with it. `/settings` (`SettingsList`, behind the avatar on a
 phone) and `/settings/[section]` (`SettingsSectionPage`) are plain pages.
 
+Onboarding: `api.ts` gives other modules `markOnboarded`, which saves the time zone and the time of onboarding once
+and answers whether this call did it.
+
 - **Writes:** `user_settings` (updates; `src/server` creates the row), `api_token`, `mcp_rate_limit`.
   Better Auth writes its own tables.
 - **Depends on:** no other module.

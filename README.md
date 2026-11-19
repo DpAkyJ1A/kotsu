@@ -15,7 +15,9 @@ the user does. Signing in works: enter your email, type the 6-digit code from th
 the account), and private pages open; sessions live in Postgres. Continue with Google does the same in one step, and
 lands in the account of the same email if it was made with a code. On a device with Touch ID, Face ID or a screen
 lock, Kotsu then offers that device a passkey once, and the next sign-in picks it from the email field's
-autofill. Signed in, a desktop shell opens on the calendar: a sidebar with the menu under your name and the
+autofill. A new account first picks a starting point: Learn a language, Study a course, Job search & growth (each
+shows the shelves it makes) or Start blank; the pick also saves the browser's time zone. Signed in, a desktop shell
+opens on the calendar: a sidebar with the menu under your name and the
 Calendar, Practice and Clock sections, still empty pages. The menu switches the theme (light, dark, or Auto to follow
 the system) and the language at once, and saves both to the account, so they follow you to another device; it also
 signs you out and opens Settings. Settings (⌘, or Ctrl+, from anywhere) open over the current page: Account changes

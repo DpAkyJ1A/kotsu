@@ -19,7 +19,8 @@ from anywhere, and the layout fills it with items that close it as they run (`Co
 `apply-theme.ts` shows a picked theme on the page at once, without the colours drifting through their transitions, and
 tells which theme is on the page (`useAppliedTheme` follows `data-theme` on `<html>`). What counts as a shortcut press
 and whether to show ⌘ or Ctrl lives in `shortcut.ts`; `useShortcut` binds one to the document. `RadioCards` picks one
-value out of a few shown as pictures (the theme previews in Settings). `useActionMutation` wraps a Server Action for a component:
+value out of a few shown as pictures (the theme previews in Settings, the templates at onboarding); a picker that needs another
+picture size sets it on `data-slot="radio-card-picture"`. `useActionMutation` wraps a Server Action for a component:
 it runs it, and when it fails shows the error code's message (`errors.*`) in a toast.
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons

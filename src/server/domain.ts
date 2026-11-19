@@ -25,6 +25,15 @@ export function command<Input extends z.ZodType, Result>(
     run(ctx, parse(schema, input));
 }
 
+command.tx = function transaction<Input extends z.ZodType, Result>(
+  schema: Input,
+  run: (ctx: Ctx, input: z.output<Input>) => Promise<Result>,
+) {
+  return command(schema, (ctx, input) =>
+    ctx.db.transaction((db) => run({ ...ctx, db }, input)),
+  );
+};
+
 function parse<Schema extends z.ZodType>(
   schema: Schema,
   input: unknown,
