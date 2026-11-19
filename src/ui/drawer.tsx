@@ -32,7 +32,7 @@ export function DrawerContent({
       <DialogPrimitive.Content
         data-slot="drawer-content"
         className={cn(
-          'fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100%-4rem)] flex-col gap-5 overflow-y-auto rounded-t-2xl bg-popover p-6 text-popover-foreground shadow-xl data-[state=closed]:animate-slide-out-bottom data-[state=open]:animate-slide-in-bottom',
+          'fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100%-4rem)] flex-col gap-5 overflow-y-auto rounded-t-2xl bg-popover p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-popover-foreground shadow-xl data-[state=closed]:animate-slide-out-bottom data-[state=open]:animate-slide-in-bottom',
           'md:inset-y-0 md:left-auto md:max-h-none md:w-sm md:rounded-none md:data-[state=closed]:animate-slide-out-right md:data-[state=open]:animate-slide-in-right',
           className,
         )}

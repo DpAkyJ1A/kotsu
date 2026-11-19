@@ -24,5 +24,5 @@ function withRequestPath(headers: Headers, path: string) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ['/((?!api|_next|icon/|apple-icon/|.*\\..*).*)'],
 };

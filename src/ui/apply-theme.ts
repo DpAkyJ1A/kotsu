@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
+import { themeColors } from '@/lib/theme-color';
 import { themeAttribute, themeFrom } from '@/lib/theme-cookie';
 import type { Theme } from '@/lib/user-settings';
 
@@ -8,7 +9,16 @@ export function applyTheme(theme: Theme) {
   const applied = themeAttribute(theme);
   if (applied) root.dataset.theme = applied;
   else delete root.dataset.theme;
+  paintWindow(theme);
   finishTransitions();
+}
+
+function paintWindow(theme: Theme) {
+  for (const { media, color } of themeColors(theme)) {
+    document
+      .querySelector(`meta[name="theme-color"][media="${media}"]`)
+      ?.setAttribute('content', color);
+  }
 }
 
 export function appliedTheme() {

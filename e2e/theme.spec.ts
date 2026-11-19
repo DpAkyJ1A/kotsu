@@ -30,6 +30,18 @@ test('renders the picked theme into the HTML, so the first paint has it', async 
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
 });
 
+test('paints the window of the installed app in the picked theme', async ({
+  page,
+}) => {
+  await openWithTheme(page, '/sign-in', 'dark');
+
+  await expect(
+    page.locator(
+      'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+    ),
+  ).toHaveAttribute('content', '#121214');
+});
+
 test('a picked theme wins over the system one', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await openWithTheme(page, '/sign-in', 'light');

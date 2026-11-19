@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, test } from 'vitest';
 
+import { BACKGROUND } from '@/lib/theme-color';
+
 const css = readFileSync(new URL('theme.css', import.meta.url), 'utf8');
 
 // The raw tokens: `--name: light-dark(light, dark)` or `--name: var(--other)`
@@ -106,6 +108,13 @@ test('every token has a light and a dark value', () => {
     expect(() => resolve(name, 'light')).not.toThrow();
   }
 });
+
+test.for<Scheme>(['light', 'dark'])(
+  'the window around the app has the %s background',
+  (scheme) => {
+    expect(resolve('background', scheme)).toBe(BACKGROUND[scheme]);
+  },
+);
 
 describe.for<Scheme>(['light', 'dark'])('%s theme', (scheme) => {
   test.for(PAIRS)(
