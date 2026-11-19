@@ -105,10 +105,6 @@
       "add": "Добавить ключ",
       "passkeyAdded": "Ключ доступа добавлен.",
       "notAdded": "Ключ доступа не добавился. Попробуй ещё раз.",
-      "confirmTitle": "Подтверди, что это ты",
-      "confirmDescription": "Чтобы добавить ключ, введи код, который придёт на <strong>{email}</strong>.",
-      "codeSent": "Введи код, который ушёл на <strong>{email}</strong>.",
-      "confirm": "Подтвердить",
       "confirmed": "Готово. Теперь добавь ключ.",
       "rename": "Переименовать {name}",
       "renameTitle": "Новое имя ключа",
@@ -119,6 +115,27 @@
       "removeFromPasswordManager": "В менеджере паролей ключ останется, пока ты не удалишь его и там.",
       "removeConfirm": "Удалить",
       "notRemoved": "Ключ не удалился. Попробуй ещё раз."
+    },
+    "confirm": {
+      "title": "Подтверди, что это ты",
+      "addPasskey": "Чтобы добавить ключ, введи код, который придёт на <strong>{email}</strong>.",
+      "disconnectGoogle": "Чтобы отключить Google, введи код, который придёт на <strong>{email}</strong>.",
+      "codeSent": "Введи код, который ушёл на <strong>{email}</strong>.",
+      "confirm": "Подтвердить"
+    },
+    "google": {
+      "title": "Google",
+      "connected": "Подключён",
+      "notConnected": "Не подключён",
+      "connect": "Подключить",
+      "disconnect": "Отключить",
+      "connectedHint": "Вход по коду из письма работает и без него. После отключения вход через Google снова его подключит.",
+      "notConnectedHint": "Вход через Google тоже его подключает. Подключить можно только аккаунт Google с этой почтой.",
+      "errors": {
+        "emailDoesNotMatch": "У этого аккаунта Google другая почта. Выбери аккаунт с {email}.",
+        "connectFailed": "Google не подключился. Попробуй ещё раз.",
+        "disconnectFailed": "Google не отключился. Попробуй ещё раз."
+      }
     }
   },
   "errors": {

@@ -2,12 +2,11 @@ import { expect, type Page } from '@playwright/test';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { passkey, session, user } from '@/server/db/schema/auth';
+import { passkey, user } from '@/server/db/schema/auth';
 
-import { signInWithCode, test } from './fixtures';
+import { signedInDaysAgo, signInWithCode, test } from './fixtures';
 
 const PHONE = { width: 390, height: 844 };
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 test.use({ locale: 'en-US', colorScheme: 'light' });
 
@@ -44,21 +43,6 @@ async function passkeysOf(db: NodePgDatabase, email: string) {
     .from(passkey)
     .innerJoin(user, eq(user.id, passkey.userId))
     .where(eq(user.email, email));
-}
-
-async function signedInDaysAgo(
-  db: NodePgDatabase,
-  email: string,
-  days: number,
-) {
-  const [account] = await db
-    .select({ id: user.id })
-    .from(user)
-    .where(eq(user.email, email));
-  await db
-    .update(session)
-    .set({ createdAt: new Date(Date.now() - days * DAY_MS) })
-    .where(eq(session.userId, account?.id ?? ''));
 }
 
 test.describe('on a wide screen', () => {

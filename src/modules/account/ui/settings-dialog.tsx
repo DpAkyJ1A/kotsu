@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/ui/dialog';
 import { useShortcut } from '@/ui/use-shortcut';
 
 import type { Account } from '../core/account';
+import type { GoogleLink } from '../core/google-link';
 import type { Settings } from '../core/settings';
 import { SETTINGS_SECTIONS } from '../core/settings-sections';
 import {
@@ -17,9 +18,17 @@ import { useSettingsDialog } from '../hooks/use-settings-dialog';
 import { SettingsNav, SettingsNavButton } from './settings-nav';
 import { SettingsSectionContent } from './settings-section-content';
 
-type SettingsDialogProps = { account: Account; settings: Settings };
+type SettingsDialogProps = {
+  account: Account;
+  settings: Settings;
+  googleLink: GoogleLink;
+};
 
-export function SettingsDialog({ account, settings }: SettingsDialogProps) {
+export function SettingsDialog({
+  account,
+  settings,
+  googleLink,
+}: SettingsDialogProps) {
   const t = useTranslations('settings');
   const { section, close } = useSettingsDialog();
   const [lastSection, setLastSection] = useState(section ?? 'account');
@@ -73,6 +82,7 @@ export function SettingsDialog({ account, settings }: SettingsDialogProps) {
             section={shownSection}
             account={account}
             settings={settings}
+            googleLink={googleLink}
           />
         </section>
       </DialogContent>

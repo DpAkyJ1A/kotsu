@@ -35,6 +35,7 @@ const meta = {
   args: {
     account: { name: 'Ada Lovelace', email: 'ada@example.com' },
     settings: SETTINGS,
+    googleLink: { status: 'notConnected' },
   },
   parameters: onPage({}),
   decorators: [

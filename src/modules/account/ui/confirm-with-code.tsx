@@ -15,13 +15,17 @@ import { Input } from '@/ui/input';
 
 import { type AuthError, authErrorOf } from '../core/auth-error';
 
+type ConfirmPurpose = 'addPasskey' | 'disconnectGoogle';
+
 type ConfirmWithCodeProps = {
+  purpose: ConfirmPurpose;
   email: string;
   onConfirmed: () => void;
   onCancel: () => void;
 };
 
 export function ConfirmWithCode({
+  purpose,
   email,
   onConfirmed,
   onCancel,
@@ -70,13 +74,13 @@ export function ConfirmWithCode({
     >
       <div className="grid gap-1">
         <p id={titleId} className="text-sm font-semibold">
-          {t('settings.passkeys.confirmTitle')}
+          {t('settings.confirm.title')}
         </p>
         <p className="text-sm text-muted-foreground">
           {t.rich(
             hasSentCode
-              ? 'settings.passkeys.codeSent'
-              : 'settings.passkeys.confirmDescription',
+              ? 'settings.confirm.codeSent'
+              : `settings.confirm.${purpose}`,
             { email, strong: strongEmail },
           )}
         </p>
@@ -98,7 +102,7 @@ export function ConfirmWithCode({
             />
           </label>
           <Button type="submit" disabled={isPending}>
-            {t('settings.passkeys.confirm')}
+            {t('settings.confirm.confirm')}
           </Button>
         </form>
       )}
@@ -118,6 +122,7 @@ export function ConfirmWithCode({
       )}
       <div className="flex flex-wrap gap-2">
         <Button
+          ref={focusWhenShown}
           variant={hasSentCode ? 'ghost' : 'primary'}
           size="sm"
           onClick={sendCode}
@@ -138,6 +143,6 @@ export function ConfirmWithCode({
   );
 }
 
-function focusWhenShown(input: HTMLInputElement | null) {
-  input?.focus();
+function focusWhenShown(element: HTMLElement | null) {
+  element?.focus();
 }

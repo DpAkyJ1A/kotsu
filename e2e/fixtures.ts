@@ -6,7 +6,11 @@ import { desc, eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-import { user, verification } from '@/server/db/schema/auth';
+import { session, user, verification } from '@/server/db/schema/auth';
+
+export const WITHOUT_GOOGLE_URL = 'http://localhost:5688';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type Visitor = { email: string; readCode: () => Promise<string> };
 
@@ -66,4 +70,24 @@ export function settingsSaved(page: Page) {
   return page.waitForResponse(
     (response) => response.request().headers()['next-action'] !== undefined,
   );
+}
+
+export async function userIdOf(db: NodePgDatabase, email: string) {
+  const [found] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.email, email));
+  if (!found) throw new Error(`No user ${email}`);
+  return found.id;
+}
+
+export async function signedInDaysAgo(
+  db: NodePgDatabase,
+  email: string,
+  days: number,
+) {
+  await db
+    .update(session)
+    .set({ createdAt: new Date(Date.now() - days * DAY_MS) })
+    .where(eq(session.userId, await userIdOf(db, email)));
 }

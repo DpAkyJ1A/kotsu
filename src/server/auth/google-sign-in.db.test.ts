@@ -7,62 +7,23 @@ import {
   createTestAuth,
   EMAIL,
   GOOGLE,
+  GOOGLE_ACCESS_TOKEN,
+  GOOGLE_PROFILE,
+  googleAnswersWith,
+  goToGoogle,
   HOST,
-  post,
+  returnFromGoogle,
   signIn,
 } from '@/server/auth/testing';
 import { account, user } from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
 
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const ACCESS_TOKEN = 'google-access-token';
-const ADA_ON_GOOGLE = {
-  sub: '108876543210123456789',
-  email: EMAIL,
-  email_verified: true,
-  name: 'Ada Lovelace',
-  picture: 'https://lh3.googleusercontent.com/a/ada',
-};
-
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function idTokenOf(profile: object) {
-  const part = (json: object) =>
-    Buffer.from(JSON.stringify(json)).toString('base64url');
-  const claims = {
-    iss: 'https://accounts.google.com',
-    aud: GOOGLE.clientId,
-    ...profile,
-  };
-  return `${part({ alg: 'none' })}.${part(claims)}.`;
-}
-
-function googleAnswersWith(profile: object) {
-  const tokenRequests: URLSearchParams[] = [];
-  vi.stubGlobal(
-    'fetch',
-    async (input: RequestInfo | URL, init?: RequestInit) => {
-      const request = new Request(input, init);
-      if (request.url !== GOOGLE_TOKEN_URL) {
-        throw new Error(`Unexpected request to ${request.url}`);
-      }
-      tokenRequests.push(new URLSearchParams(await request.text()));
-      return Response.json({
-        access_token: ACCESS_TOKEN,
-        token_type: 'Bearer',
-        expires_in: 3599,
-        scope: 'openid email profile',
-        id_token: idTokenOf(profile),
-      });
-    },
-  );
-  return tokenRequests;
-}
-
-async function startGoogleSignIn(auth: Auth) {
-  const response = await post(auth, {
+function startGoogleSignIn(auth: Auth) {
+  return goToGoogle(auth, {
     path: '/sign-in/social',
     body: {
       provider: 'google',
@@ -70,25 +31,6 @@ async function startGoogleSignIn(auth: Auth) {
       errorCallbackURL: '/sign-in',
     },
   });
-  const { url } = (await response.json()) as { url: string };
-  const googleURL = new URL(url);
-  return {
-    googleURL,
-    state: googleURL.searchParams.get('state') ?? '',
-    cookie: cookiesFrom(response),
-  };
-}
-
-function returnFromGoogle(
-  auth: Auth,
-  { state, cookie }: { state: string; cookie: string },
-) {
-  const query = new URLSearchParams({ code: 'code-from-google', state });
-  return auth.handler(
-    new Request(`http://${HOST}/api/auth/callback/google?${query}`, {
-      headers: { cookie },
-    }),
-  );
 }
 
 async function signInWithGoogle(auth: Auth) {
@@ -142,7 +84,7 @@ describe('sign-in with Google', () => {
     db,
   }) => {
     const { auth } = createTestAuth(db);
-    const tokenRequests = googleAnswersWith(ADA_ON_GOOGLE);
+    const tokenRequests = googleAnswersWith(GOOGLE_PROFILE);
 
     const response = await signInWithGoogle(auth);
     const users = await db.select().from(user);
@@ -156,7 +98,7 @@ describe('sign-in with Google', () => {
         email: EMAIL,
         emailVerified: true,
         name: 'Ada Lovelace',
-        image: ADA_ON_GOOGLE.picture,
+        image: GOOGLE_PROFILE.picture,
       },
     ]);
   });
@@ -167,7 +109,7 @@ describe('sign-in with Google', () => {
     const { auth, sentCodes } = createTestAuth(db);
     await signIn(auth, sentCodes);
     const [byCode] = await db.select().from(user);
-    googleAnswersWith(ADA_ON_GOOGLE);
+    googleAnswersWith(GOOGLE_PROFILE);
 
     const response = await signInWithGoogle(auth);
     const users = await db.select().from(user);
@@ -179,7 +121,7 @@ describe('sign-in with Google', () => {
     expect(response.headers.get('location')).toBe('/calendar');
     expect(users).toEqual([byCode]);
     expect(googleAccounts).toMatchObject([
-      { userId: byCode?.id, accountId: ADA_ON_GOOGLE.sub },
+      { userId: byCode?.id, accountId: GOOGLE_PROFILE.sub },
     ]);
   });
 
@@ -188,7 +130,7 @@ describe('sign-in with Google', () => {
   }) => {
     const { auth, sentCodes } = createTestAuth(db);
     await signIn(auth, sentCodes);
-    googleAnswersWith({ ...ADA_ON_GOOGLE, email_verified: false });
+    googleAnswersWith({ ...GOOGLE_PROFILE, email_verified: false });
 
     const response = await signInWithGoogle(auth);
 
@@ -203,7 +145,7 @@ describe('sign-in with Google', () => {
     db,
   }) => {
     const { auth } = createTestAuth(db);
-    googleAnswersWith({ ...ADA_ON_GOOGLE, email_verified: false });
+    googleAnswersWith({ ...GOOGLE_PROFILE, email_verified: false });
 
     const response = await signInWithGoogle(auth);
 
@@ -216,18 +158,18 @@ describe('sign-in with Google', () => {
 
   test('the Google tokens are stored encrypted', async ({ db }) => {
     const { auth } = createTestAuth(db);
-    googleAnswersWith(ADA_ON_GOOGLE);
+    googleAnswersWith(GOOGLE_PROFILE);
 
     await signInWithGoogle(auth);
     const [stored] = await db.select().from(account);
 
     expect(stored?.accessToken).toBeTruthy();
-    expect(stored?.accessToken).not.toContain(ACCESS_TOKEN);
+    expect(stored?.accessToken).not.toContain(GOOGLE_ACCESS_TOKEN);
   });
 
   test('a state from another sign-in is refused', async ({ db }) => {
     const { auth } = createTestAuth(db);
-    googleAnswersWith(ADA_ON_GOOGLE);
+    googleAnswersWith(GOOGLE_PROFILE);
     const mine = await startGoogleSignIn(auth);
     const someoneElses = await startGoogleSignIn(auth);
 

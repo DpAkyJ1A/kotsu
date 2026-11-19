@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test.use({ locale: 'en-US' });
+import { WITHOUT_GOOGLE_URL } from './fixtures';
 
-const WITHOUT_GOOGLE_URL = 'http://localhost:5688';
+test.use({ locale: 'en-US' });
 
 test.describe('with Google keys', () => {
   test('the button sends the visitor to Google with our callback, a state and PKCE', async ({

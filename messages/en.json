@@ -105,10 +105,6 @@
       "add": "Add passkey",
       "passkeyAdded": "Passkey added.",
       "notAdded": "The passkey wasn't added. Try again.",
-      "confirmTitle": "Confirm it's you",
-      "confirmDescription": "To add a passkey, enter a code we'll email to <strong>{email}</strong>.",
-      "codeSent": "Enter the code we sent to <strong>{email}</strong>.",
-      "confirm": "Confirm",
       "confirmed": "Confirmed. Now add your passkey.",
       "rename": "Rename {name}",
       "renameTitle": "Rename passkey",
@@ -119,6 +115,27 @@
       "removeFromPasswordManager": "Your password manager keeps it until you delete it there too.",
       "removeConfirm": "Remove",
       "notRemoved": "The passkey wasn't removed. Try again."
+    },
+    "confirm": {
+      "title": "Confirm it's you",
+      "addPasskey": "To add a passkey, enter a code we'll email to <strong>{email}</strong>.",
+      "disconnectGoogle": "To disconnect Google, enter a code we'll email to <strong>{email}</strong>.",
+      "codeSent": "Enter the code we sent to <strong>{email}</strong>.",
+      "confirm": "Confirm"
+    },
+    "google": {
+      "title": "Google",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "connectedHint": "Email codes work without it. If you disconnect, signing in with Google connects it again.",
+      "notConnectedHint": "Signing in with Google connects it too. Only the Google account with this email can be connected.",
+      "errors": {
+        "emailDoesNotMatch": "That Google account has another email. Pick the one with {email}.",
+        "connectFailed": "Google wasn't connected. Try again.",
+        "disconnectFailed": "Google wasn't disconnected. Try again."
+      }
     }
   },
   "errors": {
