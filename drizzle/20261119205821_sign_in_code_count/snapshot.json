@@ -1,0 +1,102 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "1862b36a-16c7-4209-80bb-a024e10a99e3",
+  "prevIds": [
+    "350ea30f-cb28-4bd0-9ea9-fb1568e6ecff"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "sign_in_code_count"
+      ],
+      "writes": [
+        "s|tbl|public.sign_in_code_count",
+        "n|tbl|public.sign_in_code_count",
+        "e|tbl|public.sign_in_code_count",
+        "n|rel|public.sign_in_code_count",
+        "n|type|public.sign_in_code_count",
+        "n|rel|public.sign_in_code_count_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "sign_in_code_count",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "sign_in_code_count",
+        "name": "email",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "sign_in_code_count",
+        "name": "window_started_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "sign_in_code_count",
+        "name": "requests",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "sign_in_code_count",
+        "name": "sign_in_code_count_pkey",
+        "columns": [
+          "email"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

@@ -13,7 +13,8 @@ import { deployment, type DeploymentEnv } from './deployment';
 export const TEST_SECRET = 'test-secret-with-at-least-32-characters';
 export const RP_ID = 'localhost';
 export const HOST = `${RP_ID}:5687`;
-export const EMAIL = 'ada@example.com';
+export const EMAIL = `ada+${crypto.randomUUID()}@example.com`;
+export const ANOTHER_EMAIL = `grace+${crypto.randomUUID()}@example.com`;
 export const GOOGLE = {
   clientId: 'kotsu-test.apps.googleusercontent.com',
   clientSecret: 'test-google-secret',
@@ -75,10 +76,16 @@ export function post(
   );
 }
 
-export function requestCode(auth: Auth) {
+type CodeRequest = { email?: string; type?: string; ip?: string };
+
+export function requestCode(
+  auth: Auth,
+  { email = EMAIL, type = 'sign-in', ip }: CodeRequest = {},
+) {
   return post(auth, {
     path: '/email-otp/send-verification-otp',
-    body: { email: EMAIL, type: 'sign-in' },
+    body: { email, type },
+    ...(ip && { ip }),
   });
 }
 

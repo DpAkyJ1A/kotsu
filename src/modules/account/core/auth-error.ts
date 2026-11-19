@@ -4,6 +4,7 @@ export type AuthError =
   | 'expiredCode'
   | 'tooManyAttempts'
   | 'tooManyRequests'
+  | 'tooManyCodes'
   | 'passkeyFailed'
   | 'passkeyExists'
   | 'sessionNotFresh'
@@ -21,6 +22,7 @@ const ERROR_BY_CODE: Partial<Record<string, AuthError>> = {
   INVALID_OTP: 'wrongCode',
   OTP_EXPIRED: 'expiredCode',
   TOO_MANY_ATTEMPTS: 'tooManyAttempts',
+  TOO_MANY_CODES: 'tooManyCodes',
   PASSKEY_NOT_FOUND: 'passkeyFailed',
   AUTHENTICATION_FAILED: 'passkeyFailed',
   CHALLENGE_NOT_FOUND: 'passkeyFailed',
@@ -40,6 +42,7 @@ export async function authErrorOf(
 }
 
 function toAuthError({ status, code = '' }: FailedRequest): AuthError {
-  if (status === TOO_MANY_REQUESTS) return 'tooManyRequests';
-  return ERROR_BY_CODE[code] ?? 'unknown';
+  const named = ERROR_BY_CODE[code];
+  if (named) return named;
+  return status === TOO_MANY_REQUESTS ? 'tooManyRequests' : 'unknown';
 }

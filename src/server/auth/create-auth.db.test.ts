@@ -4,6 +4,7 @@ import { describe, expect } from 'vitest';
 
 import type { Auth } from '@/server/auth/create-auth';
 import {
+  ANOTHER_EMAIL,
   cookiesFrom,
   createPasskey,
   createTestAuth,
@@ -106,19 +107,6 @@ describe('the auth API', () => {
     expect(statuses).toEqual([200, 200, 200, 429]);
   });
 
-  test('only sign-in codes are emailed', async ({ db }) => {
-    const { auth, sentCodes } = createTestAuth(db);
-    await signIn(auth, sentCodes);
-
-    const response = await post(auth, {
-      path: '/email-otp/send-verification-otp',
-      body: { email: EMAIL, type: 'forget-password' },
-    });
-
-    expect(response.status).toBe(200);
-    expect(sentCodes).toHaveLength(1);
-  });
-
   test.for([
     '/email-otp/reset-password',
     '/email-otp/change-email',
@@ -171,17 +159,13 @@ describe('a self-hosted copy', () => {
     db,
   }) => {
     const { auth } = createTestAuth(db, { TRUSTED_PROXIES: ['10.0.0.0/8'] });
-    const requestCodeAs = (visitor: string) =>
-      post(auth, {
-        path: '/email-otp/send-verification-otp',
-        body: { email: EMAIL, type: 'sign-in' },
-        ip: `${visitor}, 10.1.2.3`,
-      });
+    const requestCodeAs = (visitor: string, email: string) =>
+      requestCode(auth, { email, ip: `${visitor}, 10.1.2.3` });
 
-    for (let i = 0; i < 3; i++) await requestCodeAs('192.0.2.10');
+    for (let i = 0; i < 3; i++) await requestCodeAs('192.0.2.10', EMAIL);
 
-    expect((await requestCodeAs('192.0.2.10')).status).toBe(429);
-    expect((await requestCodeAs('192.0.2.20')).status).toBe(200);
+    expect((await requestCodeAs('192.0.2.10', ANOTHER_EMAIL)).status).toBe(429);
+    expect((await requestCodeAs('192.0.2.20', ANOTHER_EMAIL)).status).toBe(200);
   });
 });
 

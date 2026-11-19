@@ -16,6 +16,7 @@ describe('authErrorOf', () => {
     ['expiredCode', { status: 400, code: 'OTP_EXPIRED' }],
     ['tooManyAttempts', { status: 403, code: 'TOO_MANY_ATTEMPTS' }],
     ['tooManyRequests', { status: 429 }],
+    ['tooManyCodes', { status: 429, code: 'TOO_MANY_CODES' }],
     ['passkeyFailed', { status: 401, code: 'PASSKEY_NOT_FOUND' }],
     ['passkeyFailed', { status: 401, code: 'AUTHENTICATION_FAILED' }],
     ['passkeyFailed', { status: 400, code: 'CHALLENGE_NOT_FOUND' }],

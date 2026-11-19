@@ -87,6 +87,28 @@ export const TooManyRequests: Story = {
   },
 };
 
+export const TooManyCodesToThisAddress: Story = {
+  beforeEach: () => {
+    mocked(authClient.emailOtp.sendVerificationOtp).mockResolvedValue({
+      data: null,
+      error: {
+        status: 429,
+        statusText: 'Too Many Requests',
+        code: 'TOO_MANY_CODES',
+      },
+    });
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('Email'), 'ada@example.com');
+    await userEvent.click(canvas.getByRole('button', { name: 'Send code' }));
+
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(
+      'Too many codes sent to this address. Try again in 15 minutes.',
+    );
+    await expect(getRouter().push).not.toHaveBeenCalled();
+  },
+};
+
 export const SignsInWithAPasskeyFromAutofill: Story = {
   args: { next: toNextPath('/practice') },
   beforeEach: () => {

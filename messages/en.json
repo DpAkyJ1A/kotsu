@@ -89,6 +89,7 @@
       "expiredCode": "This code has expired. Send a new one.",
       "tooManyAttempts": "Too many wrong tries. Send a new code.",
       "tooManyRequests": "Too many requests. Wait a minute and try again.",
+      "tooManyCodes": "Too many codes sent to this address. Try again in 15 minutes.",
       "passkeyFailed": "That passkey didn't work. Sign in with a code instead.",
       "passkeyExists": "This device already has a passkey for Kotsu.",
       "passkeyNotAdded": "The passkey wasn't turned on. Try again, or skip it for now.",
@@ -111,7 +112,7 @@
       "title": "What Kotsu keeps",
       "account": "<strong>Your account:</strong> your email address and name. If you continue with Google, also your profile picture, your Google account ID and the sign-in tokens Google issues. Kotsu asks Google for nothing more, so those tokens can't open your mail, files or anything else in your Google account.",
       "content": "<strong>What you make:</strong> your shelves, docs, cards, sheets, events and practice history, and your settings, such as the language, theme and time zone.",
-      "signIn": "<strong>Sign-in records:</strong> your sessions, with the IP address and browser of each sign-in; your passkeys (a public key and a device name: your fingerprint or face never leaves your device); one-time sign-in codes; counts of requests from each IP address.",
+      "signIn": "<strong>Sign-in records:</strong> your sessions, with the IP address and browser of each sign-in; your passkeys (a public key and a device name: your fingerprint or face never leaves your device); one-time sign-in codes; counts of requests from each IP address and of codes sent to each email address.",
       "none": "No analytics, no ads, no tracking. Kotsu never sells your data."
     },
     "use": {
@@ -138,7 +139,7 @@
     "retention": {
       "title": "How long",
       "account": "Your account and what you make: until you delete your account.",
-      "signIn": "A sign-in code works for 5 minutes, a session for 7 days without a visit, and a count of requests from an IP address is kept for a minute. Once expired, they're deleted automatically. Your sessions, passkeys and Google link are deleted with your account."
+      "signIn": "A sign-in code works for 5 minutes, a session for 7 days without a visit, a count of requests from an IP address is kept for a minute, and a count of codes sent to an email address for 15 minutes. Once expired, they're deleted automatically. Your sessions, passkeys and Google link are deleted with your account."
     },
     "rights": {
       "title": "Your rights",
