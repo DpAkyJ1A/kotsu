@@ -8,6 +8,40 @@
     "goTo": "Перейти",
     "actions": "Действия"
   },
+  "shelves": {
+    "newShelf": "Новая полка",
+    "name": "Название полки",
+    "options": "Действия с полкой {name}",
+    "rename": "Переименовать",
+    "colour": "Цвет",
+    "delete": "Удалить",
+    "deleted": "Полка {name} удалена",
+    "undo": "Вернуть",
+    "empty": "Полок пока нет",
+    "emptyHint": "Полка собирает доки и таблицы на одну тему.",
+    "emptyShelf": "На этой полке пока пусто",
+    "emptyShelfHint": "Здесь будут лежать доки и таблицы.",
+    "colours": {
+      "violet": "Фиолетовый",
+      "blue": "Синий",
+      "amber": "Янтарный",
+      "green": "Зелёный",
+      "pink": "Розовый",
+      "orange": "Оранжевый",
+      "red": "Красный",
+      "teal": "Бирюзовый",
+      "slate": "Серый"
+    },
+    "move": {
+      "handle": "Переместить полку {name}",
+      "roleDescription": "перетаскиваемый",
+      "instructions": "Нажми пробел, чтобы взять полку, стрелки вверх и вниз — чтобы двигать её, пробел ещё раз — чтобы отпустить, Escape — чтобы отменить.",
+      "pickedUp": "Полка {name} взята. Место {position, number} из {count, number}.",
+      "movedTo": "{name}: место {position, number} из {count, number}.",
+      "dropped": "Полка {name} теперь на месте {position, number} из {count, number}.",
+      "cancelled": "Перемещение отменено. Полка {name} снова на месте {position, number} из {count, number}."
+    }
+  },
   "ui": {
     "close": "Закрыть",
     "notifications": "Уведомления",

@@ -7,6 +7,9 @@ swaps in `__mocks__/auth-client.ts`), and the way to the sign-in page and back (
 
 The palette's colours (`palette-colors.ts`), shared by the database enum and the shelves.
 
+`run-action.ts` calls a Server Action from the browser and boils its answer down to `null` or a failure code: the
+action's own, `OFFLINE` when the browser is offline (then nothing is sent), or `INTERNAL` when the call itself fails.
+
 Also the one list of each choice in user settings (`user-settings.ts`: themes, languages, week starts, time formats),
 which the database schema, the settings schema and the language picking share, and the two cookies that keep the
 theme and the language on a device for the pages without a user: `theme-cookie.ts` and `pick-locale.ts`, which also

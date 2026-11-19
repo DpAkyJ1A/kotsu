@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-import { settingsSaved, signInWithCode, test } from './fixtures';
+import { actionAnswered, signInWithCode, test } from './fixtures';
 
 test.use({ locale: 'en-US' });
 
@@ -63,7 +63,7 @@ test('the palette flips the theme and saves it to the account', async ({
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('body')).toHaveCSS('background-color', DARK);
 
-  const saved = settingsSaved(page);
+  const saved = actionAnswered(page);
   await runFromPalette(page, 'Toggle theme');
   await expect(page.locator('body')).toHaveCSS('background-color', LIGHT);
   await saved;

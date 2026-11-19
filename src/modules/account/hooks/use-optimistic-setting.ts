@@ -1,13 +1,15 @@
 import { startTransition, useOptimistic } from 'react';
 
+import { useActionMutation } from '@/ui/use-action-mutation';
+
+import { updateSettingsAction } from '../actions';
 import type { SettingsPatch } from '../core/settings';
-import { useUpdateSettings } from './use-update-settings';
 
 export function useOptimisticSetting<Value>(
   saved: Value,
   toPatch: (value: Value) => SettingsPatch,
 ) {
-  const updateSettings = useUpdateSettings();
+  const updateSettings = useActionMutation(updateSettingsAction);
   const [shown, setShown] = useOptimistic(saved);
 
   function pick(value: Value) {

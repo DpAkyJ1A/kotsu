@@ -16,6 +16,8 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSwatchGroup,
+  DropdownMenuSwatchItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { IconButton } from './icon-button';
@@ -267,5 +269,70 @@ export const SubmenuKeyboard: StoryObj<Meta<typeof ItemActions>> = {
     await userEvent.keyboard('{ArrowDown}{Enter}');
     await expect(args.onDelete).toHaveBeenCalledOnce();
     await expect(args.onMove).not.toHaveBeenCalled();
+  },
+};
+
+const SWATCHES = [
+  { value: 'violet', label: 'Violet', className: 'bg-violet-foreground' },
+  { value: 'blue', label: 'Blue', className: 'bg-blue-foreground' },
+  { value: 'teal', label: 'Teal', className: 'bg-teal-foreground' },
+  { value: 'amber', label: 'Amber', className: 'bg-amber-foreground' },
+];
+
+type ColourMenuProps = { onColourChange: (colour: string) => void };
+
+function ColourMenu({ onColourChange }: ColourMenuProps) {
+  const [colour, setColour] = useState('violet');
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <IconButton label="Options for Spanish">
+          <EllipsisIcon />
+        </IconButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        <DropdownMenuLabel id="colour">Colour</DropdownMenuLabel>
+        <DropdownMenuSwatchGroup
+          aria-labelledby="colour"
+          value={colour}
+          onValueChange={setColour}
+        >
+          {SWATCHES.map((swatch) => (
+            <DropdownMenuSwatchItem
+              key={swatch.value}
+              value={swatch.value}
+              aria-label={swatch.label}
+              textValue={swatch.label}
+              className={swatch.className}
+              onSelect={() => {
+                onColourChange(swatch.value);
+              }}
+            />
+          ))}
+        </DropdownMenuSwatchGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export const WithSwatches: StoryObj<Meta<typeof ColourMenu>> = {
+  args: { onColourChange: fn() },
+  render: (args) => <ColourMenu {...args} />,
+  play: async ({ args, canvas, userEvent }) => {
+    const swatch = (name: string) =>
+      screen.getByRole('menuitemradio', { name });
+
+    canvas.getByRole('button', { name: 'Options for Spanish' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(swatch('Violet')).toHaveFocus());
+    await expect(swatch('Violet')).toBeChecked();
+
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    await expect(swatch('Teal')).toBeChecked();
+    await expect(swatch('Teal')).toHaveFocus();
+    await expect(args.onColourChange).toHaveBeenCalledOnce();
+    await expect(args.onColourChange).toHaveBeenLastCalledWith('teal');
+    await userEvent.keyboard('{Escape}');
   },
 };

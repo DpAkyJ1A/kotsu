@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { SettingsAvatarLink } from '@/modules/account';
 import { loadAccount } from '@/modules/account/loaders';
-import { PageHeader } from '@/ui/page-header';
+import { ShelvesScreen } from '@/modules/shelves';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('nav');
@@ -11,15 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ShelvesPage() {
-  const [t, account] = await Promise.all([
-    getTranslations('nav'),
-    loadAccount(),
-  ]);
+  const account = await loadAccount();
 
   return (
-    <PageHeader>
-      <h1 className="text-2xl font-bold tracking-tight">{t('shelves')}</h1>
-      <SettingsAvatarLink account={account} className="ml-auto md:hidden" />
-    </PageHeader>
+    <ShelvesScreen
+      avatar={<SettingsAvatarLink account={account} className="md:hidden" />}
+    />
   );
 }

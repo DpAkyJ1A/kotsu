@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-import { settingsSaved, signInWithCode, test } from './fixtures';
+import { actionAnswered, signInWithCode, test } from './fixtures';
 
 const PHONE = { width: 390, height: 844 };
 
@@ -42,7 +42,7 @@ test.describe('on a wide screen', () => {
 
     await dialog.getByRole('button', { name: 'Appearance' }).click();
     await expect(page).toHaveURL('/calendar?settings=appearance');
-    const saved = settingsSaved(page);
+    const saved = actionAnswered(page);
     await dialog.getByRole('radio', { name: 'Sunday' }).click();
     await saved;
 
@@ -171,7 +171,7 @@ test.describe('on a phone', () => {
       page.getByRole('navigation').getByRole('link', { name: 'Calendar' }),
     ).toBeVisible();
 
-    const saved = settingsSaved(page);
+    const saved = actionAnswered(page);
     await page.getByRole('radio', { name: '12 h' }).click();
     await saved;
     await expect(
@@ -186,7 +186,7 @@ test.describe('on a phone', () => {
     page,
   }) => {
     await page.goto('/settings/appearance');
-    const saved = settingsSaved(page);
+    const saved = actionAnswered(page);
     await page.getByRole('radio', { name: 'Dark' }).click();
 
     await expect(page.locator('body')).toHaveCSS(

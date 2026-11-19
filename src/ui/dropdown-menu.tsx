@@ -32,6 +32,7 @@ const MENU_CLASS_NAME =
 export function DropdownMenuContent({
   className,
   sideOffset = 6,
+  collisionPadding = 8,
   ...props
 }: ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
@@ -39,6 +40,7 @@ export function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         className={cn(
           MENU_CLASS_NAME,
           'max-h-(--radix-dropdown-menu-content-available-height)',
@@ -148,6 +150,44 @@ export function DropdownMenuSegmentedItem({
       )}
       {...props}
     />
+  );
+}
+
+export function DropdownMenuSwatchGroup({
+  className,
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
+  return (
+    <DropdownMenuPrimitive.RadioGroup
+      data-slot="dropdown-menu-swatch-group"
+      className={cn('flex justify-between px-1.5 py-1', className)}
+      {...props}
+    />
+  );
+}
+
+export function DropdownMenuSwatchItem({
+  className,
+  onSelect,
+  ...props
+}: Omit<ComponentProps<typeof DropdownMenuPrimitive.RadioItem>, 'children'>) {
+  return (
+    <DropdownMenuPrimitive.RadioItem
+      data-slot="dropdown-menu-swatch-item"
+      onSelect={(event) => {
+        event.preventDefault();
+        onSelect?.(event);
+      }}
+      className={cn(
+        'grid size-5 cursor-default place-items-center rounded-full text-background outline-hidden transition-transform select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-highlighted:scale-115 motion-reduce:transition-none pointer-coarse:size-6',
+        className,
+      )}
+      {...props}
+    >
+      <DropdownMenuPrimitive.ItemIndicator>
+        <CheckIcon className="size-3.5" strokeWidth={3} />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </DropdownMenuPrimitive.RadioItem>
   );
 }
 
