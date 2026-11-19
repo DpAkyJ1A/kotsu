@@ -37,13 +37,14 @@ gets its own colour, and its ⋯ menu renames it, recolours it or deletes it, wi
 reorder (on a phone, press and hold it first; from the keyboard, Tab to its move handle, then Space and the arrows). A
 shelf opens its own page, still empty: docs and sheets come next. Kotsu also installs as an app: Chrome offers it in the
 address bar, an iPhone adds it with Share → Add to Home Screen, and it opens in a window of its own, without the
-browser's bars, its title bar in the colours of the theme you picked.
+browser's bars, its title bar in the colours of the theme you picked. And it runs on your own server: one Docker
+Compose command starts the app with its database (see [Self-hosting](#self-hosting)).
 
 ## Tech stack
 
 Next.js 16 (App Router, React Compiler) · React 19 · TypeScript 6 · Tailwind CSS 4 · shadcn/ui on Radix ·
 Sonner · cmdk · dnd-kit · next-intl · Lucide icons · Storybook 10 · Postgres 18 (Neon) · Drizzle ORM · Better Auth ·
-Resend · pnpm
+Resend · pnpm · Docker
 
 ## Architecture
 
@@ -130,7 +131,8 @@ back, so tests never see each other's rows.
 port (such as `pnpm dev`) is tested instead. The app needs its database here too.
 
 On GitHub, every pull request runs lint and the format check, typecheck, Knip, every kind of test (the
-database and end-to-end ones with a Postgres 18 service) and a production build in parallel, and checks that
+database and end-to-end ones with a Postgres 18 service), a production build, and the self-hosting setup (it builds the
+Docker image, starts it with `self-host/compose.yaml` and runs the `@smoke` tests against it) in parallel, and checks that
 its title follows Conventional Commits, because the squash merge makes the title the commit message. `main`
 takes changes only through a pull request with every check green.
 
@@ -145,6 +147,48 @@ PLAYWRIGHT_BASE_URL=https://… VERCEL_AUTOMATION_BYPASS_SECRET=… pnpm test:sm
 ```
 
 The secret is needed only for previews, which sit behind Vercel's Deployment Protection.
+
+## Self-hosting
+
+Kotsu runs on any machine with Docker. The [`Dockerfile`](Dockerfile) builds the production server, and
+[`self-host/compose.yaml`](self-host/compose.yaml) runs it with Postgres 18:
+
+```sh
+git clone https://github.com/DpAkyJ1A/kotsu.git
+cd kotsu/self-host
+cp .env.example .env   # fill in BETTER_AUTH_SECRET and POSTGRES_PASSWORD: openssl rand -hex 32
+docker compose up -d
+```
+
+`docker compose up` builds the image, waits for the database, applies the migrations (the `migrate` service runs
+once and exits) and starts the app on http://localhost:3000. `docker compose logs -f app` follows its log;
+`git pull && docker compose up -d --build` updates it; `docker compose down` stops it and keeps the data, which
+`docker compose down -v` deletes.
+
+The settings live in `self-host/.env`:
+
+| Variable                                   | Does                                                                                                                                                                                                                                                                        |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                                  | the address people open Kotsu at, such as `https://kotsu.example.com`. Sign-in takes requests only from it and ties passkeys to its host, so passkeys made under one host don't work under another                                                                          |
+| `BETTER_AUTH_SECRET`                       | signs sessions and encrypts sign-in codes, at least 32 characters                                                                                                                                                                                                           |
+| `POSTGRES_PASSWORD`                        | the database's password; letters and digits only, since it goes into the database URL                                                                                                                                                                                       |
+| `RESEND_API_KEY`, `EMAIL_FROM`             | email sign-in codes through [Resend](https://resend.com), from an address on a domain verified there                                                                                                                                                                        |
+| `SIGN_IN_CODES_IN_LOG`                     | `true` prints sign-in codes in `docker compose logs app` instead of emailing them: enough when the server is yours alone, since after the first sign-in a passkey can take over. With neither this nor Resend, a code has nowhere to go and sign-in fails                   |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | turn on Continue with Google: an OAuth client of type Web application from the Google Cloud Console, with the redirect URI `<APP_URL>/api/auth/callback/google`                                                                                                             |
+| `TRUSTED_PROXIES`                          | proxies (addresses or CIDR ranges, comma-separated) whose entries in `X-Forwarded-For` count. Sign-in limits code requests per visitor's address and reads it from that header; set this only if your proxy appends to the header (nginx with `$proxy_add_x_forwarded_for`) |
+
+The app listens on 127.0.0.1:3000 only, so the internet reaches it through an HTTPS proxy on the same machine:
+passkeys and secure cookies need HTTPS everywhere but `localhost`. [Caddy](https://caddyserver.com) gets the
+certificate itself and replaces `X-Forwarded-For` with the visitor's address, so this is its whole Caddyfile:
+
+```
+kotsu.example.com {
+	reverse_proxy localhost:3000
+}
+```
+
+To run the image without Compose, start `node migrate.ts` in it once per update before the server, with the same
+`DATABASE_URL`; the server itself is the image's default command.
 
 ## License
 

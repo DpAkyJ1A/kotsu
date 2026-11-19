@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 # The Postgres service of the `db` and `e2e` jobs, and a session-signing secret that exists only in CI; `build`
-# needs both only to pass the check in src/server/env.ts
+# needs both only to pass the check in src/server/env.ts, and `docker` hands the secret to its container
 env:
   DATABASE_URL: postgres://kotsu:kotsu@localhost:5432/kotsu
   BETTER_AUTH_SECRET: ci-only-secret-that-signs-no-real-session
@@ -95,6 +95,26 @@ jobs:
       - *checkout
       - *setup
       - run: pnpm build
+
+  # Self-hosting as the README describes it: the image builds, migrates a fresh database and passes the smoke tests
+  docker:
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: http://localhost:3000
+      POSTGRES_PASSWORD: ci-only-database-password
+      SIGN_IN_CODES_IN_LOG: 'true'
+    steps:
+      - *checkout
+      - *setup
+      - run: docker compose up --build --wait
+        working-directory: self-host
+      - run: pnpm exec playwright install --with-deps --only-shell chromium
+      - run: pnpm test:smoke
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+      - if: failure()
+        run: docker compose logs
+        working-directory: self-host
 
   e2e:
     runs-on: ubuntu-latest

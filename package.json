@@ -21,7 +21,7 @@
     "test:smoke": "playwright test --grep @smoke --project desktop",
     "storybook": "storybook dev --port 6006",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "node --env-file-if-exists=.env migrate.ts",
     "db:studio": "drizzle-kit studio",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm test"
   },

@@ -5,30 +5,33 @@ import { Resend } from 'resend';
 
 import { env } from '@/server/env';
 
-const FROM = 'Kotsu <no-reply@kotsu.devazx.com>';
-
 type SignInCode = { email: string; otp: string; minutesValid: number };
+
+type ResendSender = { apiKey: string; from: string };
 
 export type SendSignInCode = (code: SignInCode) => Promise<void>;
 
 export const sendSignInCode: SendSignInCode = async (code) => {
   if (env.RESEND_API_KEY) {
-    await emailCode(env.RESEND_API_KEY, code);
+    await emailCode({ apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM }, code);
     return;
   }
-  if (env.NODE_ENV !== 'development') {
-    throw new Error('RESEND_API_KEY is not set, so the code cannot be emailed');
+  const logsCodes = env.NODE_ENV === 'development' || env.SIGN_IN_CODES_IN_LOG;
+  if (!logsCodes) {
+    throw new Error(
+      'Neither RESEND_API_KEY nor SIGN_IN_CODES_IN_LOG is set, so the code has nowhere to go',
+    );
   }
   console.info(`Sign-in code for ${code.email}: ${code.otp}`);
 };
 
 async function emailCode(
-  apiKey: string,
+  { apiKey, from }: ResendSender,
   { email, otp, minutesValid }: SignInCode,
 ) {
   const t = await getTranslations('email.signInCode');
   const { error } = await new Resend(apiKey).emails.send({
-    from: FROM,
+    from,
     to: email,
     subject: t('subject', { code: otp }),
     text: t('text', { code: otp, minutes: minutesValid }),

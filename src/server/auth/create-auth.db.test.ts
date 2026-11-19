@@ -135,6 +135,56 @@ describe('the auth API', () => {
   });
 });
 
+describe('a self-hosted copy', () => {
+  const SELF_HOSTED = { APP_URL: 'https://kotsu.example.com' };
+
+  function requestCodeFrom(origin: string, auth: Auth) {
+    return post(auth, {
+      path: '/email-otp/send-verification-otp',
+      body: { email: EMAIL, type: 'sign-in' },
+      origin,
+    });
+  }
+
+  test('sends a code to its own address', async ({ db }) => {
+    const { auth, sentCodes } = createTestAuth(db, SELF_HOSTED);
+
+    const response = await requestCodeFrom('https://kotsu.example.com', auth);
+
+    expect(response.status).toBe(200);
+    expect(sentCodes).toHaveLength(1);
+  });
+
+  test.for(['http://localhost:5687', 'https://kotsu.evil.example'])(
+    'refuses to send a code to %s',
+    async (origin, { db }) => {
+      const { auth, sentCodes } = createTestAuth(db, SELF_HOSTED);
+
+      const response = await requestCodeFrom(origin, auth);
+
+      expect(response.status).toBe(403);
+      expect(sentCodes).toHaveLength(0);
+    },
+  );
+
+  test('behind a trusted proxy each visitor has a code limit of their own', async ({
+    db,
+  }) => {
+    const { auth } = createTestAuth(db, { TRUSTED_PROXIES: ['10.0.0.0/8'] });
+    const requestCodeAs = (visitor: string) =>
+      post(auth, {
+        path: '/email-otp/send-verification-otp',
+        body: { email: EMAIL, type: 'sign-in' },
+        ip: `${visitor}, 10.1.2.3`,
+      });
+
+    for (let i = 0; i < 3; i++) await requestCodeAs('192.0.2.10');
+
+    expect((await requestCodeAs('192.0.2.10')).status).toBe(429);
+    expect((await requestCodeAs('192.0.2.20')).status).toBe(200);
+  });
+});
+
 describe('passkeys', () => {
   test('a visitor cannot start adding a passkey', async ({ db }) => {
     const { auth } = createTestAuth(db);

@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
+  // The Docker image runs Next.js's own minimal server; `next start` warns about this output, so only the image asks for it
+  ...(process.env.NEXT_OUTPUT === 'standalone' ? { output: 'standalone' } : {}),
   reactCompiler: true,
   typedRoutes: true,
   redirects: () =>

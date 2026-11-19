@@ -8,6 +8,7 @@ import type { Db } from '@/server/db/client';
 import { account, passkey, user } from '@/server/db/schema/auth';
 
 import { type Auth, createAuth } from './create-auth';
+import { deployment, type DeploymentEnv } from './deployment';
 
 export const TEST_SECRET = 'test-secret-with-at-least-32-characters';
 export const RP_ID = 'localhost';
@@ -31,7 +32,10 @@ const ORIGIN = `http://${HOST}`;
 const IP_PER_TEST_FILE = ['10.0', randomInt(256), randomInt(1, 255)].join('.');
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
-export function createTestAuth(db: Db) {
+export function createTestAuth(
+  db: Db,
+  deploymentEnv: Partial<DeploymentEnv> = {},
+) {
   const sentCodes: string[] = [];
   const auth = createAuth({
     db,
@@ -40,7 +44,7 @@ export function createTestAuth(db: Db) {
       sentCodes.push(otp);
       return Promise.resolve();
     },
-    rpID: RP_ID,
+    deployment: deployment({ TRUSTED_PROXIES: [], ...deploymentEnv }),
     google: GOOGLE,
   });
   return { auth, sentCodes };
@@ -51,18 +55,19 @@ type AuthRequest = {
   body: object;
   cookie?: string;
   ip?: string;
+  origin?: string;
 };
 
-export function post(auth: Auth, { path, body, cookie, ip }: AuthRequest) {
-  const headers = new Headers({
-    'content-type': 'application/json',
-    origin: ORIGIN,
-  });
+export function post(
+  auth: Auth,
+  { path, body, cookie, ip, origin = ORIGIN }: AuthRequest,
+) {
+  const headers = new Headers({ 'content-type': 'application/json', origin });
   if (cookie) headers.set('cookie', cookie);
   headers.set('x-forwarded-for', ip ?? IP_PER_TEST_FILE);
 
   return auth.handler(
-    new Request(`${ORIGIN}/api/auth${path}`, {
+    new Request(`${origin}/api/auth${path}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
