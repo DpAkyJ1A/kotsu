@@ -134,3 +134,11 @@ export const rateLimit = pgTable('rate_limit', {
   count: integer('count').notNull(),
   lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
 });
+
+export const signInCodeCount = pgTable('sign_in_code_count', {
+  email: text('email').primaryKey(),
+  windowStartedAt: timestamp('window_started_at', {
+    withTimezone: true,
+  }).notNull(),
+  requests: integer('requests').notNull(),
+});

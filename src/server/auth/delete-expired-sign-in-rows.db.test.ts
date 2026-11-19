@@ -7,7 +7,12 @@ import {
   signIn,
 } from '@/server/auth/testing';
 import type { Db } from '@/server/db/client';
-import { rateLimit, session, verification } from '@/server/db/schema/auth';
+import {
+  rateLimit,
+  session,
+  signInCodeCount,
+  verification,
+} from '@/server/db/schema/auth';
 import { dbTest as test } from '@/server/db/testing';
 
 const MINUTE_MS = 60 * 1000;
@@ -32,6 +37,14 @@ async function addCode(db: Db, expiresAt: Date) {
   return identifier;
 }
 
+async function addCodeCount(db: Db, windowStartedAt: Date) {
+  const email = `${crypto.randomUUID()}@example.com`;
+  await db
+    .insert(signInCodeCount)
+    .values({ email, windowStartedAt, requests: 3 });
+  return email;
+}
+
 async function sessionTokens(db: Db) {
   const rows = await db.select({ token: session.token }).from(session);
   return rows.map((row) => row.token);
@@ -42,6 +55,13 @@ async function codeIdentifiers(db: Db) {
     .select({ identifier: verification.identifier })
     .from(verification);
   return rows.map((row) => row.identifier);
+}
+
+async function countedEmails(db: Db) {
+  const rows = await db
+    .select({ email: signInCodeCount.email })
+    .from(signInCodeCount);
+  return rows.map((row) => row.email);
 }
 
 async function requestCountKeys(db: Db) {
@@ -66,6 +86,19 @@ describe('expired sign-in records', () => {
     expect(await sessionTokens(db)).not.toContain(expiredSession);
     expect(await codeIdentifiers(db)).toContain(liveCode);
     expect(await codeIdentifiers(db)).not.toContain(expiredCode);
+  });
+
+  test('a sign-in deletes code counts whose 15 minutes are over and keeps running ones', async ({
+    db,
+  }) => {
+    const { auth, sentCodes } = createTestAuth(db);
+    const overCount = await addCodeCount(db, fromNow(-16 * MINUTE_MS));
+    const runningCount = await addCodeCount(db, fromNow(-14 * MINUTE_MS));
+
+    await signIn(auth, sentCodes);
+
+    expect(await countedEmails(db)).toContain(runningCount);
+    expect(await countedEmails(db)).not.toContain(overCount);
   });
 
   test('a cleanup that fails is logged and the sign-in still goes through', async ({

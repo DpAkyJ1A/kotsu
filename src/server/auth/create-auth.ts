@@ -13,6 +13,7 @@ import * as schema from '@/server/db/schema/auth';
 import { deleteExpiredSignInRows } from './delete-expired-sign-in-rows';
 import type { Deployment } from './deployment';
 import type { GoogleClient } from './google-client';
+import { limitSignInCodes } from './limit-sign-in-codes';
 import { passkeyName } from './passkey-name';
 import type { SendSignInCode } from './send-sign-in-code';
 
@@ -55,6 +56,7 @@ export function createAuth({
     rateLimit: { enabled: true, storage: 'database' },
     disabledPaths: UNUSED_EMAIL_OTP_PATHS,
     onAPIError: { errorURL: signInPath(null) },
+    hooks: { before: limitSignInCodes(db) },
     socialProviders: google
       ? { google: { ...google, prompt: 'select_account' } }
       : {},
