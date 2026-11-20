@@ -70,7 +70,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
 
   return (
     <TooltipProvider>
-      <ShelvesProvider shelves={navigation.shelves}>
+      <ShelvesProvider shelves={navigation.shelves} items={navigation.items}>
         <SidebarProvider defaultState={sidebarState}>
           <Sidebar>
             <SidebarHeader>

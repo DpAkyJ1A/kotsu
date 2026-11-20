@@ -24,7 +24,7 @@ export function useShelfList(saved: Shelf[]) {
   const moveShelf = useActionMutation(moveShelfAction);
   const deleteShelf = useActionMutation(deleteShelfAction);
 
-  function change(shelfChange: ShelfChange, save: () => Promise<void>) {
+  function change(shelfChange: ShelfChange, save: () => Promise<unknown>) {
     startTransition(async () => {
       showChange(shelfChange);
       await save();

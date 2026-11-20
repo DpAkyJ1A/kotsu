@@ -5,20 +5,21 @@ import { cva } from 'class-variance-authority';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useRef } from 'react';
 
 import { isCurrentSection } from '@/ui/current-section';
 import { IconButton } from '@/ui/icon-button';
 import { GripVerticalIcon } from '@/ui/icons';
 
-import type { Shelf } from '../core/shelf';
+import { type Shelf, SHELF_NAME_MAX_LENGTH } from '../core/shelf';
 import { shelfPath } from '../core/shelf-path';
+import { useOpenUnlessDoubleClicked } from '../hooks/use-open-unless-double-clicked';
+import { useRenaming } from '../hooks/use-renaming';
 import { useShelves } from '../hooks/use-shelves';
+import { NameInput } from './name-input';
 import { ShelfDot } from './shelf-dot';
 import type { ShelfListSize } from './shelf-list-size';
 import { ShelfMenu } from './shelf-menu';
-import { type Ending, ShelfNameInput } from './shelf-name-input';
 
 const rowVariants = cva(
   'group/shelf flex items-center gap-1 bg-inherit transition-colors select-none [-webkit-touch-callout:none] data-dragging:shadow-lg',
@@ -64,36 +65,34 @@ const menuVariants = cva('', {
   },
 });
 
-type Renaming = { caret?: number };
+const LIST_STAYS_WHEN_A_SHELF_OPENS: Record<ShelfListSize, boolean> = {
+  sidebar: true,
+  page: false,
+};
 
 type ShelfRowProps = { shelf: Shelf; index: number; size: ShelfListSize };
 
 export function ShelfRow({ shelf, index, size }: ShelfRowProps) {
-  const t = useTranslations('shelves.move');
+  const t = useTranslations('shelves');
   const shelves = useShelves();
   const pathname = usePathname();
-  const [renaming, setRenaming] = useState<Renaming | null>(null);
   const linkRef = useRef<HTMLAnchorElement>(null);
   const nameRef = useRef<HTMLSpanElement>(null);
+  const rename = useRenaming({ link: linkRef, name: nameRef });
   const { ref, handleRef, isDragging } = useSortable({
     id: shelf.id,
     index,
     data: { name: shelf.name },
   });
   const href = shelfPath(shelf.id);
-
-  function startRenaming(start: Renaming) {
-    flushSync(() => {
-      setRenaming(start);
-    });
-  }
-
-  function stopRenaming({ restoreFocus }: Ending) {
-    flushSync(() => {
-      setRenaming(null);
-    });
-    if (restoreFocus) linkRef.current?.focus();
-  }
+  const handleClick = useOpenUnlessDoubleClicked({
+    href,
+    waitOn: nameRef,
+    onDoubleClick: rename.startAtClick,
+  });
+  const clickHandlers = LIST_STAYS_WHEN_A_SHELF_OPENS[size]
+    ? { onDoubleClick: rename.startAtClick }
+    : { onClick: handleClick };
 
   return (
     <li
@@ -101,17 +100,19 @@ export function ShelfRow({ shelf, index, size }: ShelfRowProps) {
       data-dragging={isDragging ? '' : undefined}
       className={rowVariants({ size })}
     >
-      {renaming ? (
+      {rename.editing ? (
         <div className={renameVariants({ size })}>
           <DotBox color={shelf.color} />
-          <ShelfNameInput
+          <NameInput
+            label={t('name')}
+            maxLength={SHELF_NAME_MAX_LENGTH}
             defaultValue={shelf.name}
-            {...renaming}
+            {...rename.editing}
             onSave={(name, ending) => {
               if (name !== shelf.name) shelves.update(shelf.id, { name });
-              stopRenaming(ending);
+              rename.stop(ending);
             }}
-            onCancel={stopRenaming}
+            onCancel={rename.stop}
           />
         </div>
       ) : (
@@ -121,9 +122,7 @@ export function ShelfRow({ shelf, index, size }: ShelfRowProps) {
           draggable={false}
           aria-current={isCurrentSection(pathname, href) ? 'page' : undefined}
           className={linkVariants({ size })}
-          onDoubleClick={(event) => {
-            startRenaming({ caret: caretIn(nameRef.current, event) });
-          }}
+          {...clickHandlers}
         >
           <DotBox color={shelf.color} />
           <span ref={nameRef} className="truncate">
@@ -133,8 +132,8 @@ export function ShelfRow({ shelf, index, size }: ShelfRowProps) {
       )}
       <IconButton
         ref={handleRef}
-        label={t('handle', { name: shelf.name })}
-        aria-roledescription={t('roleDescription')}
+        label={t('move.handle', { name: shelf.name })}
+        aria-roledescription={t('move.roleDescription')}
         size="sm"
         className="sr-only text-muted-foreground focus-visible:not-sr-only focus-visible:size-8"
       >
@@ -143,9 +142,7 @@ export function ShelfRow({ shelf, index, size }: ShelfRowProps) {
       <ShelfMenu
         shelf={shelf}
         className={menuVariants({ size })}
-        onRename={() => {
-          startRenaming({});
-        }}
+        onRename={rename.start}
       />
     </li>
   );
@@ -157,10 +154,4 @@ function DotBox({ color }: Pick<Shelf, 'color'>) {
       <ShelfDot color={color} />
     </span>
   );
-}
-
-function caretIn(name: HTMLElement | null, event: MouseEvent) {
-  const caret = document.caretPositionFromPoint(event.clientX, event.clientY);
-  if (caret && name?.contains(caret.offsetNode)) return caret.offset;
-  return name?.textContent.length ?? 0;
 }

@@ -21,7 +21,8 @@ tells which theme is on the page (`useAppliedTheme` follows `data-theme` on `<ht
 and whether to show ⌘ or Ctrl lives in `shortcut.ts`; `useShortcut` binds one to the document. `RadioCards` picks one
 value out of a few shown as pictures (the theme previews in Settings, the templates at onboarding); a picker that needs another
 picture size sets it on `data-slot="radio-card-picture"`. `useActionMutation` wraps a Server Action for a component:
-it runs it, and when it fails shows the error code's message (`errors.*`) in a toast.
+it runs it, when it fails shows the error code's message (`errors.*`) in a toast, and answers whether it went through.
+`useMediaQuery` follows a CSS media query (false on the server).
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

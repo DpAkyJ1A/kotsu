@@ -6,6 +6,8 @@ import { actionAnswered, signInWithCode, test } from './fixtures';
 const PHONE = { width: 390, height: 844 };
 const UNDO_DELAY_MS = 5_000;
 const LONG_PRESS_MS = 400;
+const DOUBLE_CLICK_WAIT_MS = 300;
+const SHELF_URL = /\/shelves\/[\da-f-]{36}$/;
 
 test.use({ locale: 'en-US' });
 
@@ -174,6 +176,120 @@ test.describe('in the sidebar', () => {
     const menu = await pickFromMenu(page, sidebar, 'Spanish');
     await menu.getByRole('menuitem', { name: 'Delete' }).click();
     await expect(page).toHaveURL('/shelves');
+  });
+
+  test('opens a shelf at once on a click on its name', async ({ page }) => {
+    await page.clock.install();
+    await page.reload();
+    const sidebar = sidebarShelvesOf(page);
+    await createShelf(page, sidebar, 'Spanish');
+
+    await page.clock.pauseAt(Date.now() + 1_000);
+    await sidebar.getByRole('link', { name: 'Spanish' }).click();
+    await expect(page).toHaveURL(SHELF_URL);
+  });
+});
+
+test.describe('on the Shelves page of a wide screen', () => {
+  test.skip(
+    ({ isMobile }) => isMobile,
+    'Phones open a shelf on a tap and rename it from its ⋯ menu',
+  );
+
+  test('renames a shelf on a double-click on its name, with the caret where the click was', async ({
+    page,
+  }) => {
+    await createShelf(page, sidebarShelvesOf(page), 'Spanish');
+    await page.goto('/shelves');
+    const main = page.getByRole('main');
+
+    const nameText = main.getByText('Spanish', { exact: true });
+    const box = await nameText.boundingBox();
+    await nameText.dblclick({
+      position: { x: 12, y: (box?.height ?? 0) / 2 },
+    });
+    const name = main.getByRole('textbox', { name: 'Shelf name' });
+    await expect(name).toBeFocused();
+    const [start, end] = await name.evaluate((input: HTMLInputElement) => [
+      input.selectionStart ?? -1,
+      input.selectionEnd ?? -1,
+    ]);
+    expect(start).toBe(end);
+    expect(start).toBeGreaterThan(0);
+    expect(start).toBeLessThan('Spanish'.length);
+    await page.waitForTimeout(2 * DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL('/shelves');
+    await expect(name).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' B1');
+    const answered = actionAnswered(page);
+    await page.keyboard.press('Enter');
+    await answered;
+
+    await page.reload();
+    await expect(namesIn(main)).toHaveText(['Spanish B1']);
+  });
+
+  test('opens a shelf a moment after a click on its name, and at once on a click beside it', async ({
+    page,
+  }) => {
+    await page.clock.install();
+    await page.reload();
+    await createShelf(page, sidebarShelvesOf(page), 'Spanish');
+    await page.goto('/shelves');
+    const main = page.getByRole('main');
+    await page.clock.pauseAt(Date.now() + 1_000);
+
+    await main.getByText('Spanish', { exact: true }).click();
+    await page.waitForTimeout(2 * DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL('/shelves');
+    await page.clock.runFor(DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL(SHELF_URL);
+
+    await page.goBack();
+    await main
+      .getByRole('link', { name: 'Spanish' })
+      .click({ position: { x: 8, y: 8 } });
+    await expect(page).toHaveURL(SHELF_URL);
+  });
+
+  test('reorders shelves with the mouse without opening the one it drags', async ({
+    page,
+  }) => {
+    const sidebar = sidebarShelvesOf(page);
+    await createShelf(page, sidebar, 'Spanish');
+    await createShelf(page, sidebar, 'Guitar');
+    await page.goto('/shelves');
+    const main = page.getByRole('main');
+
+    const guitar = await main
+      .getByText('Guitar', { exact: true })
+      .boundingBox();
+    if (!guitar) throw new Error('Guitar must be on screen');
+    await page.mouse.move(guitar.x + 20, guitar.y + guitar.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(guitar.x + 20, guitar.y + guitar.height / 2 + 10, {
+      steps: 5,
+    });
+    await page.mouse.move(guitar.x + 20, guitar.y + guitar.height / 2, {
+      steps: 5,
+    });
+    await page.mouse.up();
+    await page.waitForTimeout(2 * DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL('/shelves');
+
+    const answered = actionAnswered(page);
+    await dragWithMouse(
+      page,
+      main.getByText('Guitar', { exact: true }),
+      main.getByRole('link', { name: 'Spanish' }),
+    );
+    await answered;
+    await page.waitForTimeout(2 * DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL('/shelves');
+
+    await page.reload();
+    await expect(namesIn(main)).toHaveText(['Guitar', 'Spanish']);
   });
 });
 

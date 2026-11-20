@@ -12,5 +12,6 @@ export function useActionMutation<Input>(action: Action<Input, ErrorCode>) {
   return async function run(input: Input) {
     const failure = await runAction(action, input);
     if (failure) toast.error(t(failure));
+    return failure === null;
   };
 }

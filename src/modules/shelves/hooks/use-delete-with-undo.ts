@@ -3,8 +3,6 @@ import { useState } from 'react';
 
 import { toast } from '@/ui/toast';
 
-import type { Shelf } from '../core/shelf';
-
 const UNDO_DELAY_MS = 5_000;
 
 export function useDeleteWithUndo(deleteNow: (id: string) => void) {
@@ -17,22 +15,22 @@ export function useDeleteWithUndo(deleteNow: (id: string) => void) {
 
   return {
     waiting,
-    delete: (shelf: Shelf) => {
-      setWaiting((ids) => new Set([...ids, shelf.id]));
-      const toastId = toast(t('deleted', { name: shelf.name }), {
+    delete: (id: string, deletedMessage: string) => {
+      setWaiting((ids) => new Set([...ids, id]));
+      const toastId = toast(deletedMessage, {
         duration: Infinity,
         action: {
           label: t('undo'),
           onClick: () => {
             clearTimeout(timer);
-            stopWaiting(shelf.id);
+            stopWaiting(id);
           },
         },
       });
       const timer = setTimeout(() => {
         toast.dismiss(toastId);
-        deleteNow(shelf.id);
-        stopWaiting(shelf.id);
+        deleteNow(id);
+        stopWaiting(id);
       }, UNDO_DELAY_MS);
     },
   };

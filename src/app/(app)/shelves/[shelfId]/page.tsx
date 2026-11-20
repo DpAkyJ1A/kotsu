@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
-import { ShelfHeading } from '@/modules/shelves';
+import { ShelfHeading, ShelfScreen } from '@/modules/shelves';
 import { loadNavigation } from '@/modules/shelves/loaders';
 import { ChevronLeftIcon } from '@/ui/icons';
 import { PageHeader } from '@/ui/page-header';
@@ -40,12 +40,7 @@ export default async function ShelfPage({
         </Link>
         <ShelfHeading shelf={shelf} />
       </PageHeader>
-      <div className="grid gap-1 px-6 py-4">
-        <p className="font-semibold">{t('shelves.emptyShelf')}</p>
-        <p className="text-sm text-muted-foreground">
-          {t('shelves.emptyShelfHint')}
-        </p>
-      </div>
+      <ShelfScreen shelfId={shelf.id} />
     </>
   );
 }
