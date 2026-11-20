@@ -4,6 +4,6 @@ import { cache } from 'react';
 
 import { getCtx } from '@/server/ctx/get-ctx';
 
-import { listShelves } from './domain/queries';
+import { getNavigation } from './domain/queries';
 
-export const loadShelves = cache(async () => listShelves(await getCtx()));
+export const loadNavigation = cache(async () => getNavigation(await getCtx()));

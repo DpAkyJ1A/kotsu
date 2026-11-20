@@ -1,0 +1,562 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "58ed07f8-f4ee-4e68-895d-a7381b224a8e",
+  "prevIds": [
+    "1862b36a-16c7-4209-80bb-a024e10a99e3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "item_kind"
+      ],
+      "writes": [
+        "s|enum|public.item_kind",
+        "n|enum|public.item_kind",
+        "e|enum|public.item_kind",
+        "n|type|public.item_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "item"
+      ],
+      "writes": [
+        "s|tbl|public.item",
+        "n|tbl|public.item",
+        "e|tbl|public.item",
+        "n|rel|public.item",
+        "n|type|public.item",
+        "n|rel|public.item_pkey",
+        "n|rel|public.item_id_user_id_unique"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.item_kind"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "item",
+        "item_user_id_shelf_id_position_idx"
+      ],
+      "writes": [
+        "s|idx|public.item_user_id_shelf_id_position_idx",
+        "n|idx|public.item_user_id_shelf_id_position_idx",
+        "e|idx|public.item_user_id_shelf_id_position_idx",
+        "n|rel|public.item_user_id_shelf_id_position_idx"
+      ],
+      "reads": [
+        "n|tbl|public.item",
+        "n|sch|public",
+        "n|col|public.item.user_id",
+        "n|col|public.item.shelf_id",
+        "n|col|public.item.position"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "item",
+        "item_search_idx"
+      ],
+      "writes": [
+        "s|idx|public.item_search_idx",
+        "n|idx|public.item_search_idx",
+        "e|idx|public.item_search_idx",
+        "n|rel|public.item_search_idx"
+      ],
+      "reads": [
+        "n|tbl|public.item",
+        "n|sch|public",
+        "n|col|public.item.search"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "item",
+        "item_title_trgm_idx"
+      ],
+      "writes": [
+        "s|idx|public.item_title_trgm_idx",
+        "n|idx|public.item_title_trgm_idx",
+        "e|idx|public.item_title_trgm_idx",
+        "n|rel|public.item_title_trgm_idx"
+      ],
+      "reads": [
+        "n|tbl|public.item",
+        "n|sch|public",
+        "n|col|public.item.title"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "item"
+      ],
+      "writes": [
+        "s|fk|public.item.item_user_id_user_id_fkey",
+        "n|fk|public.item.item_user_id_user_id_fkey",
+        "e|fk|public.item.item_user_id_user_id_fkey",
+        "n|con|public.item.item_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.item",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.item.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "item"
+      ],
+      "writes": [
+        "s|fk|public.item.item_shelf_id_user_id_fkey",
+        "n|fk|public.item.item_shelf_id_user_id_fkey",
+        "e|fk|public.item.item_shelf_id_user_id_fkey",
+        "n|con|public.item.item_shelf_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.item",
+        "n|sch|public",
+        "n|tbl|public.shelf",
+        "n|sch|public",
+        "n|col|public.item.shelf_id",
+        "n|col|public.item.user_id",
+        "n|col|public.shelf.id",
+        "n|col|public.shelf.user_id",
+        "e|uniqueness|public.shelf.id.user_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "item",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "item_kind",
+        "values": [
+          "doc",
+          "sheet"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "shelf_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "kind",
+        "type": "item_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "title",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "position",
+        "type": "text collate \"C\"",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "content",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "plain_text",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "search",
+        "type": "tsvector",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": {
+          "as": "setweight(to_tsvector('simple', \"title\"), 'A') || setweight(to_tsvector('simple', \"plain_text\"), 'B')",
+          "type": "stored"
+        },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "size_bytes",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_user_id_shelf_id_position_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "shelf_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "position",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_search_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "search",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "gin",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_title_trgm_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "title",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": {
+              "name": "gin_trgm_ops",
+              "default": false
+            }
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "gin",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_shelf_id_user_id_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "shelf_id",
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "shelf",
+        "columnsTo": [
+          "id",
+          "user_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_id_user_id_unique",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "user_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "item",
+        "name": "item_title_length",
+        "value": "char_length(\"title\") between 1 and 200",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

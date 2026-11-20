@@ -12,7 +12,7 @@ import { shelf } from '@/server/db/schema/shelves';
 import { dbTest as test } from '@/server/db/testing';
 
 import { createShelf, deleteShelf, moveShelf, updateShelf } from './commands';
-import { listShelves } from './queries';
+import { getNavigation } from './queries';
 
 const NOW = new Date('2026-11-19T09:00:00Z');
 const MISSING_ID = '019a9c3e-0000-7000-8000-000000000000';
@@ -23,6 +23,10 @@ async function signIn(db: Db, email: string) {
 
 async function createShelves(ctx: Ctx, names: string[]) {
   for (const name of names) await createShelf(ctx, { name });
+}
+
+async function listShelves(ctx: Ctx) {
+  return (await getNavigation(ctx)).shelves;
 }
 
 async function shelfNames(ctx: Ctx) {

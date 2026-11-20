@@ -18,7 +18,7 @@ import {
 import { onboardingPath } from '@/modules/onboarding';
 import { isOnboarded } from '@/modules/onboarding/loaders';
 import { ShelfNav, ShelvesProvider } from '@/modules/shelves';
-import { loadShelves } from '@/modules/shelves/loaders';
+import { loadNavigation } from '@/modules/shelves/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
 import {
@@ -48,22 +48,29 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     redirect(onboardingPath((await headers()).get(REQUEST_PATH_HEADER)));
   }
 
-  const [account, settings, googleLink, shelves, cookieStore, headerStore, t] =
-    await Promise.all([
-      loadAccount(),
-      loadSettings(),
-      loadGoogleLink(),
-      loadShelves(),
-      cookies(),
-      headers(),
-      getTranslations('nav'),
-    ]);
+  const [
+    account,
+    settings,
+    googleLink,
+    navigation,
+    cookieStore,
+    headerStore,
+    t,
+  ] = await Promise.all([
+    loadAccount(),
+    loadSettings(),
+    loadGoogleLink(),
+    loadNavigation(),
+    cookies(),
+    headers(),
+    getTranslations('nav'),
+  ]);
   const sidebarState = sidebarStateFrom(cookieStore.get(SIDEBAR_COOKIE)?.value);
   const isApple = isApplePlatform(headerStore.get('user-agent') ?? '');
 
   return (
     <TooltipProvider>
-      <ShelvesProvider shelves={shelves}>
+      <ShelvesProvider shelves={navigation.shelves}>
         <SidebarProvider defaultState={sidebarState}>
           <Sidebar>
             <SidebarHeader>
