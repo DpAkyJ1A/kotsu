@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { ShelfHeading } from '@/modules/shelves';
-import { loadShelves } from '@/modules/shelves/loaders';
+import { loadNavigation } from '@/modules/shelves/loaders';
 import { ChevronLeftIcon } from '@/ui/icons';
 import { PageHeader } from '@/ui/page-header';
 
@@ -12,7 +12,7 @@ type ShelfParams = PageProps<'/shelves/[shelfId]'>['params'];
 
 async function shelfOf(params: ShelfParams) {
   const { shelfId } = await params;
-  const shelves = await loadShelves();
+  const { shelves } = await loadNavigation();
   return shelves.find(({ id }) => id === shelfId) ?? notFound();
 }
 
