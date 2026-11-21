@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
 import { expect } from 'storybook/test';
 
 import { SidebarProvider } from '@/ui/sidebar';
 import { Toaster } from '@/ui/toast';
 import { TooltipProvider } from '@/ui/tooltip';
 
-import { createShelfAction } from '../actions';
+import { createShelfAction, updateShelfAction } from '../actions';
+import type { Item } from '../core/item';
 import type { Shelf } from '../core/shelf';
+import { DOUBLE_CLICK_WAIT_MS } from '../hooks/use-open-unless-double-clicked';
 import {
   ShelvesFromServer,
   startShelfServer,
@@ -27,11 +30,11 @@ const SHELVES: Shelf[] = [
   },
 ];
 
-type ShelvesScreenStoryArgs = { shelves: Shelf[] };
+type ShelvesScreenStoryArgs = { shelves: Shelf[]; items: Item[] };
 
 const meta = {
   title: 'Shelves/ShelvesScreen',
-  args: { shelves: SHELVES },
+  args: { shelves: SHELVES, items: [] },
   parameters: { nextjs: { appDirectory: true } },
   globals: { viewport: { value: 'mobile2' } },
   render: () => <ShelvesScreen avatar={null} />,
@@ -48,7 +51,7 @@ const meta = {
     ),
   ],
   beforeEach: ({ args }) => {
-    startShelfServer(args.shelves);
+    startShelfServer(args);
   },
 } satisfies Meta<ShelvesScreenStoryArgs>;
 
@@ -80,5 +83,23 @@ export const StartsFromAnEmptyList: Story = {
     ).toBeVisible();
     await expect(createShelfAction).toHaveBeenCalledOnce();
     await expect(canvas.queryByText('No shelves yet')).toBeNull();
+  },
+};
+
+export const RenamesAShelfOnADoubleClickOnItsName: Story = {
+  globals: { viewport: { value: 'desktop' } },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.dblClick(canvas.getByText('Guitar'));
+
+    const name = canvas.getByRole('textbox', { name: 'Shelf name' });
+    await expect(name).toHaveFocus();
+    await userEvent.keyboard(' lessons{Enter}');
+
+    await expect(updateShelfAction).toHaveBeenLastCalledWith({
+      id: SHELVES[1]?.id,
+      name: 'Guitar lessons',
+    });
+    await new Promise((resolve) => setTimeout(resolve, DOUBLE_CLICK_WAIT_MS));
+    await expect(getRouter().push).not.toHaveBeenCalled();
   },
 };

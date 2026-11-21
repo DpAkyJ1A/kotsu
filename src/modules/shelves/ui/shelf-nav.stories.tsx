@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, mocked, screen, waitFor } from 'storybook/test';
+import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
+import { expect, mocked, screen, waitFor, within } from 'storybook/test';
 
 import { toast, Toaster } from '@/ui/toast';
 
@@ -9,8 +10,10 @@ import {
   moveShelfAction,
   updateShelfAction,
 } from '../actions';
+import type { Item } from '../core/item';
 import type { Shelf } from '../core/shelf';
 import { ShelfNav } from './shelf-nav';
+import { ShelfScreen } from './shelf-screen';
 import {
   ShelvesFromServer,
   startShelfServer,
@@ -32,6 +35,25 @@ const RUNNING: Shelf = {
   color: 'amber',
 };
 
+const VERBS: Item = {
+  id: '019a9c3e-0101-7000-8000-000000000101',
+  shelfId: SPANISH.id,
+  kind: 'doc',
+  title: 'Verbs',
+};
+const CHORDS: Item = {
+  id: '019a9c3e-0201-7000-8000-000000000201',
+  shelfId: GUITAR.id,
+  kind: 'doc',
+  title: 'Chords',
+};
+const SCALES: Item = {
+  id: '019a9c3e-0202-7000-8000-000000000202',
+  shelfId: GUITAR.id,
+  kind: 'doc',
+  title: 'Scales',
+};
+
 const UUID_V7 = /^[\da-f]{8}-[\da-f]{4}-7/;
 
 async function expectAnnounced(text: string) {
@@ -45,12 +67,12 @@ async function expectAnnounced(text: string) {
   );
 }
 
-type ShelfNavStoryArgs = { shelves: Shelf[] };
+type ShelfNavStoryArgs = { shelves: Shelf[]; items: Item[] };
 
 const meta = {
   title: 'Shelves/ShelfNav',
   component: ShelfNav,
-  args: { shelves: [SPANISH, GUITAR, RUNNING] },
+  args: { shelves: [SPANISH, GUITAR, RUNNING], items: [] },
   parameters: { nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
@@ -63,7 +85,7 @@ const meta = {
     ),
   ],
   beforeEach: ({ args }) => {
-    startShelfServer(args.shelves);
+    startShelfServer(args);
     return () => {
       toast.dismiss();
     };
@@ -178,6 +200,7 @@ export const RecoloursAShelf: Story = {
 };
 
 export const TakesADeletedShelfBackWithUndo: Story = {
+  args: { items: [VERBS] },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(
       canvas.getByRole('button', { name: 'Options for Guitar' }),
@@ -186,11 +209,144 @@ export const TakesADeletedShelfBackWithUndo: Story = {
       await screen.findByRole('menuitem', { name: 'Delete' }),
     );
 
+    await expect(screen.queryByRole('dialog')).toBeNull();
     await expect(canvas.queryByRole('link', { name: 'Guitar' })).toBeNull();
     await userEvent.click(await screen.findByRole('button', { name: 'Undo' }));
 
     await expect(canvas.getByRole('link', { name: 'Guitar' })).toBeVisible();
     await expect(deleteShelfAction).not.toHaveBeenCalled();
+  },
+};
+
+export const DeletesAShelfWithDocsOnceItsNameIsTyped: Story = {
+  args: { items: [VERBS, CHORDS, SCALES] },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Options for Guitar' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete Guitar?',
+    });
+    await expect(dialog).toHaveAccessibleDescription(
+      'Its 2 docs will be deleted too:',
+    );
+    await expect(
+      within(dialog)
+        .getAllByRole('listitem')
+        .map((doc) => doc.textContent),
+    ).toEqual(['Chords', 'Scales']);
+    const name = within(dialog).getByRole('textbox', {
+      name: 'Type Guitar to confirm',
+    });
+    const confirm = within(dialog).getByRole('button', {
+      name: 'Delete shelf',
+    });
+    await waitFor(() => expect(name).toHaveFocus());
+    await expect(confirm).toBeDisabled();
+
+    await userEvent.keyboard('guitar{Enter}');
+    await expect(confirm).toBeDisabled();
+    await expect(dialog).toBeVisible();
+    await userEvent.clear(name);
+    await userEvent.keyboard('Guitar');
+    await expect(confirm).toBeEnabled();
+    await userEvent.click(confirm);
+
+    await expect(screen.queryByRole('dialog')).toBeNull();
+    await expect(canvas.queryByRole('link', { name: 'Guitar' })).toBeNull();
+    await expect(await screen.findByText('Guitar deleted')).toBeInTheDocument();
+    await expect(deleteShelfAction).not.toHaveBeenCalled();
+  },
+};
+
+export const AsksBeforeDeletingAShelfWhoseDocWaitsForUndo: Story = {
+  args: { items: [CHORDS] },
+  render: () => (
+    <>
+      <ShelfNav />
+      <ShelfScreen shelfId={GUITAR.id} />
+    </>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Options for Chords' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
+    await expect(await screen.findByText('Chords deleted')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Options for Guitar' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete Guitar?',
+    });
+    await expect(
+      within(dialog)
+        .getAllByRole('listitem')
+        .map((doc) => doc.textContent),
+    ).toEqual(['Chords']);
+  },
+};
+
+export const LeavesThePageOfADocOnADeletedShelf: Story = {
+  args: { items: [CHORDS] },
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: { pathname: `/docs/${CHORDS.id}` },
+    },
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Options for Guitar' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete Guitar?',
+    });
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Type Guitar to confirm' }),
+      'Guitar{Enter}',
+    );
+
+    await expect(getRouter().replace).toHaveBeenLastCalledWith('/shelves');
+  },
+};
+
+export const KeepsAShelfWhenItsDeleteDialogIsCancelled: Story = {
+  args: { items: [CHORDS] },
+  play: async ({ canvas, userEvent }) => {
+    const options = canvas.getByRole('button', { name: 'Options for Guitar' });
+    await userEvent.click(options);
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete Guitar?',
+    });
+    await expect(dialog).toHaveAccessibleDescription(
+      'Its doc will be deleted too:',
+    );
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await expect(options).toHaveFocus();
+    await expect(canvas.getByRole('link', { name: 'Guitar' })).toBeVisible();
+    await expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
   },
 };
 

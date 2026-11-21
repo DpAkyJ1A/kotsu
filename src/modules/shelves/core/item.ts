@@ -9,7 +9,7 @@ export type Item = {
   title: string;
 };
 
-const ITEM_TITLE_MAX_LENGTH = 200;
+export const ITEM_TITLE_MAX_LENGTH = 200;
 
 const ItemId = z.uuid();
 const ShelfId = z.uuid();

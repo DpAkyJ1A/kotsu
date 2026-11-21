@@ -21,6 +21,21 @@
     "emptyHint": "A shelf keeps docs and sheets on one topic together.",
     "emptyShelf": "Nothing on this shelf yet",
     "emptyShelfHint": "Docs and sheets will live here.",
+    "docs": {
+      "newDoc": "New doc",
+      "title": "Doc title",
+      "create": "Create",
+      "options": "Options for {title}",
+      "moveTo": "Move to",
+      "deleted": "{title} deleted"
+    },
+    "deleteShelf": {
+      "title": "Delete {name}?",
+      "docs": "{count, plural, one {Its doc will be deleted too:} other {Its # docs will be deleted too:}}",
+      "typeName": "Type <strong>{name}</strong> to confirm",
+      "confirm": "Delete shelf",
+      "cancel": "Cancel"
+    },
     "colours": {
       "violet": "Violet",
       "blue": "Blue",

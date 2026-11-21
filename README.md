@@ -35,7 +35,10 @@ then jump to a section, open Settings or switch between the light and dark theme
 the sidebar lists your shelves, and on a phone the Shelves tab does. The + makes one (type a name, Enter), each shelf
 gets its own colour, and its ⋯ menu renames it, recolours it or deletes it, with Undo for five seconds. Drag a shelf to
 reorder (on a phone, press and hold it first; from the keyboard, Tab to its move handle, then Space and the arrows). A
-shelf opens its own page, still empty: docs and sheets come next. Kotsu also installs as an app: Chrome offers it in the
+shelf opens its own page with its docs as tiles. The dashed + tile first in line makes a doc: type its title, Enter, and
+the doc opens (for now a page with its title only; the editor comes next). A double-click on a doc's title renames it,
+and its ⋯ menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A shelf that holds docs asks first: its delete window
+lists the docs that go with it, and deletes only once you type the shelf's name. Kotsu also installs as an app: Chrome offers it in the
 address bar, an iPhone adds it with Share → Add to Home Screen, and it opens in a window of its own, without the
 browser's bars, its title bar in the colours of the theme you picked. And it runs on your own server: one Docker
 Compose command starts the app with its database (see [Self-hosting](#self-hosting)). The privacy policy at `/privacy`

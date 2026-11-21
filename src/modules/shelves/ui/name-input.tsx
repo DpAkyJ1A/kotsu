@@ -1,16 +1,15 @@
 'use client';
 
 import { cn } from 'cn';
-import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useLayoutEffect, useRef } from 'react';
 
 import { Input } from '@/ui/input';
 
-import { SHELF_NAME_MAX_LENGTH } from '../core/shelf';
-
 export type Ending = { restoreFocus: boolean };
 
-type ShelfNameInputProps = {
+type NameInputProps = {
+  label: string;
+  maxLength: number;
   defaultValue?: string;
   caret?: number;
   className?: string;
@@ -18,14 +17,15 @@ type ShelfNameInputProps = {
   onCancel: (ending: Ending) => void;
 };
 
-export function ShelfNameInput({
+export function NameInput({
+  label,
+  maxLength,
   defaultValue = '',
   caret,
   className,
   onSave,
   onCancel,
-}: ShelfNameInputProps) {
-  const t = useTranslations('shelves');
+}: NameInputProps) {
   const isDone = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -61,9 +61,9 @@ export function ShelfNameInput({
   return (
     <Input
       ref={inputRef}
-      aria-label={t('name')}
+      aria-label={label}
       defaultValue={defaultValue}
-      maxLength={SHELF_NAME_MAX_LENGTH}
+      maxLength={maxLength}
       enterKeyHint="done"
       autoComplete="off"
       className={cn('h-8 px-2', className)}

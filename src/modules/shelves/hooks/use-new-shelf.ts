@@ -1,7 +1,7 @@
 import { type RefObject, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { Ending } from '../ui/shelf-name-input';
+import type { Ending } from '../ui/name-input';
 
 export function useNewShelf(button: RefObject<HTMLButtonElement | null>) {
   const [isCreating, setIsCreating] = useState(false);
