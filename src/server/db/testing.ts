@@ -1,7 +1,8 @@
 import 'server-only';
 
-import { type EmptyRelations, TransactionRollbackError } from 'drizzle-orm';
-import { drizzle, type NodePgTransaction } from 'drizzle-orm/node-postgres';
+import { TransactionRollbackError } from 'drizzle-orm';
+import { drizzle, type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
+import type { PgAsyncTransaction } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { inject, test } from 'vitest';
 
@@ -12,7 +13,7 @@ import { inject, test } from 'vitest';
  */
 export const dbTest = test.extend<{
   $file: { pool: Pool };
-  $test: { db: NodePgTransaction<EmptyRelations> };
+  $test: { db: PgAsyncTransaction<NodePgQueryResultHKT> };
 }>({
   pool: [
     async ({}, use) => {
