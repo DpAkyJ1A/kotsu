@@ -422,12 +422,16 @@ export const OpensAFoldedShelfOnceADocLandsOnIt: Story = {
     await userEvent.keyboard(' ');
     await expectAnnounced('Verbs moved to the end of Guitar.');
 
-    await expect(
-      canvas.getByRole('button', { name: 'Docs on Guitar' }),
-    ).toHaveAttribute('aria-expanded', 'true');
-    await expect(
-      canvas.getAllByRole('link').map((link) => link.textContent),
-    ).toEqual(['Spanish', 'Guitar', 'Chords', 'Verbs', 'Running']);
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Docs on Guitar' }),
+      ).toHaveAttribute('aria-expanded', 'true'),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getAllByRole('link').map((link) => link.textContent),
+      ).toEqual(['Spanish', 'Guitar', 'Chords', 'Verbs', 'Running']),
+    );
     await expect(document.cookie).not.toContain(GUITAR.id);
   },
 };
