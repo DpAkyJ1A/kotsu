@@ -27,7 +27,19 @@
       "create": "Create",
       "options": "Options for {title}",
       "moveTo": "Move to",
-      "deleted": "{title} deleted"
+      "deleted": "{title} deleted",
+      "toggle": "Docs on {name}",
+      "newDocOn": "New doc on {name}",
+      "move": {
+        "instructions": "Press Space to pick it up, the arrow keys to move it, Space again to drop it, or Escape to cancel.",
+        "handle": "Move {title}",
+        "pickedUp": "Picked up {title}. Position {position, number} of {count, number} on {shelf}.",
+        "movedTo": "{title}: position {position, number} of {count, number} on {shelf}.",
+        "overShelf": "{title}: to the end of {shelf}.",
+        "dropped": "{title} dropped at position {position, number} of {count, number} on {shelf}.",
+        "droppedOnShelf": "{title} moved to the end of {shelf}.",
+        "cancelled": "Move cancelled. {title} is back at position {position, number} of {count, number} on {shelf}."
+      }
     },
     "deleteShelf": {
       "title": "Delete {name}?",
@@ -50,7 +62,7 @@
     "move": {
       "handle": "Move {name}",
       "roleDescription": "draggable",
-      "instructions": "Press Space to pick the shelf up, the up and down arrows to move it, Space again to drop it, or Escape to cancel.",
+      "instructions": "Press Space to pick it up, the up and down arrows to move it, Space again to drop it, or Escape to cancel.",
       "pickedUp": "Picked up {name}. Position {position, number} of {count, number}.",
       "movedTo": "{name}: position {position, number} of {count, number}.",
       "dropped": "{name} dropped at position {position, number} of {count, number}.",

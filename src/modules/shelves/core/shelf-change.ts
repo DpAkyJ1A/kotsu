@@ -28,15 +28,6 @@ export function applyShelfChange(
   }
 }
 
-export function shelfBefore(
-  shelves: readonly Shelf[],
-  movedId: string,
-  newIndex: number,
-) {
-  const others = shelves.filter((shelf) => shelf.id !== movedId);
-  return newIndex === 0 ? undefined : others[newIndex - 1]?.id;
-}
-
 function moveAfter(
   shelves: readonly Shelf[],
   id: string,

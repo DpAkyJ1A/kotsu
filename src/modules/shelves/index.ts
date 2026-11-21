@@ -1,3 +1,7 @@
+export {
+  COLLAPSED_SHELVES_COOKIE,
+  collapsedShelvesFrom,
+} from './core/collapsed-shelves';
 export { shelfPath } from './core/shelf-path';
 export { ShelfDot } from './ui/shelf-dot';
 export { ShelfHeading } from './ui/shelf-heading';

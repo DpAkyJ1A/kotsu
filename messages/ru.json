@@ -27,7 +27,19 @@
       "create": "Создать",
       "options": "Действия с доком {title}",
       "moveTo": "Перенести на полку",
-      "deleted": "Док {title} удалён"
+      "deleted": "Док {title} удалён",
+      "toggle": "Доки на полке {name}",
+      "newDocOn": "Новый док на полке {name}",
+      "move": {
+        "instructions": "Нажми пробел, чтобы взять, стрелки — чтобы двигать, пробел ещё раз — чтобы отпустить, Escape — чтобы отменить.",
+        "handle": "Переместить док {title}",
+        "pickedUp": "Док {title} взят. Место {position, number} из {count, number} на полке {shelf}.",
+        "movedTo": "{title}: место {position, number} из {count, number} на полке {shelf}.",
+        "overShelf": "{title}: в конец полки {shelf}.",
+        "dropped": "Док {title} теперь на месте {position, number} из {count, number} на полке {shelf}.",
+        "droppedOnShelf": "Док {title} перенесён в конец полки {shelf}.",
+        "cancelled": "Перемещение отменено. Док {title} снова на месте {position, number} из {count, number} на полке {shelf}."
+      }
     },
     "deleteShelf": {
       "title": "Удалить полку {name}?",
@@ -50,7 +62,7 @@
     "move": {
       "handle": "Переместить полку {name}",
       "roleDescription": "перетаскиваемый",
-      "instructions": "Нажми пробел, чтобы взять полку, стрелки вверх и вниз — чтобы двигать её, пробел ещё раз — чтобы отпустить, Escape — чтобы отменить.",
+      "instructions": "Нажми пробел, чтобы взять, стрелки вверх и вниз — чтобы двигать, пробел ещё раз — чтобы отпустить, Escape — чтобы отменить.",
       "pickedUp": "Полка {name} взята. Место {position, number} из {count, number}.",
       "movedTo": "{name}: место {position, number} из {count, number}.",
       "dropped": "Полка {name} теперь на месте {position, number} из {count, number}.",

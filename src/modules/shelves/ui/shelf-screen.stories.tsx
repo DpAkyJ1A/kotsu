@@ -404,3 +404,66 @@ export const TakesADeletedDocBackWithUndo: Story = {
     await expect(deleteItemAction).not.toHaveBeenCalled();
   },
 };
+
+async function expectAnnounced(text: string) {
+  await waitFor(() =>
+    expect(
+      Array.from(
+        document.querySelectorAll('[id^="dnd-kit-announcement"]'),
+        (region) => region.textContent,
+      ),
+    ).toContain(text),
+  );
+}
+
+export const MovesATileWithTheKeyboard: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const handle = canvas.getByRole('button', { name: 'Move Verbs' });
+    await waitFor(() =>
+      expect(handle).toHaveAccessibleDescription(
+        'Press Space to pick it up, the arrow keys to move it, Space again to drop it, or Escape to cancel.',
+      ),
+    );
+    canvas.getByRole('link', { name: 'Verbs' }).focus();
+    await userEvent.tab();
+    await expect(handle).toHaveFocus();
+
+    await userEvent.keyboard(' ');
+    await expectAnnounced('Picked up Verbs. Position 1 of 4 on Spanish.');
+    await userEvent.keyboard('{ArrowRight}');
+    await expectAnnounced('Verbs: position 2 of 4 on Spanish.');
+    await userEvent.keyboard(' ');
+    await expectAnnounced('Verbs dropped at position 2 of 4 on Spanish.');
+
+    await waitFor(() => expect(moveItemAction).toHaveBeenCalledOnce());
+    await expect(moveItemAction).toHaveBeenLastCalledWith({
+      id: VERBS.id,
+      shelfId: SPANISH.id,
+      after: SPANISH_DOCS[1]?.id,
+    });
+    await expect(
+      canvas
+        .getAllByRole('link')
+        .slice(0, 2)
+        .map((link) => link.textContent),
+    ).toEqual(['Kitchen & food', 'Verbs']);
+    await expect(getRouter().push).not.toHaveBeenCalled();
+  },
+};
+
+export const SendsNothingWhenATileIsDroppedWhereItWas: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const handle = canvas.getByRole('button', { name: 'Move Verbs' });
+    await waitFor(() => expect(handle).toHaveAccessibleDescription());
+    canvas.getByRole('link', { name: 'Verbs' }).focus();
+    await userEvent.tab();
+    await expect(handle).toHaveFocus();
+
+    await userEvent.keyboard(' ');
+    await expectAnnounced('Picked up Verbs. Position 1 of 4 on Spanish.');
+    await userEvent.keyboard(' ');
+    await expectAnnounced('Verbs dropped at position 1 of 4 on Spanish.');
+
+    await expect(moveItemAction).not.toHaveBeenCalled();
+  },
+};

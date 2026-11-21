@@ -51,7 +51,7 @@ export function ShelvesScreen({ avatar }: ShelvesScreenProps) {
             </Button>
           </div>
         ) : (
-          <ShelfList size="page">
+          <ShelfList>
             {newShelf.isCreating && (
               <NewShelfRow size="page" onDone={newShelf.stop} />
             )}

@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from 'cn';
 import { useTranslations } from 'next-intl';
 import { useId, useRef, useState } from 'react';
 
@@ -27,11 +26,10 @@ import { PALETTE_FILL } from './palette-fill';
 
 type ShelfMenuProps = {
   shelf: Shelf;
-  className?: string;
   onRename: () => void;
 };
 
-export function ShelfMenu({ shelf, className, onRename }: ShelfMenuProps) {
+export function ShelfMenu({ shelf, onRename }: ShelfMenuProps) {
   const t = useTranslations('shelves');
   const shelves = useShelves();
   const { existing } = useItems();
@@ -49,7 +47,7 @@ export function ShelfMenu({ shelf, className, onRename }: ShelfMenuProps) {
             ref={trigger}
             label={t('options', { name: shelf.name })}
             size="sm"
-            className={cn('text-muted-foreground', className)}
+            className="text-muted-foreground"
           >
             <EllipsisIcon />
           </IconButton>

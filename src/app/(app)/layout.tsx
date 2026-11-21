@@ -17,7 +17,12 @@ import {
 } from '@/modules/account/loaders';
 import { onboardingPath } from '@/modules/onboarding';
 import { isOnboarded } from '@/modules/onboarding/loaders';
-import { ShelfNav, ShelvesProvider } from '@/modules/shelves';
+import {
+  COLLAPSED_SHELVES_COOKIE,
+  collapsedShelvesFrom,
+  ShelfNav,
+  ShelvesProvider,
+} from '@/modules/shelves';
 import { loadNavigation } from '@/modules/shelves/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
@@ -66,6 +71,9 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     getTranslations('nav'),
   ]);
   const sidebarState = sidebarStateFrom(cookieStore.get(SIDEBAR_COOKIE)?.value);
+  const collapsedShelves = collapsedShelvesFrom(
+    cookieStore.get(COLLAPSED_SHELVES_COOKIE)?.value,
+  );
   const isApple = isApplePlatform(headerStore.get('user-agent') ?? '');
 
   return (
@@ -115,7 +123,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
                 {t('clock')}
               </SidebarLink>
             </SidebarNav>
-            <ShelfNav />
+            <ShelfNav collapsed={collapsedShelves} />
           </Sidebar>
           <SidebarInset>{children}</SidebarInset>
           <TabBar>

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import type { Shelf } from './shelf';
-import { applyShelfChange, shelfBefore } from './shelf-change';
+import { applyShelfChange } from './shelf-change';
 
 const spanish: Shelf = { id: 'spanish', name: 'Spanish', color: 'violet' };
 const guitar: Shelf = { id: 'guitar', name: 'Guitar', color: 'blue' };
@@ -74,17 +74,5 @@ describe('applyShelfChange', () => {
     applyShelfChange(frozen, { type: 'delete', id: 'spanish' });
 
     expect(frozen).toEqual(shelves);
-  });
-});
-
-describe('shelfBefore', () => {
-  test.each([
-    { id: 'running', index: 0, before: undefined },
-    { id: 'running', index: 1, before: 'spanish' },
-    { id: 'spanish', index: 1, before: 'guitar' },
-    { id: 'spanish', index: 2, before: 'running' },
-    { id: 'guitar', index: 1, before: 'spanish' },
-  ])('finds $before above $id dropped at $index', ({ id, index, before }) => {
-    expect(shelfBefore(shelves, id, index)).toBe(before);
   });
 });
