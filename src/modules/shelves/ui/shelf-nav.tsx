@@ -8,9 +8,11 @@ import { PlusIcon } from '@/ui/icons';
 
 import { useNewShelf } from '../hooks/use-new-shelf';
 import { NewShelfRow } from './new-shelf-row';
-import { ShelfList } from './shelf-list';
+import { ShelfTree } from './shelf-tree';
 
-export function ShelfNav() {
+type ShelfNavProps = { collapsed: readonly string[] };
+
+export function ShelfNav({ collapsed }: ShelfNavProps) {
   const t = useTranslations();
   const headingId = useId();
   const newShelfButton = useRef<HTMLButtonElement>(null);
@@ -39,11 +41,11 @@ export function ShelfNav() {
         </IconButton>
       </div>
       <div className="-mx-3 min-h-0 overflow-y-auto px-3 py-0.5">
-        <ShelfList size="sidebar">
+        <ShelfTree collapsed={collapsed}>
           {newShelf.isCreating && (
             <NewShelfRow size="sidebar" onDone={newShelf.stop} />
           )}
-        </ShelfList>
+        </ShelfTree>
       </div>
     </nav>
   );

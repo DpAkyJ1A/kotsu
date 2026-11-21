@@ -19,7 +19,8 @@ on another shelf, answers `NOT_FOUND`.
 
 The doors: `api.ts` gives other modules' domain code `createShelf` (onboarding makes a template's shelves with it),
 `actions.ts` makes a Server Action of each shelf and item command, `loaders.ts` gives pages `loadNavigation`, and
-`index.ts` gives the app layout `ShelvesProvider` and `ShelfNav` (the sidebar's list), the pages `ShelvesScreen` (the
+`index.ts` gives the app layout `ShelvesProvider`, `ShelfNav` (the sidebar's tree) and the folded-shelves cookie
+(`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`), the pages `ShelvesScreen` (the
 Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs) and `shelfPath`, and other modules `ShelfDot`.
 `ShelvesProvider` holds the two lists every view shows, shelves and items, each with its own reducer from `core/`
 (`applyShelfChange`, `applyItemChange`): changes appear at once (`useOptimistic`) and the page is rendered again when
@@ -31,8 +32,9 @@ so one waiting for its own Undo counts. A double-click on a name renames it in p
 (`useRenaming`, which doc tiles use too). In the sidebar that is a plain double-click: the first click opens the shelf
 and the sidebar stays. On the Shelves page the first click would leave the list, so a click on a name there waits 300 ms
 for a second one, as a doc's title does (below).
-Reordering is `@dnd-kit/react`: rows follow the mouse after 5 px and a finger after a 250 ms press, and each row has a
-move handle that shows on keyboard focus, with the moves spoken in the interface language. A shelf's page reads the
+Reordering is `@dnd-kit/react`, set up once for every list (`hooks/drag-setup.ts`): rows and tiles follow the mouse
+after 5 px and a finger after a 250 ms press, nothing starts on a button or a field, and each one has a move handle that
+shows on keyboard focus, with the moves spoken in the interface language. A shelf's page reads the
 same list, so a renamed shelf's title changes with the sidebar.
 
 A shelf's page shows a dashed + tile first, captioned only on an empty shelf, and then its docs as tiles (the items of
@@ -47,6 +49,22 @@ Server Actions one at a time, so every earlier change has reached the server bef
 tile's title renames the doc in place, like a shelf's name; since the tile is a link that leaves the page, a click on
 its title waits 300 ms for a second one before the doc opens (`useOpenUnlessDoubleClicked`). A click anywhere else on the tile, Enter and a ⌘-click open at once, and touch
 screens (whose ⋯ buttons are always shown) never wait.
+
+In the sidebar each shelf lists its docs under its row (`ShelfTree` → `ShelfBranch` → `DocRow`). Every shelf starts
+open, its docs one step in along a thin line that falls from the shelf's dot. On hover or keyboard focus the dot of a
+shelf with docs turns into an arrow that folds it away (on a touch screen the arrow stays), and the folded ones live in a cookie of shelf ids that the app layout reads, so the tree
+comes from the server already folded; only shelves that still exist are written. A shelf opens itself when a doc is
+made on it or dropped on it. A row's buttons (the move handle, + and ⋯) lie over its right end and show on hover and
+keyboard focus, when the name moves its ellipsis in front of them; until then the name has the whole row. The + in a
+shelf's row opens the same create form as the + tile (`NewDoc`); after the doc is created the focus stays
+on its page instead of going back to the +. Docs drag in the same provider as the shelves (`useDocDragging`): over
+another doc the list shows where the doc will land (`moveOverDoc` in `core/doc-drag.ts`; on another shelf it goes before
+that doc from above and after it from below), dropped on a shelf's row it goes to the end of that shelf
+(`moveOntoShelf`), and nothing is sent when it lands where it was (`changesPlace`). The spoken moves name the shelf and
+come from the same moves as the preview and the drop, so what is said is where the doc goes. A
+double-click on a doc's title renames it in place, as a shelf's name does there, and deleting the doc whose page is open
+leaves for its shelf's page. On a shelf's page the tiles reorder within their grid (`useTileDragging`, the arrow keys on
+the move handle); to another shelf a doc goes through ⋯ → Move to or the sidebar. The `/shelves` list stays flat.
 
 `useItems()` gives the views `items` (what they show), `existing` (the same with the docs waiting for Undo),
 `createDoc(shelfId, title)` (creates, opens, and resolves to whether it worked), `rename(id, title)`,

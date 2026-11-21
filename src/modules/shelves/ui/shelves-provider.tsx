@@ -75,6 +75,9 @@ export function ShelvesProvider({
               item.id,
               t('docs.deleted', { title: item.title }),
             );
+            if (isCurrentSection(pathname, docPath(item.id))) {
+              router.replace(shelfPath(item.shelfId));
+            }
           },
         }}
       >

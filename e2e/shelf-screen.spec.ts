@@ -1,9 +1,10 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 import { actionAnswered, signInWithCode, test } from './fixtures';
 
 const PHONE = { width: 390, height: 844 };
 const UNDO_DELAY_MS = 5_000;
+const LONG_PRESS_MS = 400;
 const DOUBLE_CLICK_WAIT_MS = 300;
 const DOC_URL = /\/docs\/[\da-f-]{36}$/;
 const SHELF_URL = /\/shelves\/[\da-f-]{36}$/;
@@ -250,6 +251,32 @@ test.describe('on a wide screen', () => {
     await page.goto(docUrl);
     await expect(page.getByText('This page could not be found.')).toBeVisible();
   });
+
+  test('reorders docs with the mouse without opening the one it drags, and keeps the order after a reload', async ({
+    page,
+  }) => {
+    await createShelf(page, 'Spanish');
+    for (const title of ['Verbs', 'Food', 'Travel']) {
+      await openShelf(page, 'Spanish');
+      await createDoc(page, title);
+    }
+    await openShelf(page, 'Spanish');
+    const shelf = page.url();
+    const main = page.getByRole('main');
+
+    const answered = actionAnswered(page);
+    await dragAcross(
+      page,
+      main.getByText('Travel', { exact: true }),
+      main.getByText('Verbs', { exact: true }),
+    );
+    await answered;
+    await page.waitForTimeout(2 * DOUBLE_CLICK_WAIT_MS);
+    await expect(page).toHaveURL(shelf);
+
+    await page.reload();
+    await expect(tilesOf(page)).toHaveText(['Travel', 'Verbs', 'Food']);
+  });
 });
 
 test.describe('on a phone', () => {
@@ -292,4 +319,71 @@ test.describe('on a phone', () => {
     await main.getByRole('link', { name: 'Verbs' }).getByText('Verbs').tap();
     await expect(page).toHaveURL(DOC_URL);
   });
+
+  test('a long press picks a doc up and moves it', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName !== 'chromium',
+      'The long press goes through Chromium touch events',
+    );
+    const main = page.getByRole('main');
+    await createShelfInTheShelvesTab(page, 'Spanish');
+    await main.getByRole('link', { name: 'Spanish' }).click();
+    await expect(page).toHaveURL(SHELF_URL);
+    for (const title of ['Verbs', 'Food', 'Travel']) {
+      await createDoc(page, title);
+      await page.getByRole('link', { name: 'Spanish' }).click();
+      await expect(page).toHaveURL(SHELF_URL);
+    }
+
+    const answered = actionAnswered(page);
+    await longPressAndDrag(
+      page,
+      main.getByRole('link', { name: 'Travel' }),
+      main.getByRole('link', { name: 'Verbs' }),
+    );
+    await answered;
+
+    await page.reload();
+    await expect(tilesOf(page)).toHaveText(['Travel', 'Verbs', 'Food']);
+  });
 });
+
+async function dragAcross(page: Page, from: Locator, to: Locator) {
+  const start = await from.boundingBox();
+  const end = await to.boundingBox();
+  if (!start || !end) throw new Error('Both tiles must be on screen');
+  await page.mouse.move(start.x + 5, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + 5, end.y + end.height / 2, { steps: 12 });
+  await page.mouse.up();
+}
+
+async function longPressAndDrag(page: Page, from: Locator, to: Locator) {
+  const start = await from.boundingBox();
+  const end = await to.boundingBox();
+  if (!start || !end) throw new Error('Both tiles must be on screen');
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (
+    type: 'touchStart' | 'touchMove' | 'touchEnd',
+    point?: { x: number; y: number },
+  ) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: point ? [point] : [],
+    });
+  const startAt = { x: start.x + 20, y: start.y + start.height / 2 };
+  const endAt = { x: end.x + 20, y: end.y + end.height / 2 };
+
+  await touch('touchStart', startAt);
+  await page.waitForTimeout(LONG_PRESS_MS);
+  for (let step = 1; step <= 10; step++) {
+    await touch('touchMove', {
+      x: startAt.x + ((endAt.x - startAt.x) * step) / 10,
+      y: startAt.y + ((endAt.y - startAt.y) * step) / 10,
+    });
+  }
+  await touch('touchEnd');
+}

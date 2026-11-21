@@ -13,7 +13,6 @@ import {
 import type { Item } from '../core/item';
 import type { Shelf } from '../core/shelf';
 import { ShelfNav } from './shelf-nav';
-import { ShelfScreen } from './shelf-screen';
 import {
   ShelvesFromServer,
   startShelfServer,
@@ -67,12 +66,16 @@ async function expectAnnounced(text: string) {
   );
 }
 
-type ShelfNavStoryArgs = { shelves: Shelf[]; items: Item[] };
+type ShelfNavStoryArgs = {
+  collapsed: string[];
+  shelves: Shelf[];
+  items: Item[];
+};
 
 const meta = {
   title: 'Shelves/ShelfNav',
   component: ShelfNav,
-  args: { shelves: [SPANISH, GUITAR, RUNNING], items: [] },
+  args: { collapsed: [], shelves: [SPANISH, GUITAR, RUNNING], items: [] },
   parameters: { nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
@@ -265,12 +268,6 @@ export const DeletesAShelfWithDocsOnceItsNameIsTyped: Story = {
 
 export const AsksBeforeDeletingAShelfWhoseDocWaitsForUndo: Story = {
   args: { items: [CHORDS] },
-  render: () => (
-    <>
-      <ShelfNav />
-      <ShelfScreen shelfId={GUITAR.id} />
-    </>
-  ),
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(
       canvas.getByRole('button', { name: 'Options for Chords' }),
@@ -355,7 +352,7 @@ export const MovesAShelfWithTheKeyboard: Story = {
     const handle = canvas.getByRole('button', { name: 'Move Spanish' });
     await waitFor(() =>
       expect(handle).toHaveAccessibleDescription(
-        'Press Space to pick the shelf up, the up and down arrows to move it, Space again to drop it, or Escape to cancel.',
+        'Press Space to pick it up, the up and down arrows to move it, Space again to drop it, or Escape to cancel.',
       ),
     );
     canvas.getByRole('link', { name: 'Spanish' }).focus();

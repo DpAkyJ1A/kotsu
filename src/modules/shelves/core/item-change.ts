@@ -1,6 +1,6 @@
 import type { Item } from './item';
 
-type ItemMove = {
+export type ItemMove = {
   type: 'move';
   id: string;
   shelfId: string;
