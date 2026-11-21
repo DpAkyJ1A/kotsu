@@ -1,4 +1,5 @@
 import type { Passkey } from '@better-auth/passkey';
+import { BetterFetchError } from '@better-fetch/fetch';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import {
   expect,
@@ -164,14 +165,7 @@ export const Loading: Story = {
 
 export const LoadingFailed: Story = {
   beforeEach: () => {
-    listOf(
-      null,
-      Object.assign(new Error('Internal Server Error'), {
-        status: 500,
-        statusText: 'Internal Server Error',
-        error: null,
-      }),
-    );
+    listOf(null, new BetterFetchError(500, 'Internal Server Error', null));
   },
   play: async ({ canvas, userEvent }) => {
     await expect(canvas.getByRole('alert')).toHaveTextContent(
