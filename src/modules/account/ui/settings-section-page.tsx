@@ -34,6 +34,7 @@ export function SettingsSectionPage({
       <PageHeader>
         <Link
           href="/settings"
+          aria-label={t('backToSettings')}
           className="-ml-1 flex items-center gap-0.5 rounded-md px-1 text-sm font-medium text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden [&>svg]:size-4.5"
         >
           <ChevronLeftIcon />

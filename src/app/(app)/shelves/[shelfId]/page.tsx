@@ -33,7 +33,7 @@ export default async function ShelfPage({
       <PageHeader>
         <Link
           href="/shelves"
-          aria-label={t('nav.shelves')}
+          aria-label={t('nav.backToShelves')}
           className="-ml-2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:hidden [&>svg]:size-6"
         >
           <ChevronLeftIcon />

@@ -2,6 +2,7 @@
   "nav": {
     "calendar": "Календарь",
     "shelves": "Полки",
+    "backToShelves": "Назад к полкам",
     "practice": "Тренировка",
     "clock": "Часы",
     "search": "Поиск",
@@ -24,6 +25,8 @@
     "docs": {
       "newDoc": "Новый док",
       "title": "Название дока",
+      "breadcrumb": "Навигационная цепочка",
+      "backToShelf": "Назад к полке {name}",
       "create": "Создать",
       "options": "Действия с доком {title}",
       "moveTo": "Перенести на полку",
@@ -68,6 +71,11 @@
       "dropped": "Полка {name} теперь на месте {position, number} из {count, number}.",
       "cancelled": "Перемещение отменено. Полка {name} снова на месте {position, number} из {count, number}."
     }
+  },
+  "docs": {
+    "body": "Текст дока",
+    "placeholder": "Начни писать. Markdown тоже работает: # заголовок, - список, [] чеклист",
+    "emptyChecklistItem": "Пустой пункт чеклиста"
   },
   "onboarding": {
     "title": "С чего начнём?",
@@ -184,6 +192,7 @@
   },
   "settings": {
     "title": "Настройки",
+    "backToSettings": "Назад в настройки",
     "theme": "Тема",
     "light": "Светлая",
     "dark": "Тёмная",

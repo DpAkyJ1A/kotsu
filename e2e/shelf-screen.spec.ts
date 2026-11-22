@@ -300,7 +300,7 @@ test.describe('on a phone', () => {
 
     await expect(page).toHaveURL(DOC_URL);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Verbs');
-    await page.getByRole('link', { name: 'Spanish' }).click();
+    await page.getByRole('link', { name: 'Back to Spanish' }).click();
     await expect(page).toHaveURL(SHELF_URL);
     await expect(main.getByRole('link', { name: 'Verbs' })).toBeVisible();
   });
@@ -312,7 +312,7 @@ test.describe('on a phone', () => {
     await createShelfInTheShelvesTab(page, 'Spanish');
     await main.getByRole('link', { name: 'Spanish' }).click();
     await createDoc(page, 'Verbs');
-    await page.getByRole('link', { name: 'Spanish' }).click();
+    await page.getByRole('link', { name: 'Back to Spanish' }).click();
     await expect(page).toHaveURL(SHELF_URL);
 
     await page.clock.pauseAt(Date.now() + 1_000);
@@ -334,7 +334,7 @@ test.describe('on a phone', () => {
     await expect(page).toHaveURL(SHELF_URL);
     for (const title of ['Verbs', 'Food', 'Travel']) {
       await createDoc(page, title);
-      await page.getByRole('link', { name: 'Spanish' }).click();
+      await page.getByRole('link', { name: 'Back to Spanish' }).click();
       await expect(page).toHaveURL(SHELF_URL);
     }
 

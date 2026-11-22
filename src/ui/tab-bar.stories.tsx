@@ -72,6 +72,22 @@ export const OnAPhone: Story = {
   },
 };
 
+export const OnADocPage: Story = {
+  globals: { viewport: { value: 'mobile2' } },
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: { pathname: '/docs/019a9c3e-0101-7000-8000-000000000101' },
+    },
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('link', { name: 'Shelves' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  },
+};
+
 export const HiddenOnAWideScreen: Story = {
   globals: { viewport: { value: 'desktop' } },
   play: async ({ canvasElement }) => {

@@ -178,7 +178,9 @@ test.describe('on a phone', () => {
       page.getByRole('combobox', { name: 'Day ends at' }),
     ).toHaveText(/^4:00\sAM$/);
 
-    await page.getByRole('link', { name: 'Settings' }).click();
+    const back = page.getByRole('link', { name: 'Back to Settings' });
+    await expect(back).toHaveText('Settings');
+    await back.click();
     await expect(page).toHaveURL('/settings');
   });
 

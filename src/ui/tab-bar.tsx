@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ComponentProps, ReactNode } from 'react';
 
-import { isCurrentSection } from './current-section';
+import { isCurrentTab } from './current-tab';
 
 export function TabBar({
   className,
@@ -39,7 +39,7 @@ export function TabBarLink({ href, children }: TabBarLinkProps) {
     <li>
       <Link
         href={href}
-        aria-current={isCurrentSection(pathname, href) ? 'page' : undefined}
+        aria-current={isCurrentTab(pathname, href) ? 'page' : undefined}
         className="flex h-tab-bar flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring aria-[current=page]:font-semibold aria-[current=page]:text-primary [&>svg]:size-6"
       >
         {children}

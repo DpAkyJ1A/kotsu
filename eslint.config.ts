@@ -292,6 +292,16 @@ export default defineConfig([
               door(['actions.ts'], { module: SAME_MODULE }),
               element('ui', 'lib'),
             ),
+            // A component test renders in the messages of the app, as a story does through the preview
+            allow(
+              {
+                element: {
+                  type: ['module-ui', 'module-hooks'],
+                  fileInternalPath: '**/*.browser.test.tsx',
+                },
+              },
+              { element: { type: 'i18n', fileInternalPath: 'testing.tsx' } },
+            ),
             ...Object.entries(MODULE_DEPENDENCIES).flatMap(
               ([module, dependencies]) =>
                 dependencies.flatMap((dependency) => [
