@@ -12,7 +12,7 @@ import { DocKit } from '../core/doc-kit';
 import { SlashMenu } from '../ui/slash-menu';
 
 const TOUCH_SCREEN = '(pointer: coarse)';
-const ROOM_AROUND_THE_CARET_PX = { top: 5, right: 5, bottom: 96, left: 5 };
+const ROOM_AROUND_THE_CARET_PX = { top: 64, right: 5, bottom: 96, left: 5 };
 const SHOWS_HINT = 'shows-hint';
 
 type Words = {

@@ -120,6 +120,14 @@
         "label": "Divider",
         "description": "A line between parts"
       }
+    },
+    "toolbar": {
+      "label": "Formatting",
+      "bold": "Bold",
+      "italic": "Italic",
+      "strike": "Strikethrough",
+      "code": "Inline code",
+      "sampleText": "text"
     }
   },
   "onboarding": {

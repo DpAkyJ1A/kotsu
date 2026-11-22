@@ -10,33 +10,8 @@ import {
   useState,
 } from 'react';
 
-import {
-  Heading1Icon,
-  Heading2Icon,
-  Heading3Icon,
-  ListIcon,
-  ListOrderedIcon,
-  MinusIcon,
-  SquareCheckIcon,
-  SquareCodeIcon,
-  TextQuoteIcon,
-  TypeIcon,
-} from '@/ui/icons';
-
 import { findSlashBlocks, type SlashBlock } from '../core/slash-blocks';
-
-const ICONS: Record<SlashBlock, typeof TypeIcon> = {
-  text: TypeIcon,
-  heading1: Heading1Icon,
-  heading2: Heading2Icon,
-  heading3: Heading3Icon,
-  bulletList: ListIcon,
-  orderedList: ListOrderedIcon,
-  taskList: SquareCheckIcon,
-  blockquote: TextQuoteIcon,
-  codeBlock: SquareCodeIcon,
-  horizontalRule: MinusIcon,
-};
+import { ICONS } from './format-icons';
 
 const STEPS: Partial<Record<string, number>> = { ArrowDown: 1, ArrowUp: -1 };
 

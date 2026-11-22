@@ -43,8 +43,11 @@ checklist, `>` for a quote, three backticks for code, `---` for a line, and `**b
 `` `code` ``), or type `/` at the start of a line or after a space to pick a block from a menu (a new doc says so, and
 so does the empty line you are on: "Type / for blocks"): what follows narrows it (`/h2`, `/todo`, `/heading 2`; a space
 that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves the text as it is. A block picked on an
-empty line takes that line; on a line with text it goes below it. For now the text lives only on the page: saving it
-comes next. The title saves itself once you pause or leave it, Enter goes on to the text, and the sidebar and the line
+empty line takes that line; on a line with text it goes below it. On a wider screen a row of buttons above the title
+does the same with a click: three headings, bold, italic, strike and code, the three lists, a quote, a code block and a
+line. It stays at the top of the window as you scroll, lights up what the caret is in, and each button's tooltip shows
+its shortcut and its Markdown ("Bold ⌘B **text**"). For now the text lives only on the page: saving it comes next. The
+title saves itself once you pause or leave it, Enter goes on to the text, and the sidebar and the line
 above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title renames it, and its ⋯
 menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A shelf that holds docs
 asks first: its delete window lists the docs that go with it, and deletes only once you type the shelf's name. In the

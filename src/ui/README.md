@@ -19,11 +19,14 @@ palette (`command-palette.tsx`) is part of the frame too: its search field sits 
 from anywhere, and the layout fills it with items that close it as they run (`CommandPaletteLink` goes to a page).
 `apply-theme.ts` shows a picked theme on the page at once, without the colours drifting through their transitions, and
 tells which theme is on the page (`useAppliedTheme` follows `data-theme` on `<html>`). What counts as a shortcut press
-and whether to show ⌘ or Ctrl lives in `shortcut.ts`; `useShortcut` binds one to the document. `RadioCards` picks one
+and whether to show ⌘ or Ctrl lives in `shortcut.ts`, and `shortcutKeys` writes a binding for the platform (`Mod-Alt-2`
+is ⌘⌥2 on Apple devices, Ctrl Alt 2 elsewhere); `useShortcut` binds one to the document. `RadioCards` picks one
 value out of a few shown as pictures (the theme previews in Settings, the templates at onboarding); a picker that needs another
 picture size sets it on `data-slot="radio-card-picture"`. `useActionMutation` wraps a Server Action for a component:
 it runs it, when it fails shows the error code's message (`errors.*`) in a toast, and answers whether it went through.
-`useMediaQuery` follows a CSS media query (false on the server).
+`useMediaQuery` follows a CSS media query (false on the server). `Toolbar` is Radix's toolbar: one Tab stop, and the
+arrows, Home and End move along its buttons and pass the disabled ones by; `ToolbarSeparator` splits them into groups,
+and `ToolbarButton` is a small icon button that turns violet while its `aria-pressed` is true.
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

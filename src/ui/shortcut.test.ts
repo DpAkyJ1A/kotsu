@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { isApplePlatform, isShortcut } from './shortcut';
+import { isApplePlatform, isShortcut, shortcutKeys } from './shortcut';
 
 const COMMAND_K = {
   metaKey: true,
@@ -68,4 +68,19 @@ describe('Apple platform', () => {
   ])('is not %s', (_, userAgent) => {
     expect(isApplePlatform(userAgent)).toBe(false);
   });
+});
+
+describe('shortcut keys', () => {
+  test.each([
+    ['Mod-b', '⌘B', 'Ctrl B'],
+    ['Mod-Alt-2', '⌘⌥2', 'Ctrl Alt 2'],
+    ['Mod-Shift-s', '⌘⇧S', 'Ctrl Shift S'],
+    ['Mod-\\', '⌘\\', 'Ctrl \\'],
+  ])(
+    '%s reads %s on a Mac and %s elsewhere, modifiers in the order of the binding',
+    (binding, apple, other) => {
+      expect(shortcutKeys(binding, { isApple: true })).toBe(apple);
+      expect(shortcutKeys(binding, { isApple: false })).toBe(other);
+    },
+  );
 });

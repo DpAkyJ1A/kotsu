@@ -3,6 +3,7 @@ import type { JSONContent, TiptapEditorHTMLElement } from '@tiptap/core';
 import { expect, screen, waitFor, within } from 'storybook/test';
 
 import { ShelvesProvider } from '@/modules/shelves';
+import { TooltipProvider } from '@/ui/tooltip';
 
 import type { Doc } from '../core/doc';
 import { DocEditor } from './doc-editor';
@@ -107,9 +108,11 @@ const meta = {
   ),
   decorators: [
     (Story) => (
-      <ShelvesProvider shelves={[SPANISH]} items={[VERBS]}>
-        <Story />
-      </ShelvesProvider>
+      <TooltipProvider>
+        <ShelvesProvider shelves={[SPANISH]} items={[VERBS]}>
+          <Story />
+        </ShelvesProvider>
+      </TooltipProvider>
     ),
   ],
 } satisfies Meta<DocEditorStoryArgs>;
@@ -456,5 +459,125 @@ export const TheTitleHasNoSlashMenu: Story = {
       canvas.getByRole('textbox', { name: 'Doc title' }),
     ).toHaveValue('Verbs /');
     await expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  },
+};
+
+function positionOf(body: HTMLElement, word: string) {
+  let found = -1;
+  editorOf(body).state.doc.descendants((node, pos) => {
+    const index = node.isText ? (node.text ?? '').indexOf(word) : -1;
+    if (found === -1 && index !== -1) found = pos + index;
+  });
+  return found;
+}
+
+function formattingToolbar() {
+  return screen.getByRole('toolbar', { name: 'Formatting' });
+}
+
+const LONG_BODY: JSONContent = {
+  type: 'doc',
+  content: Array.from({ length: 60 }, (_, line) =>
+    paragraph(text(`Line ${String(line + 1)}: yo hablo, tú hablas`)),
+  ),
+};
+
+export const TheToolbarLightsUpWhereTheCaretIs: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Hablar, to speak'));
+    const toolbar = formattingToolbar();
+    const heading2 = within(toolbar).getByRole('button', { name: 'Heading 2' });
+
+    editorOf(body).commands.focus(positionOf(body, 'Hablar') + 1);
+
+    await waitFor(() =>
+      expect(heading2).toHaveAttribute('aria-pressed', 'true'),
+    );
+    await userEvent.hover(heading2);
+    const tooltip = await screen.findByRole('tooltip');
+    await waitFor(() => expect(tooltip).toBeVisible());
+    await expect(tooltip).toHaveTextContent(/^Heading 2 .+ ##$/);
+  },
+};
+
+export const TheToolbarSitsBetweenTheHeaderAndTheTitle: Story = {
+  play: async ({ canvas }) => {
+    const toolbar = formattingToolbar();
+    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+
+    await expect(toolbar.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      title.getBoundingClientRect().top,
+    );
+  },
+};
+
+export const TheToolbarStaysAtTheTopOfTheWindow: Story = {
+  args: { content: LONG_BODY },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+    const toolbar = formattingToolbar();
+    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+
+    window.scrollTo(0, 800);
+
+    await waitFor(() => expect(toolbar.getBoundingClientRect().top).toBe(0));
+    await expect(title.getBoundingClientRect().bottom).toBeLessThan(0);
+  },
+};
+
+export const TheCaretStaysClearOfTheToolbar: Story = {
+  args: { content: LONG_BODY },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+    const editor = editorOf(body);
+    const toolbarBottom = () =>
+      formattingToolbar().getBoundingClientRect().bottom;
+    const caretTop = () =>
+      editor.view.coordsAtPos(editor.state.selection.from).top;
+    window.scrollTo(0, 1200);
+    const lineUnderTheToolbar = [...body.children].find(
+      (line) => line.getBoundingClientRect().top > 0,
+    );
+    if (!lineUnderTheToolbar) throw new Error('No line in the window');
+    editor.commands.focus(editor.view.posAtDOM(lineUnderTheToolbar, 0), {
+      scrollIntoView: false,
+    });
+    await untilFocused(body);
+    await expect(caretTop()).toBeLessThan(toolbarBottom());
+
+    editor.commands.scrollIntoView();
+
+    await waitFor(() =>
+      expect(caretTop()).toBeGreaterThanOrEqual(toolbarBottom()),
+    );
+  },
+};
+
+export const TheToolbarFitsTheColumnOfANarrowWindowWithTheSidebar: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-132">
+        <Story />
+      </div>
+    ),
+  ],
+  play: async () => {
+    const tops = within(formattingToolbar())
+      .getAllByRole('button')
+      .map((button) => button.getBoundingClientRect().top);
+
+    await expect(new Set(tops).size).toBe(1);
+  },
+};
+
+export const NoToolbarOnAPhone: Story = {
+  globals: { viewport: { value: 'mobile2' } },
+  play: async ({ canvas }) => {
+    await canvas.findByRole('textbox', { name: 'Doc text' });
+
+    await expect(canvas.queryByRole('toolbar')).not.toBeInTheDocument();
   },
 };
