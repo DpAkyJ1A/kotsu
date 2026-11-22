@@ -19,9 +19,11 @@ const SAVED_ID = '0e5a8a34-6f0e-4f5c-9a46-0b1d3c2e9f01';
 const OTHER_ID = '0e5a8a34-6f0e-4f5c-9a46-0b1d3c2e9f02';
 const UUID = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/;
 const HINT =
-  'Start writing. Markdown works too: #\u00a0heading, -\u00a0list, []\u00a0checklist';
+  'Start writing, or type / for blocks. Markdown works too: #\u00a0heading, -\u2060\u00a0list, []\u00a0checklist';
 const HINT_IN_RUSSIAN =
-  '\u041d\u0430\u0447\u043d\u0438 \u043f\u0438\u0441\u0430\u0442\u044c. Markdown \u0442\u043e\u0436\u0435 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442: #\u00a0\u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a, -\u00a0\u0441\u043f\u0438\u0441\u043e\u043a, []\u00a0\u0447\u0435\u043a\u043b\u0438\u0441\u0442';
+  'Начни писать или набери\u00a0/, чтобы выбрать блок. Markdown тоже работает: #\u00a0заголовок, -\u2060\u00a0список, []\u00a0чеклист';
+const LINE_HINT = 'Type / for blocks';
+const LINE_HINT_IN_RUSSIAN = 'Набери\u00a0/, чтобы выбрать блок';
 const BLOCKS = 'p, h1, h2, h3, li, blockquote, pre';
 const ROOM_UNDER_THE_TEXT_PX = 240;
 const CLICK_SPACING_PX = 12;
@@ -150,6 +152,10 @@ function caretWhenTheClickEnds(body: Locator) {
     { once: true },
   );
   return caret;
+}
+
+function lastLineOf(body: Locator) {
+  return body.element().querySelector<HTMLElement>(':scope > :last-child');
 }
 
 function paragraphsIn(body: Locator) {
@@ -284,6 +290,31 @@ describe('opening a doc', () => {
   });
 });
 
+describe('the hint', () => {
+  test('of an empty line under text points at the slash menu, and screen readers get no placeholder', async () => {
+    const body = await renderNewDoc();
+
+    await userEvent.keyboard('hablo{Enter}');
+
+    await expect
+      .element(lastLineOf(body))
+      .toHaveAttribute('data-placeholder', LINE_HINT);
+    await expect.element(body).not.toHaveAttribute('aria-placeholder');
+  });
+
+  test('of the doc returns once all the text is deleted', async () => {
+    const body = await renderNewDoc();
+    await userEvent.keyboard('hablo{Enter}');
+
+    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}{Backspace}');
+
+    await expect
+      .element(body.element().querySelector('p'))
+      .toHaveAttribute('data-placeholder', HINT);
+    await expect.element(body).toHaveAttribute('aria-placeholder', HINT);
+  });
+});
+
 describe('a language switch', () => {
   test('names the body and gives screen readers its hint in the new language', async () => {
     const switchToRussian = await renderNewDocToSwitch();
@@ -303,6 +334,17 @@ describe('a language switch', () => {
     await expect
       .element(body.element().querySelector('p'))
       .toHaveAttribute('data-placeholder', HINT_IN_RUSSIAN);
+  });
+
+  test('hints at the slash menu on an empty line in the new language at once', async () => {
+    const switchToRussian = await renderNewDocToSwitch();
+    await userEvent.keyboard('hablo{Enter}');
+
+    const body = await switchToRussian();
+
+    await expect
+      .element(lastLineOf(body))
+      .toHaveAttribute('data-placeholder', LINE_HINT_IN_RUSSIAN);
   });
 
   test('is not an edit: the doc gets no transaction, so there is nothing to save', async () => {

@@ -10,7 +10,7 @@ import { useDocEditor } from '../hooks/use-doc-editor';
 
 const BODY_CLASS_NAME = cn(
   'flex flex-1 flex-col text-base leading-7 [&_.tiptap]:flex-1 [&_.tiptap]:pb-24 [&_.tiptap]:outline-none',
-  '[&_.is-editor-empty]:before:pointer-events-none [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:text-muted-foreground [&_.is-editor-empty]:before:content-[attr(data-placeholder)_/_""] [&_.is-editor-empty]:before:[-webkit-nbsp-mode:normal]',
+  '[&_.shows-hint]:before:pointer-events-none [&_.shows-hint]:before:float-left [&_.shows-hint]:before:h-0 [&_.shows-hint]:before:text-muted-foreground [&_.shows-hint]:before:content-[attr(data-placeholder)_/_""] [&_.shows-hint]:before:[-webkit-nbsp-mode:normal]',
   '[&_p]:my-3',
   '[&_h1]:mt-8 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:leading-snug [&_h1]:font-bold [&_h1]:tracking-tight',
   '[&_h2]:mt-7 [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:leading-snug [&_h2]:font-bold [&_h2]:tracking-tight',
