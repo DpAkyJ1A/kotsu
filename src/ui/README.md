@@ -12,7 +12,8 @@ theme) and round colour swatches with a check on the picked one.
 The app's frame lives here too: the sidebar (`sidebar.tsx`: open or closed by its button or ⌘\ / Ctrl+\, the
 choice kept in the `sidebar` cookie from `sidebar-cookie.ts`, which the layout reads for the first paint; closed,
 it slides in from the left edge under the pointer), the page header with the button that opens it again, and the
-tab bar (`tab-bar.tsx`) that takes the sidebar's place below the `md` breakpoint. Toasts rise above the tab bar
+tab bar (`tab-bar.tsx`) that takes the sidebar's place below the `md` breakpoint; its current tab follows the
+section the page is in, and a doc's page counts as Shelves, where the doc lives (`current-tab.ts`). Toasts rise above the tab bar
 through `--tab-bar-inset` from `theme.css`, its height plus the bottom safe area, `0px` on wide screens. The ⌘K
 palette (`command-palette.tsx`) is part of the frame too: its search field sits in the sidebar, ⌘K / Ctrl+K toggles it
 from anywhere, and the layout fills it with items that close it as they run (`CommandPaletteLink` goes to a page).

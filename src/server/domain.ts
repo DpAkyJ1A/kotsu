@@ -17,6 +17,14 @@ export class AppError extends Error {
   }
 }
 
+export function query<Input extends z.ZodType, Result>(
+  schema: Input,
+  run: (ctx: Ctx, input: z.output<Input>) => Promise<Result>,
+) {
+  return async (ctx: Ctx, input: z.input<Input>) =>
+    run(ctx, parse(schema, input));
+}
+
 export function command<Input extends z.ZodType, Result>(
   schema: Input,
   run: (ctx: Ctx, input: z.output<Input>) => Promise<Result>,

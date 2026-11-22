@@ -238,7 +238,7 @@ export function SidebarInset({ className, ...props }: ComponentProps<'main'>) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        'min-w-0 flex-1 pr-[env(safe-area-inset-right)] max-md:pl-[env(safe-area-inset-left)]',
+        'flex min-w-0 flex-1 flex-col pr-[env(safe-area-inset-right)] max-md:pl-[env(safe-area-inset-left)]',
         className,
       )}
       {...props}

@@ -21,7 +21,8 @@ The doors: `api.ts` gives other modules' domain code `createShelf` (onboarding m
 `actions.ts` makes a Server Action of each shelf and item command, `loaders.ts` gives pages `loadNavigation`, and
 `index.ts` gives the app layout `ShelvesProvider`, `ShelfNav` (the sidebar's tree) and the folded-shelves cookie
 (`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`), the pages `ShelvesScreen` (the
-Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs) and `shelfPath`, and other modules `ShelfDot`.
+Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs) and `DocBreadcrumb` (a doc page's header), and other modules
+`ShelfDot` and `DocTitle` (the doc editor's title).
 `ShelvesProvider` holds the two lists every view shows, shelves and items, each with its own reducer from `core/`
 (`applyShelfChange`, `applyItemChange`): changes appear at once (`useOptimistic`) and the page is rendered again when
 the action answers; a refused one puts the list back and says why in a toast. Delete hides a shelf or a doc and waits
@@ -65,6 +66,17 @@ come from the same moves as the preview and the drop, so what is said is where t
 double-click on a doc's title renames it in place, as a shelf's name does there, and deleting the doc whose page is open
 leaves for its shelf's page. On a shelf's page the tiles reorder within their grid (`useTileDragging`, the arrow keys on
 the move handle); to another shelf a doc goes through ⋯ → Move to or the sidebar. The `/shelves` list stays flat.
+
+A doc's page shows where it is: "Spanish › Verbs" at the top (`DocBreadcrumb`, the shelf a link to its page), on a phone
+only the back arrow to the shelf, "Back to Spanish" to a screen reader. Its title is a field above the text (`DocTitle`, a `textarea` inside the page's `h1`
+that grows with the title): it saves once the typing pauses for 800 ms (`useTitleDraft`), and a title still waiting
+goes at once when the field is left or the page closes, always through `rename`, so the sidebar, the tiles and the line
+at the top change at once; Enter (but not the one that ends a word typed with an input method), or ↓ at its end, goes
+on to the text; left empty, it puts back the title it had, which it shows as its placeholder meanwhile; pasted line
+breaks become spaces (`core/title-draft.ts`). Both read the doc and its shelf from the same lists, so a rename or a
+move made in the sidebar shows there too; while the field is being typed in it keeps the typed text, and once it is
+left a rename made elsewhere after its last save stands. Renames go one at a time: Next.js sends a Server Action only
+after the one before it has answered, so a slow first save can't land after a later one.
 
 `useItems()` gives the views `items` (what they show), `existing` (the same with the docs waiting for Undo),
 `createDoc(shelfId, title)` (creates, opens, and resolves to whether it worked), `rename(id, title)`,
