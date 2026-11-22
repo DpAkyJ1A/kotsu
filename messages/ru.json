@@ -74,8 +74,53 @@
   },
   "docs": {
     "body": "Текст дока",
-    "placeholder": "Начни писать. Markdown тоже работает: # заголовок, - список, [] чеклист",
-    "emptyChecklistItem": "Пустой пункт чеклиста"
+    "placeholder": "Начни писать или набери\u00a0/, чтобы выбрать блок. Markdown тоже работает: #\u00a0заголовок, -\u2060\u00a0список, []\u00a0чеклист",
+    "emptyLineHint": "Набери\u00a0/, чтобы выбрать блок",
+    "emptyChecklistItem": "Пустой пункт чеклиста",
+    "slashMenu": {
+      "title": "Блоки",
+      "empty": "Таких блоков нет",
+      "text": {
+        "label": "Текст",
+        "description": "Просто начни писать"
+      },
+      "heading1": {
+        "label": "Заголовок 1",
+        "description": "Крупный заголовок раздела"
+      },
+      "heading2": {
+        "label": "Заголовок 2",
+        "description": "Средний заголовок раздела"
+      },
+      "heading3": {
+        "label": "Заголовок 3",
+        "description": "Мелкий заголовок раздела"
+      },
+      "bulletList": {
+        "label": "Маркированный список",
+        "description": "Простой список"
+      },
+      "orderedList": {
+        "label": "Нумерованный список",
+        "description": "Список по порядку"
+      },
+      "taskList": {
+        "label": "Чеклист",
+        "description": "Что нужно отметить"
+      },
+      "blockquote": {
+        "label": "Цитата",
+        "description": "Выдели цитату"
+      },
+      "codeBlock": {
+        "label": "Код",
+        "description": "Блок кода"
+      },
+      "horizontalRule": {
+        "label": "Разделитель",
+        "description": "Линия между частями"
+      }
+    }
   },
   "onboarding": {
     "title": "С чего начнём?",

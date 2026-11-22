@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import type { JSONContent } from '@tiptap/core';
-import { expect, waitFor } from 'storybook/test';
+import type { JSONContent, TiptapEditorHTMLElement } from '@tiptap/core';
+import { expect, screen, waitFor, within } from 'storybook/test';
 
 import { ShelvesProvider } from '@/modules/shelves';
 
@@ -133,16 +133,40 @@ export const OnAPhone: Story = {
   globals: { viewport: { value: 'mobile2' } },
 };
 
+const DOC_HINT =
+  'Start writing, or type / for blocks. Markdown works too: #\u00a0heading, -\u2060\u00a0list, []\u00a0checklist';
+const LINE_HINT = 'Type / for blocks';
+
+function seenOnly(hint: string) {
+  return `"${hint}" / ""`;
+}
+
+function hintsIn(body: HTMLElement) {
+  return [...body.querySelectorAll('*')]
+    .map((element) => getComputedStyle(element, '::before').content)
+    .filter((content) => content !== 'none');
+}
+
 export const ANewDoc: Story = {
   args: { content: null },
   play: async ({ canvas }) => {
     const body = await canvas.findByRole('textbox', { name: 'Doc text' });
 
     await waitFor(() => expect(body).toHaveFocus());
-    await expect(body.querySelector('p')).toHaveAttribute(
-      'data-placeholder',
-      'Start writing. Markdown works too: #\u00a0heading, -\u00a0list, []\u00a0checklist',
-    );
+    await expect(hintsIn(body)).toEqual([seenOnly(DOC_HINT)]);
+  },
+};
+
+export const ANewDocKeepsItsHintWithoutTheCaret: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveFocus());
+
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Doc title' }));
+
+    await expect(body).not.toHaveFocus();
+    await expect(hintsIn(body)).toEqual([seenOnly(DOC_HINT)]);
   },
 };
 
@@ -164,5 +188,273 @@ export const GoesFromTheTitleToTheStartOfTheText: Story = {
     await expect(body.querySelector('p')).toHaveTextContent(
       /^Los Regular verbs/,
     );
+  },
+};
+
+function blocksMenu() {
+  return screen.findByRole('listbox', { name: 'Blocks' });
+}
+
+async function untilFocused(body: HTMLElement) {
+  await waitFor(() => expect(body).toHaveFocus());
+}
+
+function editorOf(body: HTMLElement) {
+  const { editor } = body as TiptapEditorHTMLElement;
+  if (!editor) throw new Error('The body has no editor');
+  return editor;
+}
+
+async function expectInsideTheWindow(element: Element) {
+  const { top, right, bottom, left } = element.getBoundingClientRect();
+  await expect(left).toBeGreaterThanOrEqual(0);
+  await expect(top).toBeGreaterThanOrEqual(0);
+  await expect(right).toBeLessThanOrEqual(window.innerWidth);
+  await expect(bottom).toBeLessThanOrEqual(window.innerHeight);
+}
+
+export const AnEmptyLineHintsAtTheSlashMenuUntilTheFirstLetter: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await untilFocused(body);
+
+    await userEvent.keyboard('hablo{Enter}');
+    await expect(hintsIn(body)).toEqual([seenOnly(LINE_HINT)]);
+    await expect(body.lastElementChild).toHaveAttribute(
+      'data-placeholder',
+      LINE_HINT,
+    );
+
+    await userEvent.keyboard('h');
+    await expect(hintsIn(body)).toEqual([]);
+  },
+};
+
+export const TheLastEmptyLineHintsOnlyWithTheCaretInIt: Story = {
+  args: {
+    content: {
+      type: 'doc',
+      content: [paragraph(text('yo hablo')), heading(2, 'Present tense')],
+    },
+  },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body.lastElementChild?.tagName).toBe('P'));
+    await expect(hintsIn(body)).toEqual([]);
+
+    editorOf(body).commands.focus('end');
+    await untilFocused(body);
+    await expect(hintsIn(body)).toEqual([seenOnly(LINE_HINT)]);
+
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Doc title' }));
+    await expect(body.lastElementChild).toHaveAttribute(
+      'data-placeholder',
+      LINE_HINT,
+    );
+    await expect(hintsIn(body)).toEqual([]);
+  },
+};
+
+function hintsOfTheLines(body: HTMLElement) {
+  return [...body.children].map(
+    (line) => getComputedStyle(line, '::before').content,
+  );
+}
+
+export const AnEmptyLineHintsOnlyWhileNothingIsSelected: Story = {
+  args: {
+    content: {
+      type: 'doc',
+      content: [
+        paragraph(text('yo hablo')),
+        paragraph(),
+        paragraph(text('tú hablas')),
+      ],
+    },
+  },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('tú hablas'));
+    const middleLine = 'yo hablo'.length + 3;
+
+    editorOf(body).chain().setTextSelection(middleLine).focus().run();
+    await untilFocused(body);
+    await expect(hintsOfTheLines(body)).toEqual([
+      'none',
+      seenOnly(LINE_HINT),
+      'none',
+    ]);
+
+    editorOf(body).commands.setTextSelection({
+      from: middleLine,
+      to: middleLine + 'tú'.length + 2,
+    });
+    await expect(hintsIn(body)).toEqual([]);
+
+    editorOf(body).commands.setTextSelection(middleLine);
+    await expect(hintsOfTheLines(body)).toEqual([
+      'none',
+      seenOnly(LINE_HINT),
+      'none',
+    ]);
+  },
+};
+
+export const ANewDocKeepsItsHintWithEverythingSelected: Story = {
+  args: { content: null },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveFocus());
+
+    editorOf(body).commands.selectAll();
+
+    await expect(hintsIn(body)).toEqual([seenOnly(DOC_HINT)]);
+  },
+};
+
+export const NoHintInAnEmptyListItemHeadingQuoteOrCode: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await untilFocused(body);
+
+    for (const [shortcut, block] of [
+      ['- ', 'ul > li p'],
+      ['1. ', 'ol > li p'],
+      ['[[] ', '[data-type="taskList"] p'],
+      ['## ', 'h2'],
+      ['> ', 'blockquote p'],
+      ['``` ', 'pre'],
+    ] as const) {
+      editorOf(body)
+        .chain()
+        .setContent({ type: 'doc', content: [paragraph(text('hablo'))] })
+        .focus('end')
+        .run();
+      await userEvent.keyboard(`{Enter}${shortcut}`);
+
+      await expect(body.querySelector(block)?.textContent, block).toBe('');
+      await expect(hintsIn(body), block).toEqual([]);
+    }
+  },
+};
+
+export const SlashMenu: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    await untilFocused(
+      await canvas.findByRole('textbox', { name: 'Doc text' }),
+    );
+
+    await userEvent.keyboard('/');
+
+    const menu = await blocksMenu();
+    await expect(
+      within(menu).getByRole('option', { name: /^Text / }),
+    ).toHaveAttribute('aria-selected', 'true');
+  },
+};
+
+export const SlashMenuScrolledToItsLastBlock: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    await untilFocused(
+      await canvas.findByRole('textbox', { name: 'Doc text' }),
+    );
+    await userEvent.keyboard('/');
+    const menu = await blocksMenu();
+
+    await userEvent.keyboard('{ArrowUp}');
+
+    const divider = within(menu).getByRole('option', { name: /^Divider / });
+    await waitFor(() => expect(menu.scrollTop).toBeGreaterThan(0));
+    await expect(divider.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      menu.getBoundingClientRect().bottom,
+    );
+  },
+};
+
+export const SlashMenuWithNothingFound: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    await untilFocused(
+      await canvas.findByRole('textbox', { name: 'Doc text' }),
+    );
+
+    await userEvent.keyboard('/zzz');
+
+    const empty = await screen.findByText('No matching blocks');
+    await waitFor(() => expect(empty).toBeVisible());
+  },
+};
+
+export const SlashMenuInRussian: Story = {
+  args: { content: null },
+  globals: { locale: 'ru' },
+  play: async ({ canvas, userEvent }) => {
+    await untilFocused(
+      await canvas.findByRole('textbox', { name: 'Текст дока' }),
+    );
+
+    await userEvent.keyboard('/');
+
+    await screen.findByRole('listbox', { name: 'Блоки' });
+  },
+};
+
+export const SlashMenuOnAPhoneAtTheEndOfALine: Story = {
+  args: { content: null },
+  globals: { viewport: { value: 'mobile2' } },
+  play: async ({ canvas, userEvent }) => {
+    await untilFocused(
+      await canvas.findByRole('textbox', { name: 'Doc text' }),
+    );
+
+    await userEvent.keyboard('Todos los días hablo un poco más /');
+
+    await expectInsideTheWindow(await blocksMenu());
+  },
+};
+
+export const SlashMenuAtTheBottomOfTheScreen: Story = {
+  args: {
+    content: {
+      type: 'doc',
+      content: Array.from({ length: 40 }, (_, line) =>
+        paragraph(text(`Line ${String(line + 1)}: yo hablo, tú hablas`)),
+      ),
+    },
+  },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Line 40'));
+    editorOf(body).commands.focus('end');
+    await untilFocused(body);
+    body.lastElementChild?.scrollIntoView({ block: 'end' });
+
+    await userEvent.keyboard(' /');
+
+    const menu = await blocksMenu();
+    const slash = body.querySelector('.suggestion');
+    await waitFor(() =>
+      expect(menu.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        slash?.getBoundingClientRect().top ?? 0,
+      ),
+    );
+    await expectInsideTheWindow(menu);
+  },
+};
+
+export const TheTitleHasNoSlashMenu: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Doc title' }));
+
+    await userEvent.keyboard(' /');
+
+    await expect(
+      canvas.getByRole('textbox', { name: 'Doc title' }),
+    ).toHaveValue('Verbs /');
+    await expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   },
 };

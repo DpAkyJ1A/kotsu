@@ -74,8 +74,53 @@
   },
   "docs": {
     "body": "Doc text",
-    "placeholder": "Start writing. Markdown works too: # heading, - list, [] checklist",
-    "emptyChecklistItem": "Empty checklist item"
+    "placeholder": "Start writing, or type / for blocks. Markdown works too: #\u00a0heading, -\u2060\u00a0list, []\u00a0checklist",
+    "emptyLineHint": "Type / for blocks",
+    "emptyChecklistItem": "Empty checklist item",
+    "slashMenu": {
+      "title": "Blocks",
+      "empty": "No matching blocks",
+      "text": {
+        "label": "Text",
+        "description": "Just start writing"
+      },
+      "heading1": {
+        "label": "Heading 1",
+        "description": "Big section heading"
+      },
+      "heading2": {
+        "label": "Heading 2",
+        "description": "Medium section heading"
+      },
+      "heading3": {
+        "label": "Heading 3",
+        "description": "Small section heading"
+      },
+      "bulletList": {
+        "label": "Bulleted list",
+        "description": "A simple list"
+      },
+      "orderedList": {
+        "label": "Numbered list",
+        "description": "A list in order"
+      },
+      "taskList": {
+        "label": "Checklist",
+        "description": "Things to tick off"
+      },
+      "blockquote": {
+        "label": "Quote",
+        "description": "Set a quote apart"
+      },
+      "codeBlock": {
+        "label": "Code",
+        "description": "A block of code"
+      },
+      "horizontalRule": {
+        "label": "Divider",
+        "description": "A line between parts"
+      }
+    }
   },
   "onboarding": {
     "title": "Pick a starting point",

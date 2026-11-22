@@ -38,19 +38,23 @@ reorder (on a phone, press and hold it first; from the keyboard, Tab to its move
 shelf opens its own page with its docs as tiles. The dashed + tile first in line makes a doc: type its title, Enter, and
 the doc opens with the caret in its text (on a phone, tap the page: the keyboard opens only for a tap). A doc is a
 column of text with its title on top, and a click or tap anywhere under the text goes on at its end: type and use
-Markdown as you go (`#`, `##` and `###` for headings, `-` or `*` for a list, `1.` for a numbered one, `[]` for a checklist, `>` for a
-quote, three backticks for code, `---` for a line, and `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``). For now the
-text lives only on the page: saving it comes next. The title saves itself once you pause or leave it, Enter goes on to
-the text, and the sidebar and the line above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on
-a doc's title renames it, and its ⋯ menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A shelf that holds docs asks first: its delete window
-lists the docs that go with it, and deletes only once you type the shelf's name. In the sidebar each shelf lists its
-docs under it: the arrow beside a shelf folds it away (this device remembers), the + in its row makes a doc there, and a
-doc dragged onto another doc or another shelf moves there. Tiles on a shelf's page drag into a new order too, by mouse,
-by a long press on a phone, or from the keyboard. Kotsu also installs as an app: Chrome offers it in the
-address bar, an iPhone adds it with Share → Add to Home Screen, and it opens in a window of its own, without the
-browser's bars, its title bar in the colours of the theme you picked. And it runs on your own server: one Docker
-Compose command starts the app with its database (see [Self-hosting](#self-hosting)). The privacy policy at `/privacy`
-opens without an account, in English and Russian, and the sign-in page links to it.
+Markdown as you go (`#`, `##` and `###` for headings, `-` or `*` for a list, `1.` for a numbered one, `[]` for a
+checklist, `>` for a quote, three backticks for code, `---` for a line, and `**bold**`, `*italic*`, `~~strike~~`,
+`` `code` ``), or type `/` at the start of a line or after a space to pick a block from a menu (a new doc says so, and
+so does the empty line you are on: "Type / for blocks"): what follows narrows it (`/h2`, `/todo`, `/heading 2`; a space
+that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves the text as it is. A block picked on an
+empty line takes that line; on a line with text it goes below it. For now the text lives only on the page: saving it
+comes next. The title saves itself once you pause or leave it, Enter goes on to the text, and the sidebar and the line
+above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title renames it, and its ⋯
+menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A shelf that holds docs
+asks first: its delete window lists the docs that go with it, and deletes only once you type the shelf's name. In the
+sidebar each shelf lists its docs under it: the arrow beside a shelf folds it away (this device remembers), the + in its
+row makes a doc there, and a doc dragged onto another doc or another shelf moves there. Tiles on a shelf's page drag
+into a new order too, by mouse, by a long press on a phone, or from the keyboard. Kotsu also installs as an app: Chrome
+offers it in the address bar, an iPhone adds it with Share → Add to Home Screen, and it opens in a window of its own,
+without the browser's bars, its title bar in the colours of the theme you picked. And it runs on your own server: one
+Docker Compose command starts the app with its database (see [Self-hosting](#self-hosting)). The privacy policy at
+`/privacy` opens without an account, in English and Russian, and the sign-in page links to it.
 
 ## Tech stack
 
