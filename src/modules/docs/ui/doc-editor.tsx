@@ -7,6 +7,7 @@ import { DocTitle } from '@/modules/shelves';
 
 import type { Doc } from '../core/doc';
 import { useDocEditor } from '../hooks/use-doc-editor';
+import { DocToolbar } from './doc-toolbar';
 
 const BODY_CLASS_NAME = cn(
   'flex flex-1 flex-col text-base leading-7 [&_.tiptap]:flex-1 [&_.tiptap]:pb-24 [&_.tiptap]:outline-none',
@@ -32,7 +33,8 @@ export function DocEditor({ doc, title }: DocEditorProps) {
   const editor = useDocEditor(doc.content);
 
   return (
-    <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6">
+    <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:pt-2">
+      <DocToolbar editor={editor} />
       <DocTitle
         id={doc.id}
         title={title}

@@ -114,6 +114,17 @@ test('the caret stays above the tab bar while a long doc grows under it', async 
   expect(await caretBottomOf(body)).toBeLessThan(tabBarTop);
 });
 
+test('a phone has no formatting toolbar', async ({ page }) => {
+  await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+  const toolbar = page.getByRole('toolbar', {
+    name: 'Formatting',
+    includeHidden: true,
+  });
+
+  await expect(toolbar).toHaveCount(1);
+  await expect(toolbar).toBeHidden();
+});
+
 test('a doc lights up the Shelves tab', async ({ page }) => {
   await createDocOnANewShelf(page, 'Spanish', 'Verbs');
 

@@ -5,6 +5,7 @@
 // colour it like text, with classes: `size-5`, `text-muted-foreground`. Without an `aria-label` it is hidden
 // from screen readers.
 export {
+  BoldIcon,
   BoxIcon,
   CalendarIcon,
   CheckIcon,
@@ -13,6 +14,7 @@ export {
   ChevronRightIcon,
   ChevronUpIcon,
   ClockIcon,
+  CodeIcon,
   ContrastIcon,
   CopyIcon,
   EllipsisIcon,
@@ -27,6 +29,7 @@ export {
   Heading2Icon,
   Heading3Icon,
   InfoIcon,
+  ItalicIcon,
   KeyIcon,
   LibraryIcon,
   LinkIcon,
@@ -49,6 +52,7 @@ export {
   SparklesIcon,
   SquareCheckIcon,
   SquareCodeIcon,
+  StrikethroughIcon,
   SunIcon,
   TextQuoteIcon,
   Trash2Icon,

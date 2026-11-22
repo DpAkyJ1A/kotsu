@@ -4,6 +4,7 @@ import { actionAnswered, signInWithCode, test } from './fixtures';
 
 const DOC_URL = /\/docs\/[\da-f-]{36}$/;
 const MISSING_DOC_ID = '019a9c3e-0000-7000-8000-000000000000';
+const LONG_DOC_LINES = 30;
 
 test.use({ locale: 'en-US' });
 
@@ -102,6 +103,37 @@ test('a new doc opens with the caret in its text, and Markdown turns into blocks
   await expect(
     body.getByRole('checkbox', { name: 'Conjugate ten verbs' }),
   ).not.toBeChecked();
+});
+
+test('the toolbar over the title formats the line with the caret, and stays at the top of the window while the header scrolls away', async ({
+  page,
+}) => {
+  await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+  const body = bodyOf(page);
+  const toolbar = page.getByRole('toolbar', { name: 'Formatting' });
+  const heading2 = toolbar.getByRole('button', { name: 'Heading 2' });
+  await expect(body).toBeFocused();
+
+  await page.keyboard.type('Present tense');
+  await heading2.click();
+
+  await expect(
+    body.getByRole('heading', { level: 2, name: 'Present tense' }),
+  ).toBeVisible();
+  await expect(heading2).toHaveAttribute('aria-pressed', 'true');
+  await expect(body).toBeFocused();
+
+  await page.keyboard.press('ArrowDown');
+  for (let line = 1; line <= LONG_DOC_LINES; line++) {
+    await page.keyboard.type(`yo hablo, línea ${String(line)}`);
+    await page.keyboard.press('Enter');
+  }
+
+  await expect(heading2).toHaveAttribute('aria-pressed', 'false');
+  expect((await toolbar.boundingBox())?.y).toBe(0);
+  await expect(
+    page.getByRole('main').getByRole('link', { name: 'Spanish' }),
+  ).not.toBeInViewport();
 });
 
 test('a mouse click anywhere under the text, down to the bottom of the window, puts the caret at its end', async ({
