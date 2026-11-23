@@ -6,12 +6,12 @@ import type { LinkProps } from 'next/link';
 import type { ComponentProps } from 'react';
 
 import { DocBreadcrumb, DocTitle } from '@/modules/shelves';
-import { PageHeader } from '@/ui/page-header';
 
 import type { Doc } from '../core/doc';
 import { useDocEditor } from '../hooks/use-doc-editor';
 import { useDocSaving } from '../hooks/use-doc-saving';
 import { ConflictDialog } from './conflict-dialog';
+import { DocBar } from './doc-bar';
 import { DocSaveStatus } from './doc-save-status';
 import { DocToolbar } from './doc-toolbar';
 import { StorageFullBanner } from './storage-full-banner';
@@ -46,16 +46,16 @@ export function DocEditor({ doc, title, place, storageHref }: DocEditorProps) {
   const saving = useDocSaving(editor, doc);
 
   return (
-    <>
-      <PageHeader>
-        <DocBreadcrumb {...place} />
-        <DocSaveStatus status={saving.status} />
-      </PageHeader>
-      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:pt-2">
+    <div className="@container flex flex-1 flex-col">
+      <DocBar
+        place={<DocBreadcrumb {...place} />}
+        status={<DocSaveStatus status={saving.status} />}
+        toolbar={<DocToolbar editor={editor} />}
+      />
+      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6">
         {saving.status === 'storageFull' && (
           <StorageFullBanner storageHref={storageHref} />
         )}
-        <DocToolbar editor={editor} />
         <DocTitle
           id={doc.id}
           title={title}
@@ -69,6 +69,6 @@ export function DocEditor({ doc, title, place, storageHref }: DocEditorProps) {
         onKeepMine={saving.keepMine}
         onDecideLater={saving.decideLater}
       />
-    </>
+    </div>
   );
 }

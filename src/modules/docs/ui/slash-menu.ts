@@ -77,7 +77,9 @@ function queryIn(state: EditorState, { from, to }: Range) {
 function passHeightLeft({
   availableHeight,
   elements,
+  rects,
 }: MiddlewareState & { availableHeight: number }) {
+  if (rects.floating.height === 0) return;
   elements.floating.style.setProperty(
     '--available-height',
     `${String(availableHeight)}px`,

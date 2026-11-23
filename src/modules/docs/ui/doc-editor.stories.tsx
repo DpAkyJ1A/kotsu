@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
 import type { JSONContent, TiptapEditorHTMLElement } from '@tiptap/core';
 import { expect, mocked, screen, spyOn, waitFor, within } from 'storybook/test';
@@ -521,75 +521,333 @@ export const TheToolbarLightsUpWhereTheCaretIs: Story = {
   },
 };
 
-export const TheToolbarSitsBetweenTheHeaderAndTheTitle: Story = {
-  play: async ({ canvas }) => {
-    const toolbar = formattingToolbar();
-    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+type Box = Pick<DOMRect, 'top' | 'right' | 'bottom' | 'left'>;
 
-    await expect(toolbar.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-      title.getBoundingClientRect().top,
+function boxOf(element: Element): Box {
+  return element.getBoundingClientRect();
+}
+
+function docBar() {
+  const bar = formattingToolbar().closest('[data-slot="doc-bar"]');
+  if (!bar) throw new Error('The toolbar is not in the doc bar');
+  return bar;
+}
+
+function breadcrumb() {
+  return screen.getByRole('navigation', { name: 'Breadcrumb' });
+}
+
+function middleOf({ left, right }: Box) {
+  return (left + right) / 2;
+}
+
+function isOnOneRow(first: Box, second: Box) {
+  return first.top < second.bottom && second.top < first.bottom;
+}
+
+async function expectTheToolbarCentredOverTheText(body: HTMLElement) {
+  const [toolbar, text] = [boxOf(formattingToolbar()), boxOf(body)];
+
+  await expect(middleOf(toolbar)).toBeCloseTo(middleOf(text), 0);
+  await expect(toolbar.left).toBeLessThanOrEqual(text.left);
+  await expect(toolbar.right).toBeGreaterThanOrEqual(text.right);
+}
+
+const aWidePage: Decorator = (Story) => (
+  <div className="w-300">
+    <Story />
+  </div>
+);
+
+const aNarrowerPage: Decorator = (Story) => (
+  <div className="w-256">
+    <Story />
+  </div>
+);
+
+const aNarrowPageBesideTheSidebar: Decorator = (Story) => (
+  <div className="w-132">
+    <Story />
+  </div>
+);
+
+export const OnAWidePageTheBarIsOneRowWithTheToolbarOverTheText: Story = {
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+    const place = boxOf(breadcrumb());
+    const toolbar = boxOf(formattingToolbar());
+    const status = boxOf(saveStatus());
+
+    await expect(isOnOneRow(place, toolbar)).toBe(true);
+    await expect(isOnOneRow(toolbar, status)).toBe(true);
+    await expect(place.right).toBeLessThanOrEqual(toolbar.left);
+    await expect(toolbar.right).toBeLessThanOrEqual(status.left);
+    await expectTheToolbarCentredOverTheText(body);
+    await expect(boxOf(docBar()).bottom).toBeLessThanOrEqual(boxOf(title).top);
+  },
+};
+
+export const OnANarrowerPageTheToolbarGoesUnderThePlace: Story = {
+  decorators: [aNarrowerPage],
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+    const place = boxOf(breadcrumb());
+    const toolbar = boxOf(formattingToolbar());
+    const status = boxOf(saveStatus());
+
+    await expect(isOnOneRow(place, status)).toBe(true);
+    await expect(toolbar.top).toBeGreaterThanOrEqual(
+      Math.max(place.bottom, status.bottom),
     );
+    await expectTheToolbarCentredOverTheText(body);
+    await expect(boxOf(docBar()).bottom).toBeLessThanOrEqual(boxOf(title).top);
   },
 };
 
-export const TheToolbarStaysAtTheTopOfTheWindow: Story = {
+async function scrolledDownALongDoc(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+) {
+  const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+  await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+  window.scrollTo(0, 800);
+  await waitFor(() => expect(window.scrollY).toBe(800));
+  return body;
+}
+
+async function expectTheWholeBarInTheWindow() {
+  await expect(boxOf(docBar()).top).toBe(0);
+  for (const part of [breadcrumb(), formattingToolbar(), saveStatus()]) {
+    await expect(boxOf(part).top).toBeGreaterThanOrEqual(0);
+  }
+}
+
+export const TheBarStaysAtTheTopOfTheWindow: Story = {
+  args: { content: LONG_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    await scrolledDownALongDoc(canvas);
+
+    await expectTheWholeBarInTheWindow();
+    await expect(
+      boxOf(canvas.getByRole('textbox', { name: 'Doc title' })).bottom,
+    ).toBeLessThan(0);
+  },
+};
+
+export const TheBarStaysAtTheTopOfTheWindowOverANarrowerPageToo: Story = {
+  args: { content: LONG_BODY },
+  decorators: [aNarrowerPage],
+  play: async ({ canvas }) => {
+    await scrolledDownALongDoc(canvas);
+
+    await expectTheWholeBarInTheWindow();
+  },
+};
+
+const NO_COLOUR = 'rgba(0, 0, 0, 0)';
+
+export const TheBarShowsItsEdgeOnlyOnceThePageScrolls: Story = {
   args: { content: LONG_BODY },
   play: async ({ canvas }) => {
     const body = await canvas.findByRole('textbox', { name: 'Doc text' });
     await waitFor(() => expect(body).toHaveTextContent('Line 60'));
-    const toolbar = formattingToolbar();
-    const title = canvas.getByRole('textbox', { name: 'Doc title' });
+    const edgeColour = () => getComputedStyle(docBar()).borderBottomColor;
+    const height = () => docBar().getBoundingClientRect().height;
+    window.scrollTo(0, 0);
+    await waitFor(() => expect(edgeColour()).toBe(NO_COLOUR));
+    const heightAtTheTop = height();
 
-    window.scrollTo(0, 800);
+    window.scrollTo(0, 1);
 
-    await waitFor(() => expect(toolbar.getBoundingClientRect().top).toBe(0));
-    await expect(title.getBoundingClientRect().bottom).toBeLessThan(0);
+    await waitFor(() =>
+      expect(edgeColour()).toBe(
+        getComputedStyle(breadcrumb()).borderBottomColor,
+      ),
+    );
+    await expect(getComputedStyle(docBar()).borderBottomWidth).toBe('1px');
+    await expect(height()).toBe(heightAtTheTop);
   },
 };
 
-export const TheCaretStaysClearOfTheToolbar: Story = {
+async function expectTheCaretToStayClearOfTheBar(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+) {
+  const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+  await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+  const editor = editorOf(body);
+  const barBottom = () => boxOf(docBar()).bottom;
+  const caretTop = () =>
+    editor.view.coordsAtPos(editor.state.selection.from).top;
+  window.scrollTo(0, 1200);
+  const lineUnderTheBar = [...body.children].find(
+    (line) => boxOf(line).top > 0,
+  );
+  if (!lineUnderTheBar) throw new Error('No line in the window');
+  editor.commands.focus(editor.view.posAtDOM(lineUnderTheBar, 0), {
+    scrollIntoView: false,
+  });
+  await untilFocused(body);
+  await expect(caretTop()).toBeLessThan(barBottom());
+
+  editor.commands.scrollIntoView();
+
+  await waitFor(() => expect(caretTop()).toBeGreaterThanOrEqual(barBottom()));
+}
+
+export const TheCaretStaysClearOfTheBar: Story = {
   args: { content: LONG_BODY },
+  decorators: [aWidePage],
   play: async ({ canvas }) => {
-    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
-    await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+    await expectTheCaretToStayClearOfTheBar(canvas);
+  },
+};
+
+export const TheCaretStaysClearOfTheTallerBarOfANarrowerPage: Story = {
+  args: { content: LONG_BODY },
+  decorators: [aNarrowerPage],
+  play: async ({ canvas }) => {
+    await expectTheCaretToStayClearOfTheBar(canvas);
+  },
+};
+
+export const OnAPhoneTheCaretNeedsNoRoomForTheBarThatScrolledAway: Story = {
+  args: { content: LONG_BODY },
+  globals: { viewport: { value: 'mobile2' } },
+  play: async ({ canvas }) => {
+    const body = await scrolledDownALongDoc(canvas);
     const editor = editorOf(body);
-    const toolbarBottom = () =>
-      formattingToolbar().getBoundingClientRect().bottom;
-    const caretTop = () =>
-      editor.view.coordsAtPos(editor.state.selection.from).top;
-    window.scrollTo(0, 1200);
-    const lineUnderTheToolbar = [...body.children].find(
-      (line) => line.getBoundingClientRect().top > 0,
-    );
-    if (!lineUnderTheToolbar) throw new Error('No line in the window');
-    editor.commands.focus(editor.view.posAtDOM(lineUnderTheToolbar, 0), {
+    const line = body.children[30];
+    if (!line) throw new Error('No line 31');
+    const scrolledTo = Math.round(window.scrollY + boxOf(line).top - 88);
+    window.scrollTo(0, scrolledTo);
+    await waitFor(() => expect(window.scrollY).toBe(scrolledTo));
+    editor.commands.focus(editor.view.posAtDOM(line, 0), {
       scrollIntoView: false,
     });
     await untilFocused(body);
-    await expect(caretTop()).toBeLessThan(toolbarBottom());
 
     editor.commands.scrollIntoView();
 
-    await waitFor(() =>
-      expect(caretTop()).toBeGreaterThanOrEqual(toolbarBottom()),
-    );
+    await pause(100);
+    await expect(window.scrollY).toBe(scrolledTo);
   },
 };
 
-export const TheToolbarFitsTheColumnOfANarrowWindowWithTheSidebar: Story = {
-  decorators: [
-    (Story) => (
-      <div className="w-132">
-        <Story />
-      </div>
-    ),
-  ],
+export const TheSlashMenuOpensInFullUnderTheBarOfAScrolledDoc: Story = {
+  args: { content: LONG_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas, userEvent }) => {
+    const body = await scrolledDownALongDoc(canvas);
+    const editor = editorOf(body);
+    const lineUnderTheBar = [...body.children].find(
+      (line) => boxOf(line).top > boxOf(docBar()).bottom,
+    );
+    if (!lineUnderTheBar) throw new Error('No line under the bar');
+    editor.commands.focus(
+      editor.view.posAtDOM(lineUnderTheBar, 0) +
+        lineUnderTheBar.textContent.length,
+      { scrollIntoView: false },
+    );
+    await untilFocused(body);
+
+    await userEvent.keyboard(' /');
+
+    const menu = await blocksMenu();
+    await waitFor(() =>
+      expect(boxOf(menu).top).toBeGreaterThanOrEqual(boxOf(docBar()).bottom),
+    );
+    await expectInsideTheWindow(menu);
+    const { top, left } = boxOf(menu);
+    await expect(
+      menu.contains(document.elementFromPoint(left + 4, top + 4)),
+    ).toBe(true);
+  },
+};
+
+const A_LONG_SHELF = {
+  ...SPANISH,
+  id: '019a9c3e-0002-7000-8000-000000000002',
+  name: 'Spanish for the trip to Andalusia next spring',
+};
+const A_LONG_DOC = {
+  ...VERBS,
+  id: '019a9c3e-0102-7000-8000-000000000102',
+  shelfId: A_LONG_SHELF.id,
+  title: 'Irregular verbs in the present tense, with examples from songs',
+};
+
+function withLongNames({ content }: DocEditorStoryArgs) {
+  return (
+    <DocEditor
+      doc={{ id: A_LONG_DOC.id, content, version: 1 }}
+      title={A_LONG_DOC.title}
+      place={{ doc: A_LONG_DOC, shelf: A_LONG_SHELF }}
+      storageHref={STORAGE_HREF}
+    />
+  );
+}
+
+async function expectLongNamesToEndInAnEllipsisBefore(neighbour: Element) {
+  const names = [
+    within(breadcrumb()).getByRole('link', { name: A_LONG_SHELF.name }),
+    within(breadcrumb()).getByText(A_LONG_DOC.title),
+  ];
+
+  for (const name of names) {
+    await expect(name.scrollWidth).toBeGreaterThan(name.clientWidth);
+    await expect(boxOf(name).right).toBeLessThanOrEqual(boxOf(neighbour).left);
+  }
+}
+
+const theNarrowestWidePage: Decorator = (Story) => (
+  <div className="w-288">
+    <Story />
+  </div>
+);
+
+export const LongNamesEndInAnEllipsisBeforeTheToolbarAndLeaveItOverTheText: Story =
+  {
+    render: withLongNames,
+    decorators: [theNarrowestWidePage],
+    play: async ({ canvas }) => {
+      const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+
+      await expectLongNamesToEndInAnEllipsisBefore(formattingToolbar());
+      await expectTheToolbarCentredOverTheText(body);
+    },
+  };
+
+export const LongNamesEndInAnEllipsisBeforeTheStatusOfANarrowPage: Story = {
+  render: withLongNames,
+  decorators: [aNarrowPageBesideTheSidebar],
+  play: async () => {
+    await expectLongNamesToEndInAnEllipsisBefore(saveStatus());
+  },
+};
+
+export const TheToolbarFitsTheColumnOfANarrowPageBesideTheSidebar: Story = {
+  decorators: [aNarrowPageBesideTheSidebar],
   play: async () => {
     const tops = within(formattingToolbar())
       .getAllByRole('button')
       .map((button) => button.getBoundingClientRect().top);
 
     await expect(new Set(tops).size).toBe(1);
+  },
+};
+
+export const OnAPhoneTheHeaderScrollsAwayWithTheText: Story = {
+  args: { content: LONG_BODY },
+  globals: { viewport: { value: 'mobile2' } },
+  play: async ({ canvas }) => {
+    await scrolledDownALongDoc(canvas);
+
+    await expect(
+      boxOf(canvas.getByRole('link', { name: 'Back to Spanish' })).bottom,
+    ).toBeLessThan(0);
   },
 };
 

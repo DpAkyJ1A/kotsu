@@ -32,12 +32,12 @@ otherwise `STORAGE_FULL`.
 
 The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
 `actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
-(below); and `index.ts` gives the page `DocEditor`: the page header row (`DocBreadcrumb` from `shelves`, drawn from the
-doc and shelf the page passes in, and the save status on its right), then the title from `shelves` (`DocTitle`) above
-the body in a column; `DocEditor` draws both, since only it holds the editor that Enter in the title moves to. The page
-passes data, not a ready breadcrumb element: on a large doc React streams such an element in lazily, and in a list of
-siblings the dev build then warns about a missing `key`. The page keys it by the doc's id, so another doc
-always gets a new editor. A new doc (no body yet) opens with the caret in its text, except on a touch screen
+(below); and `index.ts` gives the page `DocEditor`: the doc bar (below: `DocBreadcrumb` from `shelves`, drawn from the
+doc and shelf the page passes in, the formatting toolbar and the save status), then the title from `shelves`
+(`DocTitle`) above the body in a column; `DocEditor` draws both, since only it holds the editor that Enter in the title
+moves to. The page passes data, not a ready breadcrumb element: on a large doc React streams such an element in lazily,
+and in a list of siblings the dev build then warns about a missing `key`. The page keys it by the doc's id, so another
+doc always gets a new editor. A new doc (no body yet) opens with the caret in its text, except on a touch screen
 (`pointer: coarse`), where a phone would show the keyboard only for a tap; the price is that an iPad with a trackpad or
 a touch laptop whose main pointer is the screen also opens without the caret. A doc with text leaves the focus where it
 was. The editable area reaches down to the bottom of the page (the shell's `main` is a flex column, so the page can fill
@@ -45,7 +45,8 @@ it), so a tap under the text lands in it: the browser itself opens the keyboard 
 text in Chromium and WebKit). ProseMirror ignores the mouse events that follow a touch, so `handleClick` in
 `useDocEditor` is for the mouse: a click under the last block puts the caret at the end at once, even when it brings the
 focus back from the title (Chrome would first put it at the start). Scrolling keeps 96 px under the caret, so a phone's
-tab bar never covers it, and 64 px over it, where the formatting toolbar sits (a phone has none but keeps the room).
+tab bar never covers it, and over it 112 px from the `md` breakpoint up, where the doc bar sits at its tallest, and 64
+px on a phone, whose bar scrolls away.
 
 An empty doc says how to start, with `/` or Markdown (to a screen reader too, as the body's `aria-placeholder`), with
 no-break spaces that keep «# heading» on one line (WebKit breaks them in editable text unless `-webkit-nbsp-mode` is
@@ -88,7 +89,11 @@ extension reads the labels through the translator, which `useDocEditor` keeps in
 updates it without a new editor and without redrawing anything. The list (`ui/slash-menu-list.tsx`) is a listbox the
 body points at with `aria-controls` and `aria-activedescendant`, mounted by the suggestion utility next to the typed `/`
 and kept inside the window by Floating UI (it flips above near the bottom, slides in from the edge on a phone and
-scrolls when there is little room); it goes with the editor when the doc closes.
+scrolls when there is little room); it goes with the editor when the doc closes. Floating UI first measures the menu
+before its list is drawn, as an empty box at the end of the page, so the menu takes the room left
+(`--available-height`) only once it has a height (or it would stay squeezed under a caret near the bottom), and the
+highlighted block scrolls into view within the list only (`container: 'nearest'`; or opening the menu in a long doc
+would throw the page to its end).
 
 What a pick does (`core/insert-block.ts`): on a line that holds only the query, the line becomes the block; on a line
 with text, the query goes and the block opens below the whole line, with the caret in it, as Enter would open a line
@@ -100,34 +105,46 @@ the menu; after a query with a space, such as `/heading 2`, the text comes back 
 open it). Adding a block to the menu takes four entries: its keywords in `SLASH_BLOCKS`, what it does in
 `TURN_PLAIN_LINE_INTO`, its icon and its label and description in `messages`.
 
-The formatting toolbar (`ui/doc-toolbar.tsx`) sits above the title from the `md` breakpoint up (a phone, with its tab
-bar, has none): headings 1 to 3 | bold, italic, strike, inline code | the three lists | quote, code block, divider, the
+The doc bar (`ui/doc-bar.tsx`) holds where the doc is, the formatting toolbar and the save status, over the title. From
+the `md` breakpoint up it sticks to the top of the window, so the save status is always in sight; its bottom edge shows
+only once the page scrolls under it (`border-b-on-scroll` in `src/ui/theme.css`, a scroll timeline over the first pixel,
+so the edge takes its pixel from the start and nothing moves). Its layout follows the width of the page, not of the
+window (a container query on `DocEditor`, which fills the shell's `main`), since the sidebar narrows the page without
+changing the window: from 72rem (`@6xl`) it is one row of three columns, the breadcrumb on the left (both names ending
+in an ellipsis when the row is short), the toolbar in the middle right over the text, and the status on the right; on a
+narrower page it is two rows of one bar, the breadcrumb and the status, then the toolbar. The layout is the same from
+the top of the page down, so scrolling never moves anything. The caret keeps 112 px from the top of the window
+(`useDocEditor`), the bar's height at two rows with some air, one number for both layouts, so it never hides under the
+bar. The bar's parts go in the order they are read on a wide page, the place, the toolbar, the status; on a narrower
+page the grid puts the status up beside the place. On a phone the bar is the plain page header and scrolls away with the
+text.
+
+The formatting toolbar (`ui/doc-toolbar.tsx`) is in the doc bar from the `md` breakpoint up (a phone, with its tab bar,
+has none): headings 1 to 3 | bold, italic, strike, inline code | the three lists | quote, code block, divider, the
 blocks with the slash menu's icons and labels (`ui/format-icons.ts`, `docs.slashMenu`; the marks have theirs in
-`docs.toolbar`). It is sticky, so once the page header scrolls away it stays at the top of the window, and the caret
-keeps 64 px from the top of the window (`useDocEditor`), so it never hides under it. A button acts on the text, never on
-the title: a click keeps the focus where it is (the button takes no `mousedown`), and from the title or from the
-keyboard the button first gives the text the focus back at its old caret. Each toggle runs the command its Tiptap
-shortcut runs (`core/apply-format.ts`), so a button and its shortcut always agree, and a second press undoes it: a block
-turns back into a paragraph, a list item leaves its list. The divider isn't a toggle: it goes under the line, with a new
-line under it for the caret, through the slash menu's `insertBlock`. A button lights up (`aria-pressed`) while the caret
-is in its format, and turns off (disabled, not hidden) where its toggle can't run: no mark in a code block, no other
-mark in inline code, no quote in a list item. Whether it can run is asked by running it on a command manager over the
-current state, which leaves the doc alone, and not with `editor.can()`: that says no to a heading or a code block in a
-list item and to a list on a heading or in code, although their shortcuts do them (its dry run skips the step that first
-takes the line out of its list). The toolbar is an ARIA toolbar (Radix, through `src/ui/toolbar.tsx`): one Tab stop, and
-the arrows, Home and End move along it, past the buttons that are off. A button's tooltip says its name, its shortcut
-and its Markdown: "Heading 2 ⌘⌥2 ##", "Bold ⌘B **text**", "Divider ---" (Ctrl instead of ⌘ away from Apple devices, read
-from the browser only once a tooltip opens, so the page from the server never depends on it). The shortcuts and the
-Markdown are one list, `SHORTCUTS` in `core/formats.ts`, free of Tiptap, for a Shortcuts section in Settings later;
-browser tests press every shortcut and type every Markdown of the list and check that the button lights up, so the list
-can't drift from Tiptap's keymaps.
+`docs.toolbar`). A button acts on the text, never on the title: a click keeps the focus where it is (the button takes no
+`mousedown`), and from the title or from the keyboard the button first gives the text the focus back at its old caret.
+Each toggle runs the command its Tiptap shortcut runs (`core/apply-format.ts`), so a button and its shortcut always
+agree, and a second press undoes it: a block turns back into a paragraph, a list item leaves its list. The divider isn't
+a toggle: it goes under the line, with a new line under it for the caret, through the slash menu's `insertBlock`. A
+button lights up (`aria-pressed`) while the caret is in its format, and turns off (disabled, not hidden) where its
+toggle can't run: no mark in a code block, no other mark in inline code, no quote in a list item. Whether it can run is
+asked by running it on a command manager over the current state, which leaves the doc alone, and not with
+`editor.can()`: that says no to a heading or a code block in a list item and to a list on a heading or in code, although
+their shortcuts do them (its dry run skips the step that first takes the line out of its list). The toolbar is an ARIA
+toolbar (Radix, through `src/ui/toolbar.tsx`): one Tab stop, and the arrows, Home and End move along it, past the
+buttons that are off. A button's tooltip says its name, its shortcut and its Markdown: "Heading 2 ⌘⌥2 ##", "Bold ⌘B
+**text**", "Divider ---" (Ctrl instead of ⌘ away from Apple devices, read from the browser only once a tooltip opens, so
+the page from the server never depends on it). The shortcuts and the Markdown are one list, `SHORTCUTS` in
+`core/formats.ts`, free of Tiptap, for a Shortcuts section in Settings later; browser tests press every shortcut and
+type every Markdown of the list and check that the button lights up, so the list can't drift from Tiptap's keymaps.
 
 The body saves itself (`hooks/save-queue.ts`, `hooks/use-doc-saving.ts`). Every edit restarts an 800 ms timer, and
 the save goes when it runs out, with the version the doc was opened at or last saved at. Only typing counts as an
 edit: a transaction that changes the doc and is not kept out of the undo history (`core/user-edit.ts`). So UniqueID
 giving the blocks of an old doc their ids as it opens saves nothing, and neither does a newer version put in from the
 server. One save is on its way at a time; edits made meanwhile go in the next one, sent as soon as the answer comes,
-from the version it returned. The right of the page header says where things are (`ui/doc-save-status.tsx`, a
+from the version it returned. The right of the doc bar says where things are (`ui/doc-save-status.tsx`, a
 `role="status"`): «Saving…», «Saved», or in red «Offline, not saved», «Too long to save» (a body over 500 KB is
 not sent, and `LIMIT` from the server reads the same), «Storage full» and «Not saved». With «Storage full» a banner
 over the doc says its changes aren't saved and links to Settings → Storage (`ui/storage-full-banner.tsx`); the link

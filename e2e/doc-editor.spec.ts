@@ -53,6 +53,31 @@ function saveStatusOf(page: Page) {
   return page.getByRole('main').getByRole('status');
 }
 
+function docBarOf(page: Page) {
+  return page.locator('[data-slot="doc-bar"]');
+}
+
+async function typeALongDoc(page: Page) {
+  for (let line = 1; line <= LONG_DOC_LINES; line++) {
+    await page.keyboard.type(`yo hablo, línea ${String(line)}`);
+    await page.keyboard.press('Enter');
+  }
+}
+
+function roomOverTheCaretLine(page: Page) {
+  return page.evaluate(() => {
+    const caret = getSelection()?.anchorNode;
+    const line = (
+      caret instanceof Element ? caret : caret?.parentElement
+    )?.closest('p');
+    const bar = document.querySelector('[data-slot="doc-bar"]');
+    if (!line || !bar) throw new Error('No caret line or no doc bar');
+    return (
+      line.getBoundingClientRect().top - bar.getBoundingClientRect().bottom
+    );
+  });
+}
+
 async function typeAndSave(page: Page, text: string) {
   await page.keyboard.type(text);
   await expect(saveStatusOf(page)).toHaveText('Saving…');
@@ -138,7 +163,7 @@ test('a new doc opens with the caret in its text, and Markdown turns into blocks
   ).not.toBeChecked();
 });
 
-test('the toolbar over the title formats the line with the caret, and stays at the top of the window while the header scrolls away', async ({
+test('the toolbar over the title formats the line with the caret, and stays at the top of the window with the place and the save status', async ({
   page,
 }) => {
   await createDocOnANewShelf(page, 'Spanish', 'Verbs');
@@ -157,16 +182,36 @@ test('the toolbar over the title formats the line with the caret, and stays at t
   await expect(body).toBeFocused();
 
   await page.keyboard.press('ArrowDown');
-  for (let line = 1; line <= LONG_DOC_LINES; line++) {
-    await page.keyboard.type(`yo hablo, línea ${String(line)}`);
-    await page.keyboard.press('Enter');
-  }
+  await typeALongDoc(page);
 
   await expect(heading2).toHaveAttribute('aria-pressed', 'false');
-  expect((await toolbar.boundingBox())?.y).toBe(0);
+  await expect(titleOf(page)).not.toBeInViewport();
+  expect((await docBarOf(page).boundingBox())?.y).toBe(0);
+  await expect(toolbar).toBeInViewport({ ratio: 1 });
   await expect(
     page.getByRole('main').getByRole('link', { name: 'Spanish' }),
-  ).not.toBeInViewport();
+  ).toBeInViewport({ ratio: 1 });
+  await expect(saveStatusOf(page)).toBeInViewport({ ratio: 1 });
+});
+
+test('the caret going up a long doc never hides under the bar, at two rows beside the sidebar too', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+  await expect(bodyOf(page)).toBeFocused();
+  await typeALongDoc(page);
+  await expect(titleOf(page)).not.toBeInViewport();
+  expect((await docBarOf(page).boundingBox())?.height).toBeGreaterThan(64);
+
+  for (let line = 1; line <= LONG_DOC_LINES; line++) {
+    await page.keyboard.press('ArrowUp');
+
+    await expect
+      .poll(() => roomOverTheCaretLine(page))
+      .toBeGreaterThanOrEqual(0);
+  }
+  await expect(titleOf(page)).toBeInViewport();
 });
 
 test('a mouse click anywhere under the text, down to the bottom of the window, puts the caret at its end', async ({

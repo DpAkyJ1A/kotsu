@@ -7,12 +7,16 @@ import { useEditor } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { useMediaQuery } from '@/ui/use-media-query';
+
 import type { Doc } from '../core/doc';
 import { DocKit } from '../core/doc-kit';
 import { SlashMenu } from '../ui/slash-menu';
 
 const TOUCH_SCREEN = '(pointer: coarse)';
+const WIDE_SCREEN = '(min-width: 48rem)';
 const ROOM_AROUND_THE_CARET_PX = { top: 64, right: 5, bottom: 96, left: 5 };
+const ROOM_UNDER_THE_DOC_BAR_PX = { ...ROOM_AROUND_THE_CARET_PX, top: 112 };
 const SHOWS_HINT = 'shows-hint';
 
 type Words = {
@@ -30,6 +34,9 @@ export function useDocEditor(content: Doc['content']) {
     cellOf({ placeholder, emptyLineHint, emptyChecklistItem }),
   );
   const [translations] = useState(() => cellOf(t));
+  const roomAroundTheCaret = useMediaQuery(WIDE_SCREEN)
+    ? ROOM_UNDER_THE_DOC_BAR_PX
+    : ROOM_AROUND_THE_CARET_PX;
 
   const editor = useEditor({
     extensions: [
@@ -60,8 +67,8 @@ export function useDocEditor(content: Doc['content']) {
         'aria-multiline': 'true',
         ...(isNodeEmpty(state.doc) && { 'aria-placeholder': placeholder }),
       }),
-      scrollThreshold: ROOM_AROUND_THE_CARET_PX,
-      scrollMargin: ROOM_AROUND_THE_CARET_PX,
+      scrollThreshold: roomAroundTheCaret,
+      scrollMargin: roomAroundTheCaret,
       handleClick: (view, _position, event) => {
         if (!isUnderTheText(view, event)) return false;
         view.dispatch(
