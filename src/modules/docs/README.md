@@ -11,17 +11,27 @@ checklist item, quote and code block carries a `blockId`, a uuid set by Tiptap's
 place in a doc and a card keeps its identity: Enter keeps the id with the text that stays, and a pasted copy gets a new
 one, so no two blocks in a doc share an id.
 
-What the schema check leaves to the save (`Node.fromJSON` and `check()` refuse unknown nodes and marks and a block in
-the wrong place, but not these): an attribute it doesn't know is dropped rather than refused, so the body to store is
-the parsed doc, not the JSON that came in; attribute values aren't checked (a heading level 7 passes); and the root may
-be any node, so the save checks it is a `doc`.
+A body to save goes through `DocBody` (`core/doc-body.ts`), which adds what the schema check leaves out
+(`Node.fromJSON` and `check()` refuse unknown nodes and marks and a block in the wrong place, but not these): an
+attribute it doesn't know is dropped rather than refused, so what is stored is the parsed doc's `toJSON()`, not the JSON
+that came in; attribute values are checked against a list of their own (a heading level 7, a `blockId` that isn't a
+uuid or a checked state that isn't a boolean are refused); and the root must be a `doc`.
 
 The domain: `getDoc({ id })` gives a doc's body and `version`, or `null` for a doc that was never saved; another user's
-item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`.
+item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`. `saveDoc({ id, version,
+content })` stores a body only on top of the version it was based on: one `update … where version = $v returning
+version` writes the body, its text for search (`core/plain-text.ts`: each block on a line of its own, so the words of
+two blocks never run together), its size in bytes and `version + 1`, and answers the new version. No row back means
+`CONFLICT` when the doc is the user's and `NOT_FOUND` when it is missing, a sheet or another user's (both ask
+`domain/own-doc.ts`). A body with more different words than Postgres's search index holds (a `tsvector` over 1 MB,
+error 54000, from roughly 600 KB of words that all differ; a text's words repeat, and a full 1 MB of them is fine)
+answers `LIMIT` instead of failing the request; a cap on a doc's size comes with task 1.5b.
 
-The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page,
-and `index.ts` gives it `DocEditor`: the title from `shelves` (`DocTitle`) above the body in a column; `DocEditor` draws
-both, since only it holds the editor that Enter in the title moves to. The page keys it by the doc's id, so another doc
+The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
+`actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
+(below); and `index.ts` gives the page `DocEditor`: the page header row (the breadcrumb the page passes in, and the save
+status on its right), then the title from `shelves` (`DocTitle`) above the body in a column; `DocEditor` draws both,
+since only it holds the editor that Enter in the title moves to. The page keys it by the doc's id, so another doc
 always gets a new editor. A new doc (no body yet) opens with the caret in its text, except on a touch screen
 (`pointer: coarse`), where a phone would show the keyboard only for a tap; the price is that an iPad with a trackpad or
 a touch laptop whose main pointer is the screen also opens without the caret. A doc with text leaves the focus where it
@@ -107,7 +117,38 @@ Markdown are one list, `SHORTCUTS` in `core/formats.ts`, free of Tiptap, for a S
 browser tests press every shortcut and type every Markdown of the list and check that the button lights up, so the list
 can't drift from Tiptap's keymaps.
 
-The body isn't saved yet (task 1.5).
+The body saves itself (`hooks/save-queue.ts`, `hooks/use-doc-saving.ts`). Every edit restarts an 800 ms timer, and
+the save goes when it runs out, with the version the doc was opened at or last saved at. Only typing counts as an
+edit: a transaction that changes the doc and is not kept out of the undo history (`core/user-edit.ts`). So UniqueID
+giving the blocks of an old doc their ids as it opens saves nothing, and neither does a newer version put in from the
+server. One save is on its way at a time; edits made meanwhile go in the next one, sent as soon as the answer comes,
+from the version it returned. The right of the page header says where things are (`ui/doc-save-status.tsx`, a
+`role="status"`): «Saving…», «Saved», or in red «Offline, not saved», «Too long to save» (a body over 1 MB is not
+sent, and `LIMIT` from the server reads the same) and «Not saved». A save that failed or found the browser offline is
+tried again with the next edit, and when the tab comes back into view or back online.
+
+A save from the open page is a Server Action, so the page and the router's cache of pages already seen are refreshed
+after it; it is handed a `structuredClone` of the body, since ProseMirror's attributes are objects without a
+prototype, which React can't send to an action. A tab that is hidden or closed (`visibilitychange` to hidden,
+`pagehide`) saves at once with `fetch` and `keepalive`, which outlives the page, to `POST /api/docs/save`: the route
+takes only requests the browser marks `Sec-Fetch-Site: same-origin` (anything else gets 403) with a `Content-Length`
+of at most 64 KB (413, `LIMIT`, otherwise) and answers as the action does (`answer()` in `src/server/actions.ts`,
+without the refresh, which a route handler can't do). A keepalive body can't pass 64 KB, so a longer doc saves through
+the action as the tab hides. The «Leave page?» question comes only
+when that can't save the edits: the browser is offline, the last save failed or met a conflict, a save is still on its
+way with newer edits behind it, or the doc is over 64 KB.
+
+A tab that comes back into view, or back online, with nothing unsaved asks the server for the doc (`router.refresh()`),
+and a newer version replaces the text silently, outside the undo history (⌘Z doesn't bring the old text back). With
+unsaved edits it leaves the server's doc alone, and its next save meets `CONFLICT`: a dialog (`ui/conflict-dialog.tsx`,
+an `alertdialog`) asks what to keep. «Reload» takes the server's version; «Keep mine», the primary, fetches it only for
+its version and saves this tab's text over it. Escape or a click outside puts the choice off: the status says «Not
+saved», no save goes, the tab asks before it closes, and the next edit asks again. The dialog itself takes the focus,
+not a button, so keys typed on as it opens choose nothing. Edges left: a doc left for another page of the app while
+offline loses its last edits (no page is left to retry them); a Server Action save still on its way as the tab
+closes, with nothing typed after it, is left to the browser, which may cut it off; a save the server took whose answer
+was lost is sent again from the old version and meets a `CONFLICT` with itself; and a doc deleted in another tab
+says «Not saved» and tries again with every edit.
 
 - **Writes:** the body of doc items: `item.content`, `item.plain_text`, `item.version`, `item.size_bytes`.
 - **Depends on:** `shelves`, `cards`.

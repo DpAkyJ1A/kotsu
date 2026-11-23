@@ -128,6 +128,19 @@
       "strike": "Strikethrough",
       "code": "Inline code",
       "sampleText": "text"
+    },
+    "saveStatus": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "offline": "Offline, not saved",
+      "tooLong": "Too long to save",
+      "notSaved": "Not saved"
+    },
+    "conflict": {
+      "title": "This doc changed elsewhere",
+      "description": "A newer version was saved in another tab or on another device. Load that version, or keep your text and save it over it.",
+      "reload": "Reload",
+      "keepMine": "Keep mine"
     }
   },
   "onboarding": {
@@ -332,6 +345,8 @@
   "errors": {
     "VALIDATION": "That couldn't be saved. Reload the page and try again.",
     "NOT_FOUND": "That's no longer here. Reload the page.",
+    "CONFLICT": "Someone saved a newer version of this elsewhere. Reload the page to see it.",
+    "LIMIT": "That's more than can be saved in one go.",
     "INTERNAL": "Something went wrong. Try again.",
     "OFFLINE": "You're offline. Try again once you're back online."
   },

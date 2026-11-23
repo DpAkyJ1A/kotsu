@@ -1,11 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
 import type { JSONContent, TiptapEditorHTMLElement } from '@tiptap/core';
-import { expect, screen, waitFor, within } from 'storybook/test';
+import { expect, mocked, screen, spyOn, waitFor, within } from 'storybook/test';
 
-import { ShelvesProvider } from '@/modules/shelves';
+import { DocBreadcrumb, ShelvesProvider } from '@/modules/shelves';
+import { SidebarInset, SidebarProvider } from '@/ui/sidebar';
 import { TooltipProvider } from '@/ui/tooltip';
 
+import { saveDocAction } from '../actions';
 import type { Doc } from '../core/doc';
+import { SAVE_AFTER_MS } from '../core/save-limits';
 import { DocEditor } from './doc-editor';
 
 const SPANISH = {
@@ -104,17 +108,27 @@ const meta = {
     <DocEditor
       doc={{ id: VERBS.id, content, version: 1 }}
       title={VERBS.title}
+      breadcrumb={<DocBreadcrumb doc={VERBS} shelf={SPANISH} />}
     />
   ),
   decorators: [
     (Story) => (
       <TooltipProvider>
         <ShelvesProvider shelves={[SPANISH]} items={[VERBS]}>
-          <Story />
+          <SidebarProvider defaultState="closed">
+            <SidebarInset>
+              <Story />
+            </SidebarInset>
+          </SidebarProvider>
         </ShelvesProvider>
       </TooltipProvider>
     ),
   ],
+  beforeEach: () => {
+    mocked(saveDocAction).mockImplementation(({ version }) =>
+      Promise.resolve({ ok: true, data: { version: version + 1 } }),
+    );
+  },
 } satisfies Meta<DocEditorStoryArgs>;
 
 export default meta;
@@ -581,3 +595,250 @@ export const NoToolbarOnAPhone: Story = {
     await expect(canvas.queryByRole('toolbar')).not.toBeInTheDocument();
   },
 };
+
+const SAVED_AFTER_AN_ANSWER_MS = SAVE_AFTER_MS * 3;
+
+function saveStatus() {
+  return screen.getByRole('status', { name: '' });
+}
+
+function lastSaved() {
+  const [save] = mocked(saveDocAction).mock.lastCall ?? [];
+  return save;
+}
+
+function pause(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function showThePage(visibility: DocumentVisibilityState) {
+  Object.defineProperty(document, 'visibilityState', {
+    value: visibility,
+    configurable: true,
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
+function isLeavingStopped() {
+  const leaving = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(leaving);
+  return leaving.defaultPrevented;
+}
+
+async function openedWithTheCaretAtTheEnd(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+) {
+  const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+  await waitFor(() => expect(body).toHaveTextContent('Next: the past tense.'));
+  editorOf(body).commands.focus('end');
+  await untilFocused(body);
+  return body;
+}
+
+export const SavesOnceTheTypingPauses: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await openedWithTheCaretAtTheEnd(canvas);
+    await expect(saveStatus()).toHaveTextContent('Saved');
+
+    await userEvent.keyboard(' And the future.');
+
+    await expect(saveStatus()).toHaveTextContent('Saving…');
+    await expect(saveDocAction).not.toHaveBeenCalled();
+    await waitFor(() => expect(saveDocAction).toHaveBeenCalledOnce(), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
+    await expect(lastSaved()).toMatchObject({ id: VERBS.id, version: 1 });
+    await expect(JSON.stringify(lastSaved()?.content)).toContain(
+      'Next: the past tense. And the future.',
+    );
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
+  },
+};
+
+export const OpeningADocSavesNothingThoughItsBlocksGetIds: Story = {
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() =>
+      expect(body.querySelector('p')).toHaveAttribute('data-blockid'),
+    );
+
+    await pause(SAVED_AFTER_AN_ANSWER_MS);
+
+    await expect(saveDocAction).not.toHaveBeenCalled();
+    await expect(saveStatus()).toHaveTextContent('Saved');
+  },
+};
+
+export const ANewDocSavesNothingUntilSomethingIsTyped: Story = {
+  args: { content: null },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await untilFocused(body);
+
+    await pause(SAVED_AFTER_AN_ANSWER_MS);
+
+    await expect(saveDocAction).not.toHaveBeenCalled();
+  },
+};
+
+export const SendsTheNextSaveOnlyAfterTheAnswer: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const firstAnswer = Promise.withResolvers<null>();
+    mocked(saveDocAction).mockImplementationOnce(async ({ version }) => {
+      await firstAnswer.promise;
+      return { ok: true, data: { version: version + 1 } };
+    });
+    await openedWithTheCaretAtTheEnd(canvas);
+
+    await userEvent.keyboard(' Hablaré.');
+    await waitFor(() => expect(saveDocAction).toHaveBeenCalledOnce(), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
+    await userEvent.keyboard(' Hablarás.');
+    await pause(SAVED_AFTER_AN_ANSWER_MS);
+    await expect(saveDocAction).toHaveBeenCalledOnce();
+
+    firstAnswer.resolve(null);
+
+    await waitFor(() => expect(saveDocAction).toHaveBeenCalledTimes(2));
+    await expect(lastSaved()?.version).toBe(2);
+    await expect(JSON.stringify(lastSaved()?.content)).toContain(
+      'Hablaré. Hablarás.',
+    );
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
+  },
+};
+
+async function conflicted(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+  userEvent: Parameters<NonNullable<Story['play']>>[0]['userEvent'],
+) {
+  mocked(saveDocAction).mockResolvedValue({
+    ok: false,
+    error: { code: 'CONFLICT' },
+  });
+  await openedWithTheCaretAtTheEnd(canvas);
+  await userEvent.keyboard(' Hablaré.');
+  return screen.findByRole(
+    'alertdialog',
+    { name: 'This doc changed elsewhere' },
+    { timeout: SAVED_AFTER_AN_ANSWER_MS },
+  );
+}
+
+export const AsksWhatToKeepWhenTheDocChangedElsewhere: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const dialog = await conflicted(canvas, userEvent);
+
+    await expect(dialog).toHaveFocus();
+    await expect(isLeavingStopped()).toBe(true);
+  },
+};
+
+export const TypingOnAsTheQuestionOpensAnswersNothing: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const dialog = await conflicted(canvas, userEvent);
+
+    await userEvent.keyboard(' Hablaremos{Enter} ');
+
+    await expect(dialog).toBeInTheDocument();
+    await expect(saveDocAction).toHaveBeenCalledOnce();
+    await expect(getRouter().refresh).not.toHaveBeenCalled();
+  },
+};
+
+export const KeepMineFetchesTheNewerVersionToSaveOver: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const dialog = await conflicted(canvas, userEvent);
+
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Keep mine' }),
+    );
+
+    await expect(getRouter().refresh).toHaveBeenCalledOnce();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(saveStatus()).toHaveTextContent('Saving…');
+  },
+};
+
+export const ClosingTheConflictDialogPutsTheChoiceOff: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const dialog = await conflicted(canvas, userEvent);
+
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(getRouter().refresh).not.toHaveBeenCalled();
+    await expect(saveStatus()).toHaveTextContent('Not saved');
+  },
+};
+
+export const SaysWhenItCannotSaveOfflineAndAsksBeforeLeaving: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const onLine = spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    await openedWithTheCaretAtTheEnd(canvas);
+
+    await userEvent.keyboard(' Hablaré.');
+
+    await waitFor(
+      () => expect(saveStatus()).toHaveTextContent('Offline, not saved'),
+      { timeout: SAVED_AFTER_AN_ANSWER_MS },
+    );
+    await expect(saveDocAction).not.toHaveBeenCalled();
+    await expect(isLeavingStopped()).toBe(true);
+
+    onLine.mockReturnValue(true);
+    window.dispatchEvent(new Event('online'));
+
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
+    await expect(saveDocAction).toHaveBeenCalledOnce();
+    await expect(isLeavingStopped()).toBe(false);
+  },
+};
+
+export const LeavingRightAfterTypingNeedsNoQuestion: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await openedWithTheCaretAtTheEnd(canvas);
+
+    await userEvent.keyboard(' Hablaré.');
+
+    await expect(saveStatus()).toHaveTextContent('Saving…');
+    await expect(isLeavingStopped()).toBe(false);
+  },
+};
+
+export const SavesAtOnceWithKeepaliveWhenThePageIsHidden: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const fetch = spyOn(window, 'fetch').mockResolvedValue(
+      Response.json({ ok: true, data: { version: 2 } }),
+    );
+    await openedWithTheCaretAtTheEnd(canvas);
+    await userEvent.keyboard(' Hablaré.');
+
+    showThePage('hidden');
+
+    await expect(fetch).toHaveBeenCalledOnce();
+    await expect(fetch).toHaveBeenCalledWith(
+      '/api/docs/save',
+      expect.objectContaining({ keepalive: true }),
+    );
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
+    await expect(saveDocAction).not.toHaveBeenCalled();
+    showThePage('visible');
+  },
+};
+
+export const LooksForANewerVersionWhenThePageComesBackWithNothingUnsaved: Story =
+  {
+    play: async ({ canvas, userEvent }) => {
+      await openedWithTheCaretAtTheEnd(canvas);
+
+      showThePage('hidden');
+      showThePage('visible');
+      await expect(getRouter().refresh).toHaveBeenCalledOnce();
+
+      await userEvent.keyboard(' Hablaré.');
+      showThePage('visible');
+      await expect(getRouter().refresh).toHaveBeenCalledOnce();
+    },
+  };

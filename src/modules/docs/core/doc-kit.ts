@@ -4,6 +4,8 @@ import { UniqueID } from '@tiptap/extension-unique-id';
 import type { Node } from '@tiptap/pm/model';
 import { StarterKit } from '@tiptap/starter-kit';
 
+export const HEADING_LEVELS = [1, 2, 3] as const;
+
 const BLOCKS_WITH_AN_ID = [
   'paragraph',
   'heading',
@@ -27,7 +29,7 @@ export const DocKit = Extension.create<DocKitOptions>({
   addExtensions() {
     return [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: { levels: [...HEADING_LEVELS] },
         underline: false,
         link: false,
       }),

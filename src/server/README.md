@@ -7,7 +7,8 @@ throws `AppError('VALIDATION')` otherwise, `query()` does the same for a read, a
 on in `ctx.db`, so a write that fails undoes the ones before it; `defineAction()` in `actions.ts` turns a domain function into a Server
 Action that takes the user from the session, refreshes the page after a write and answers with an `ActionResult`
 (`{ ok: true, data }`, or `{ ok: false, error: { code } }` with an `AppError` code; any other failure is logged and
-answered as `INTERNAL`).
+answered as `INTERNAL`). `answer()` in the same file answers the same way without the refresh, for a route handler
+(which can't refresh a page) that has to stand in for an action, as the save a closing tab sends with `keepalive` does.
 
 Server only: every file starts with `import 'server-only'`. Imports only from `src/server` and `src/lib`.
 `env.ts` is the only file that reads `process.env`.

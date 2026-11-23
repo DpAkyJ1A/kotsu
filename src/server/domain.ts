@@ -4,7 +4,8 @@ import type { z } from 'zod';
 
 import type { Ctx } from './ctx/load-ctx';
 
-export type AppErrorCode = 'VALIDATION' | 'NOT_FOUND' | 'INTERNAL';
+export type AppErrorCode =
+  'VALIDATION' | 'NOT_FOUND' | 'CONFLICT' | 'LIMIT' | 'INTERNAL';
 
 export class AppError extends Error {
   override readonly name = 'AppError';

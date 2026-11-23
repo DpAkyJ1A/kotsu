@@ -46,11 +46,14 @@ that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves
 empty line takes that line; on a line with text it goes below it. On a wider screen a row of buttons above the title
 does the same with a click: three headings, bold, italic, strike and code, the three lists, a quote, a code block and a
 line. It stays at the top of the window as you scroll, lights up what the caret is in, and each button's tooltip shows
-its shortcut and its Markdown ("Bold ⌘B **text**"). For now the text lives only on the page: saving it comes next. The
-title saves itself once you pause or leave it, Enter goes on to the text, and the sidebar and the line
-above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title renames it, and its ⋯
-menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A shelf that holds docs
-asks first: its delete window lists the docs that go with it, and deletes only once you type the shelf's name. In the
+its shortcut and its Markdown ("Bold ⌘B **text**"). The text saves itself once you pause ("Saving…", "Saved" in the
+corner, or "Offline, not saved" until the connection is back), and once more as you close the tab, which asks before it
+closes only when the text can't be saved. A tab you come back to shows what another tab saved meanwhile; if both were
+edited, it asks which text to keep. The title saves itself once you pause or leave it, Enter goes on to the text, and
+the sidebar and the line above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title
+renames it, and its ⋯ menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A
+shelf that holds docs asks first: its delete window lists the docs that go with it, and deletes only once you type the
+shelf's name. In the
 sidebar each shelf lists its docs under it: the arrow beside a shelf folds it away (this device remembers), the + in its
 row makes a doc there, and a doc dragged onto another doc or another shelf moves there. Tiles on a shelf's page drag
 into a new order too, by mouse, by a long press on a phone, or from the keyboard. Kotsu also installs as an app: Chrome

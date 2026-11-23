@@ -5,7 +5,6 @@ import { DocEditor } from '@/modules/docs';
 import { loadDoc } from '@/modules/docs/loaders';
 import { DocBreadcrumb } from '@/modules/shelves';
 import { loadNavigation } from '@/modules/shelves/loaders';
-import { PageHeader } from '@/ui/page-header';
 
 async function placeOf(itemId: string) {
   const { shelves, items } = await loadNavigation();
@@ -30,11 +29,11 @@ export default async function DocPage({ params }: PageProps<'/docs/[itemId]'>) {
   ]);
 
   return (
-    <>
-      <PageHeader>
-        <DocBreadcrumb doc={item} shelf={shelf} />
-      </PageHeader>
-      <DocEditor key={doc.id} doc={doc} title={item.title} />
-    </>
+    <DocEditor
+      key={doc.id}
+      doc={doc}
+      title={item.title}
+      breadcrumb={<DocBreadcrumb doc={item} shelf={shelf} />}
+    />
   );
 }

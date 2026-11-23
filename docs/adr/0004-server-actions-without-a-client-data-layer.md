@@ -39,4 +39,7 @@ Options considered:
 - A Server Action is a public POST endpoint. Each one gets the user from `getCtx()`, and its input goes through Zod
   like any other request.
 - Search typeahead is the one read from the browser, as a plain `GET /api/search` (tasks 1.17 and 1.18).
+- A doc's last save as its tab closes is the one write outside Server Actions: a `fetch` with `keepalive`, which
+  outlives the page, to `POST /api/docs/save`. It runs the same command through `answer()` and gives the same
+  answer, but takes only requests the browser marks `Sec-Fetch-Site: same-origin` (task 1.5).
 - If Kotsu ever needs offline work or a long-lived client cache, this is the record to revisit.

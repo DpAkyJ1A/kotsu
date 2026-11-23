@@ -2,11 +2,16 @@
 
 import { EditorContent } from '@tiptap/react';
 import { cn } from 'cn';
+import type { ReactNode } from 'react';
 
 import { DocTitle } from '@/modules/shelves';
+import { PageHeader } from '@/ui/page-header';
 
 import type { Doc } from '../core/doc';
 import { useDocEditor } from '../hooks/use-doc-editor';
+import { useDocSaving } from '../hooks/use-doc-saving';
+import { ConflictDialog } from './conflict-dialog';
+import { DocSaveStatus } from './doc-save-status';
 import { DocToolbar } from './doc-toolbar';
 
 const BODY_CLASS_NAME = cn(
@@ -27,20 +32,33 @@ const BODY_CLASS_NAME = cn(
   '[&_hr]:my-6 [&_hr]:border-border',
 );
 
-type DocEditorProps = { doc: Doc; title: string };
+type DocEditorProps = { doc: Doc; title: string; breadcrumb: ReactNode };
 
-export function DocEditor({ doc, title }: DocEditorProps) {
+export function DocEditor({ doc, title, breadcrumb }: DocEditorProps) {
   const editor = useDocEditor(doc.content);
+  const saving = useDocSaving(editor, doc);
 
   return (
-    <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:pt-2">
-      <DocToolbar editor={editor} />
-      <DocTitle
-        id={doc.id}
-        title={title}
-        onGoToBody={() => editor?.commands.focus('start')}
+    <>
+      <PageHeader>
+        {breadcrumb}
+        <DocSaveStatus status={saving.status} />
+      </PageHeader>
+      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:pt-2">
+        <DocToolbar editor={editor} />
+        <DocTitle
+          id={doc.id}
+          title={title}
+          onGoToBody={() => editor?.commands.focus('start')}
+        />
+        <EditorContent editor={editor} className={BODY_CLASS_NAME} />
+      </article>
+      <ConflictDialog
+        isOpen={saving.isAskingAboutAConflict}
+        onReload={saving.reload}
+        onKeepMine={saving.keepMine}
+        onDecideLater={saving.decideLater}
       />
-      <EditorContent editor={editor} className={BODY_CLASS_NAME} />
-    </article>
+    </>
   );
 }
