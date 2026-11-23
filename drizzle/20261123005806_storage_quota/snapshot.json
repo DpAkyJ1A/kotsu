@@ -1,0 +1,76 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "7d8e329f-f6a5-46c5-b193-7d16b3348453",
+  "prevIds": [
+    "58ed07f8-f4ee-4e68-895d-a7381b224a8e"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user_settings",
+        "storage_quota_bytes"
+      ],
+      "writes": [
+        "s|col|public.user_settings.storage_quota_bytes",
+        "n|col|public.user_settings.storage_quota_bytes",
+        "e|col|public.user_settings.storage_quota_bytes"
+      ],
+      "reads": [
+        "n|tbl|public.user_settings",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "user_settings"
+      ],
+      "writes": [
+        "s|ck|public.user_settings.user_settings_storage_quota_bytes_not_negative",
+        "n|ck|public.user_settings.user_settings_storage_quota_bytes_not_negative",
+        "e|ck|public.user_settings.user_settings_storage_quota_bytes_not_negative",
+        "n|con|public.user_settings.user_settings_storage_quota_bytes_not_negative"
+      ],
+      "reads": [
+        "n|tbl|public.user_settings",
+        "n|sch|public",
+        "n|col|public.user_settings.storage_quota_bytes"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_settings",
+        "name": "storage_quota_bytes",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_settings",
+        "name": "user_settings_storage_quota_bytes_not_negative",
+        "value": "\"storage_quota_bytes\" >= 0",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

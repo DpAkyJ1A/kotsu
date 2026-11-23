@@ -1,4 +1,5 @@
-export type SaveFailure = 'CONFLICT' | 'OFFLINE' | 'TOO_LONG' | 'FAILED';
+export type SaveFailure =
+  'CONFLICT' | 'OFFLINE' | 'TOO_LONG' | 'STORAGE_FULL' | 'FAILED';
 
 type Conflict = 'asking' | 'postponed' | 'reloading' | 'keepingMine';
 
@@ -13,7 +14,7 @@ export type SaveState = {
 };
 
 export type SaveStatus =
-  'saved' | 'saving' | 'offline' | 'tooLong' | 'notSaved';
+  'saved' | 'saving' | 'offline' | 'tooLong' | 'storageFull' | 'notSaved';
 
 export function openedAt(version: number): SaveState {
   return {
@@ -31,6 +32,7 @@ export function statusOf(state: SaveState): SaveStatus {
   if (isWaitingForTheServerDoc(state)) return 'saving';
   if (state.failure === 'OFFLINE') return 'offline';
   if (state.failure === 'TOO_LONG') return 'tooLong';
+  if (state.failure === 'STORAGE_FULL') return 'storageFull';
   if (state.failure !== null) return 'notSaved';
   return isSending(state) || hasUnsavedEdits(state) ? 'saving' : 'saved';
 }

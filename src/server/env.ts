@@ -26,6 +26,7 @@ const Env = z.object({
   SIGN_IN_CODES_IN_LOG: z.stringbool().default(false),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  STORAGE_QUOTA_MB: z.coerce.number().int().positive().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
   VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
   VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),

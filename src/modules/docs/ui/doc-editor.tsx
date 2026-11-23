@@ -2,6 +2,7 @@
 
 import { EditorContent } from '@tiptap/react';
 import { cn } from 'cn';
+import type { LinkProps } from 'next/link';
 import type { ReactNode } from 'react';
 
 import { DocTitle } from '@/modules/shelves';
@@ -13,6 +14,7 @@ import { useDocSaving } from '../hooks/use-doc-saving';
 import { ConflictDialog } from './conflict-dialog';
 import { DocSaveStatus } from './doc-save-status';
 import { DocToolbar } from './doc-toolbar';
+import { StorageFullBanner } from './storage-full-banner';
 
 const BODY_CLASS_NAME = cn(
   'flex flex-1 flex-col text-base leading-7 [&_.tiptap]:flex-1 [&_.tiptap]:pb-24 [&_.tiptap]:outline-none',
@@ -32,9 +34,19 @@ const BODY_CLASS_NAME = cn(
   '[&_hr]:my-6 [&_hr]:border-border',
 );
 
-type DocEditorProps = { doc: Doc; title: string; breadcrumb: ReactNode };
+type DocEditorProps = {
+  doc: Doc;
+  title: string;
+  breadcrumb: ReactNode;
+  storageHref: LinkProps<string>['href'];
+};
 
-export function DocEditor({ doc, title, breadcrumb }: DocEditorProps) {
+export function DocEditor({
+  doc,
+  title,
+  breadcrumb,
+  storageHref,
+}: DocEditorProps) {
   const editor = useDocEditor(doc.content);
   const saving = useDocSaving(editor, doc);
 
@@ -45,6 +57,9 @@ export function DocEditor({ doc, title, breadcrumb }: DocEditorProps) {
         <DocSaveStatus status={saving.status} />
       </PageHeader>
       <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:pt-2">
+        {saving.status === 'storageFull' && (
+          <StorageFullBanner storageHref={storageHref} />
+        )}
         <DocToolbar editor={editor} />
         <DocTitle
           id={doc.id}

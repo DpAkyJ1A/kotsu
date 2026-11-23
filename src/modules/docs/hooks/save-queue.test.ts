@@ -446,8 +446,8 @@ describe('asking before the page goes away', () => {
 });
 
 describe('after a failed save', () => {
-  test('sends again on retry when it failed offline or on the server', async () => {
-    for (const failure of ['OFFLINE', 'FAILED'] as const) {
+  test('sends again on retry when it failed offline, on the server or for a full storage that may have room again', async () => {
+    for (const failure of ['OFFLINE', 'FAILED', 'STORAGE_FULL'] as const) {
       const doc = openDoc();
       doc.type('!');
       waitTheQuiet();

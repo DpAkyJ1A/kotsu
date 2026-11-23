@@ -10,6 +10,7 @@ const IS_A_PROBLEM: Record<SaveStatus, boolean> = {
   saved: false,
   offline: true,
   tooLong: true,
+  storageFull: true,
   notSaved: true,
 };
 

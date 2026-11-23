@@ -99,6 +99,11 @@ const VERBS_BODY: JSONContent = {
 
 type DocEditorStoryArgs = { content: Doc['content'] };
 
+const STORAGE_HREF = {
+  pathname: `/docs/${VERBS.id}`,
+  query: { settings: 'storage' },
+};
+
 const meta = {
   title: 'Docs/DocEditor',
   args: { content: VERBS_BODY },
@@ -109,6 +114,7 @@ const meta = {
       doc={{ id: VERBS.id, content, version: 1 }}
       title={VERBS.title}
       breadcrumb={<DocBreadcrumb doc={VERBS} shelf={SPANISH} />}
+      storageHref={STORAGE_HREF}
     />
   ),
   decorators: [
@@ -793,6 +799,43 @@ export const SaysWhenItCannotSaveOfflineAndAsksBeforeLeaving: Story = {
     await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
     await expect(saveDocAction).toHaveBeenCalledOnce();
     await expect(isLeavingStopped()).toBe(false);
+  },
+};
+
+export const SaysWhenStorageIsFullKeepsTheTextAndSavesOnceThereIsRoom: Story = {
+  play: async ({ canvas, userEvent }) => {
+    mocked(saveDocAction).mockResolvedValue({
+      ok: false,
+      error: { code: 'STORAGE_FULL' },
+    });
+    const body = await openedWithTheCaretAtTheEnd(canvas);
+
+    await userEvent.keyboard(' Hablaré.');
+
+    await waitFor(
+      () => expect(saveStatus()).toHaveTextContent('Storage full'),
+      { timeout: SAVED_AFTER_AN_ANSWER_MS },
+    );
+    await expect(
+      screen.getByText("Storage full — changes aren't saved"),
+    ).toBeVisible();
+    await expect(
+      screen.getByRole('link', { name: 'See what takes space' }),
+    ).toHaveAttribute('href', `/docs/${VERBS.id}?settings=storage`);
+    await expect(body).toHaveTextContent('Next: the past tense. Hablaré.');
+    await expect(isLeavingStopped()).toBe(true);
+
+    mocked(saveDocAction).mockImplementation(({ version }) =>
+      Promise.resolve({ ok: true, data: { version: version + 1 } }),
+    );
+    await userEvent.keyboard(' Hablarás.');
+
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
+    await expect(
+      screen.queryByText("Storage full — changes aren't saved"),
+    ).not.toBeInTheDocument();
   },
 };
 

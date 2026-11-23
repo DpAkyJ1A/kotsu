@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { ChevronLeftIcon } from '@/ui/icons';
 import { PageHeader } from '@/ui/page-header';
@@ -19,6 +20,7 @@ type SettingsSectionPageProps = {
   account: Account;
   settings: Settings;
   googleLink: GoogleLink;
+  storage: ReactNode;
 };
 
 export function SettingsSectionPage({
@@ -26,6 +28,7 @@ export function SettingsSectionPage({
   account,
   settings,
   googleLink,
+  storage,
 }: SettingsSectionPageProps) {
   const t = useTranslations('settings');
 
@@ -71,6 +74,7 @@ export function SettingsSectionPage({
               account={account}
               settings={settings}
               googleLink={googleLink}
+              storage={storage}
             />
           </section>
         </div>

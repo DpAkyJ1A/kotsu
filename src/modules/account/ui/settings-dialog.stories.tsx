@@ -36,6 +36,7 @@ const meta = {
     account: { name: 'Ada Lovelace', email: 'ada@example.com' },
     settings: SETTINGS,
     googleLink: { status: 'notConnected' },
+    storage: <p>12 MB of 50 MB</p>,
   },
   parameters: onPage({}),
   decorators: [
@@ -131,6 +132,18 @@ export const OnTheSignInSection: Story = {
     await expect(
       screen.getByRole('button', { name: 'Sign-in & passkeys' }),
     ).toHaveAttribute('aria-current', 'true');
+  },
+};
+
+export const OnTheStorageSection: Story = {
+  parameters: onPage({ settings: 'storage' }),
+  play: async () => {
+    const dialog = await settingsDialog();
+
+    await expect(
+      screen.getByRole('heading', { name: 'Storage', level: 2 }),
+    ).toBeInTheDocument();
+    await expect(dialog).toHaveTextContent('12 MB of 50 MB');
   },
 };
 

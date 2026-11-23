@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { Account } from '../core/account';
 import type { GoogleLink } from '../core/google-link';
 import type { Settings } from '../core/settings';
@@ -12,6 +14,7 @@ type SettingsSectionContentProps = {
   account: Account;
   settings: Settings;
   googleLink: GoogleLink;
+  storage: ReactNode;
 };
 
 export function SettingsSectionContent({
@@ -19,6 +22,7 @@ export function SettingsSectionContent({
   account,
   settings,
   googleLink,
+  storage,
 }: SettingsSectionContentProps) {
   switch (section) {
     case 'account':
@@ -34,5 +38,7 @@ export function SettingsSectionContent({
           )}
         </div>
       );
+    case 'storage':
+      return storage;
   }
 }

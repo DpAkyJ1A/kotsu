@@ -18,7 +18,10 @@ server shows a toast. The language can't change offline, as its messages come fr
 was and a toast says why. Storybook swaps the actions for `__mocks__/actions.ts`.
 
 The Settings window has sections (`SETTINGS_SECTIONS` in `core/settings-sections.ts`): Account (the name, saved through
-Better Auth's `updateUser`) and Appearance (the five settings above). On a wide screen `SettingsDialog`, mounted by the
+Better Auth's `updateUser`), Appearance (the five settings above), Sign-in & passkeys and Storage. Storage shows what
+the shelves module counts, so the window and the section page take it ready-made from the app (`storage`, a React
+node: `StorageUsage` from `shelves`) and account stays free of other modules; `settingsDialogLink` gives a link that
+opens a section over a page, as the doc's «Storage full» banner does. On a wide screen `SettingsDialog`, mounted by the
 shell, opens over the current page from `?settings=<section>`: ⌘, / Ctrl+, , the menu's Settings item and the palette's
 `OpenSettingsCommand` add it with `history.pushState` (no server request), switching sections replaces it, and closing
 steps back, or drops the parameter when the page was loaded with it. `/settings` (`SettingsList`, behind the avatar on a

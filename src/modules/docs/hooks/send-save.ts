@@ -4,8 +4,8 @@ import { saveDocAction } from '../actions';
 import { byteLengthOf } from '../core/byte-length';
 import type { DocSave } from '../core/doc';
 import {
+  LARGEST_DOC_BYTES,
   LARGEST_KEEPALIVE_BYTES,
-  LARGEST_SAVE_BYTES,
 } from '../core/save-limits';
 import type { SaveFailure } from '../core/save-state';
 import type { SaveAnswer, SaveTransport } from './save-queue';
@@ -30,8 +30,8 @@ async function sendSave(
   { isLeaving }: { isLeaving: boolean },
 ): Promise<SaveAnswer> {
   if (!isOnline()) return failed('OFFLINE');
+  if (isTooLong(save)) return failed('TOO_LONG');
   const json = JSON.stringify(save);
-  if (byteLengthOf(json) > LARGEST_SAVE_BYTES) return failed('TOO_LONG');
   try {
     return answerOf(
       isLeaving && fitsAKeepalive(json)
@@ -61,11 +61,16 @@ function answerOf(result: RouteAnswer): SaveAnswer {
 function failureOf(code: string): SaveFailure {
   if (code === 'CONFLICT') return 'CONFLICT';
   if (code === 'LIMIT') return 'TOO_LONG';
+  if (code === 'STORAGE_FULL') return 'STORAGE_FULL';
   return 'FAILED';
 }
 
 function failed(failure: SaveFailure): SaveAnswer {
   return { ok: false, failure };
+}
+
+function isTooLong({ content }: DocSave) {
+  return byteLengthOf(JSON.stringify(content)) > LARGEST_DOC_BYTES;
 }
 
 function fitsAKeepalive(json: string) {

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   ChevronRightIcon,
   FingerprintPatternIcon,
+  HardDriveIcon,
   PaletteIcon,
 } from '@/ui/icons';
 
@@ -71,6 +72,18 @@ export function SettingsList({ account, settings }: SettingsListProps) {
           >
             <FingerprintPatternIcon className="text-muted-foreground" />
             <span className="flex-1">{t('sections.security.title')}</span>
+            <ChevronRightIcon className="text-muted-foreground" />
+          </Link>
+        </li>
+      </ul>
+      <ul className={GROUP_CLASS_NAME}>
+        <li>
+          <Link
+            href={settingsPagePath('storage')}
+            className={cn(ROW_CLASS_NAME, 'h-12')}
+          >
+            <HardDriveIcon className="text-muted-foreground" />
+            <span className="flex-1">{t('sections.storage.title')}</span>
             <ChevronRightIcon className="text-muted-foreground" />
           </Link>
         </li>

@@ -70,6 +70,23 @@
       "movedTo": "{name}: position {position, number} of {count, number}.",
       "dropped": "{name} dropped at position {position, number} of {count, number}.",
       "cancelled": "Move cancelled. {name} is back at position {position, number} of {count, number}."
+    },
+    "storage": {
+      "meter": "Storage used",
+      "usedOf": "{used} of {quota}",
+      "ofQuota": "of {quota}",
+      "used": "{used} used",
+      "noLimit": "There's no storage limit on this server.",
+      "level": {
+        "calm": "{free} left",
+        "low": "Running low: {free} left",
+        "critical": "Almost full: {free} left",
+        "full": "Full: changes aren't saved"
+      },
+      "largestShelves": "Largest shelves",
+      "largestDocs": "Largest docs",
+      "empty": "Nothing takes room yet.",
+      "rowCost": "Each doc also counts {size} for itself, so even an empty one takes a little room."
     }
   },
   "docs": {
@@ -134,13 +151,19 @@
       "saved": "Saved",
       "offline": "Offline, not saved",
       "tooLong": "Too long to save",
-      "notSaved": "Not saved"
+      "notSaved": "Not saved",
+      "storageFull": "Storage full"
     },
     "conflict": {
       "title": "This doc changed elsewhere",
       "description": "A newer version was saved in another tab or on another device. Load that version, or keep your text and save it over it.",
       "reload": "Reload",
       "keepMine": "Keep mine"
+    },
+    "storageFull": {
+      "title": "Storage full — changes aren't saved",
+      "hint": "Delete docs you no longer need, then keep typing and the doc saves.",
+      "link": "See what takes space"
     }
   },
   "onboarding": {
@@ -293,6 +316,10 @@
       "security": {
         "title": "Sign-in & passkeys",
         "description": "Sign in with Touch ID, Face ID or your screen lock instead of an email code."
+      },
+      "storage": {
+        "title": "Storage",
+        "description": "How much room your shelves and docs take."
       }
     },
     "passkeys": {
@@ -347,6 +374,7 @@
     "NOT_FOUND": "That's no longer here. Reload the page.",
     "CONFLICT": "Someone saved a newer version of this elsewhere. Reload the page to see it.",
     "LIMIT": "That's more than can be saved in one go.",
+    "STORAGE_FULL": "Your storage is full. Free up space to save more: Settings → Storage.",
     "INTERNAL": "Something went wrong. Try again.",
     "OFFLINE": "You're offline. Try again once you're back online."
   },

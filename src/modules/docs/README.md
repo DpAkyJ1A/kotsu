@@ -21,11 +21,14 @@ The domain: `getDoc({ id })` gives a doc's body and `version`, or `null` for a d
 item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`. `saveDoc({ id, version,
 content })` stores a body only on top of the version it was based on: one `update … where version = $v returning
 version` writes the body, its text for search (`core/plain-text.ts`: each block on a line of its own, so the words of
-two blocks never run together), its size in bytes and `version + 1`, and answers the new version. No row back means
-`CONFLICT` when the doc is the user's and `NOT_FOUND` when it is missing, a sheet or another user's (both ask
-`domain/own-doc.ts`). A body with more different words than Postgres's search index holds (a `tsvector` over 1 MB,
-error 54000, from roughly 600 KB of words that all differ; a text's words repeat, and a full 1 MB of them is fine)
-answers `LIMIT` instead of failing the request; a cap on a doc's size comes with task 1.5b.
+two blocks never run together), its size in bytes and `version + 1`, and answers the new version. A doc's body is at
+most 500 KB of JSON (`LARGEST_DOC_BYTES` in `core/save-limits.ts`); a longer one answers `LIMIT` before anything is
+written. The cap sits below what Postgres's search index holds (a `tsvector` over 1 MB fails with error 54000 at
+about 640 KB of words that all differ), so a doc at the cap stays searchable even with no word repeated; 54000 still
+answers `LIMIT` rather than failing the request. The same `update` checks the user's storage quota
+(`hasRoomForBody` from `shelves`): a body that grows past it changes nothing. No row back then means `NOT_FOUND`
+when the doc is missing, a sheet or another user's (`domain/own-doc.ts`), `CONFLICT` when its version moved on, and
+otherwise `STORAGE_FULL`.
 
 The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
 `actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
@@ -123,9 +126,12 @@ edit: a transaction that changes the doc and is not kept out of the undo history
 giving the blocks of an old doc their ids as it opens saves nothing, and neither does a newer version put in from the
 server. One save is on its way at a time; edits made meanwhile go in the next one, sent as soon as the answer comes,
 from the version it returned. The right of the page header says where things are (`ui/doc-save-status.tsx`, a
-`role="status"`): «Saving…», «Saved», or in red «Offline, not saved», «Too long to save» (a body over 1 MB is not
-sent, and `LIMIT` from the server reads the same) and «Not saved». A save that failed or found the browser offline is
-tried again with the next edit, and when the tab comes back into view or back online.
+`role="status"`): «Saving…», «Saved», or in red «Offline, not saved», «Too long to save» (a body over 500 KB is
+not sent, and `LIMIT` from the server reads the same), «Storage full» and «Not saved». With «Storage full» a banner
+over the doc says its changes aren't saved and links to Settings → Storage (`ui/storage-full-banner.tsx`); the link
+the page hands in opens the Settings window over the doc, so the unsaved text stays. A save that failed, found the
+browser offline or found the storage full is tried again with the next edit, and when the tab comes back into view or
+back online.
 
 A save from the open page is a Server Action, so the page and the router's cache of pages already seen are refreshed
 after it; it is handed a `structuredClone` of the body, since ProseMirror's attributes are objects without a

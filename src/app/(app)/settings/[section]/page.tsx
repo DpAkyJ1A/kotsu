@@ -8,6 +8,8 @@ import {
   loadGoogleLink,
   loadSettings,
 } from '@/modules/account/loaders';
+import { StorageUsage } from '@/modules/shelves';
+import { loadStorage } from '@/modules/shelves/loaders';
 
 type SectionParams = PageProps<'/settings/[section]'>['params'];
 
@@ -28,11 +30,12 @@ export async function generateMetadata({
 export default async function SettingsSectionRoute({
   params,
 }: PageProps<'/settings/[section]'>) {
-  const [section, account, settings, googleLink] = await Promise.all([
+  const [section, account, settings, googleLink, storage] = await Promise.all([
     sectionOf(params),
     loadAccount(),
     loadSettings(),
     loadGoogleLink(),
+    loadStorage(),
   ]);
 
   return (
@@ -41,6 +44,7 @@ export default async function SettingsSectionRoute({
       account={account}
       settings={settings}
       googleLink={googleLink}
+      storage={<StorageUsage storage={storage} />}
     />
   );
 }

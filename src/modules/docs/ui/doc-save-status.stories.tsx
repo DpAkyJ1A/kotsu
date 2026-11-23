@@ -38,6 +38,14 @@ export const Offline: Story = {
 
 export const TooLong: Story = { args: { status: 'tooLong' } };
 
+export const StorageFull: Story = {
+  args: { status: 'storageFull' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('status')).toHaveTextContent('Storage full');
+    await expect(canvas.getByRole('status')).toHaveClass('text-destructive');
+  },
+};
+
 export const NotSaved: Story = { args: { status: 'notSaved' } };
 
 export const InRussian: Story = {

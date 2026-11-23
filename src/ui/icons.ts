@@ -25,6 +25,7 @@ export {
   GalleryVerticalEndIcon,
   GlobeIcon,
   GripVerticalIcon,
+  HardDriveIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,

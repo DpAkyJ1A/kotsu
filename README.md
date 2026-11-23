@@ -48,8 +48,11 @@ does the same with a click: three headings, bold, italic, strike and code, the t
 line. It stays at the top of the window as you scroll, lights up what the caret is in, and each button's tooltip shows
 its shortcut and its Markdown ("Bold ⌘B **text**"). The text saves itself once you pause ("Saving…", "Saved" in the
 corner, or "Offline, not saved" until the connection is back), and once more as you close the tab, which asks before it
-closes only when the text can't be saved. A tab you come back to shows what another tab saved meanwhile; if both were
-edited, it asks which text to keep. The title saves itself once you pause or leave it, Enter goes on to the text, and
+closes only when the text can't be saved. A doc holds up to 500 KB of text and blocks. Each account has room for so
+much (the server sets it); Settings → Storage shows how much is taken on a half-circle meter, amber when it runs low
+and red when it is almost full, with the largest shelves and docs under it. Once it is full, a doc that grows says so
+in a banner, keeps your text on screen and saves it as soon as there is room again, and a new doc isn't created.
+A tab you come back to shows what another tab saved meanwhile; if both were edited, it asks which text to keep. The title saves itself once you pause or leave it, Enter goes on to the text, and
 the sidebar and the line above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title
 renames it, and its ⋯ menu renames it, moves it to the end of another shelf or deletes it, with Undo for five seconds. A
 shelf that holds docs asks first: its delete window lists the docs that go with it, and deletes only once you type the
@@ -197,6 +200,7 @@ The settings live in `self-host/.env`:
 | `RESEND_API_KEY`, `EMAIL_FROM`             | email sign-in codes through [Resend](https://resend.com), from an address on a domain verified there                                                                                                                                                                        |
 | `SIGN_IN_CODES_IN_LOG`                     | `true` prints sign-in codes in `docker compose logs app` instead of emailing them: enough when the server is yours alone, since after the first sign-in a passkey can take over. With neither this nor Resend, a code has nowhere to go and sign-in fails                   |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | turn on Continue with Google: an OAuth client of type Web application from the Google Cloud Console, with the redirect URI `<APP_URL>/api/auth/callback/google`                                                                                                             |
+| `STORAGE_QUOTA_MB`                         | the room each account gets, in megabytes of a million bytes (Settings → Storage shows it). Unset, there is no limit                                                                                                                                                         |
 | `TRUSTED_PROXIES`                          | proxies (addresses or CIDR ranges, comma-separated) whose entries in `X-Forwarded-For` count. Sign-in limits code requests per visitor's address and reads it from that header; set this only if your proxy appends to the header (nginx with `$proxy_add_x_forwarded_for`) |
 
 The app listens on 127.0.0.1:3000 only, so the internet reaches it through an HTTPS proxy on the same machine:
