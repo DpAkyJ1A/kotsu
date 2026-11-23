@@ -194,6 +194,47 @@ test('the toolbar over the title formats the line with the caret, and stays at t
   await expect(saveStatusOf(page)).toBeInViewport({ ratio: 1 });
 });
 
+test('a colour picked for text and background saves with the doc, and the last colour paints other words with both', async ({
+  page,
+}) => {
+  await createDocOnANewShelf(page, 'Spanish', 'Gender');
+  const toolbar = page.getByRole('toolbar', { name: 'Formatting' });
+  const coloured = (current: Page) =>
+    bodyOf(current).locator('span[data-color="blue"][data-bg="yellow"]');
+  await expect(bodyOf(page)).toBeFocused();
+  await page.keyboard.type('el libro');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('la mesa');
+  await bodyOf(page).getByText('el libro').click({ clickCount: 3 });
+
+  await toolbar.getByRole('button', { name: 'Colour', exact: true }).click();
+  await page
+    .getByRole('radiogroup', { name: 'Text' })
+    .getByRole('radio', { name: 'Blue' })
+    .click();
+  await page
+    .getByRole('radiogroup', { name: 'Background' })
+    .getByRole('radio', { name: 'Yellow' })
+    .click();
+  await page.keyboard.press('Escape');
+  await expect(bodyOf(page)).toBeFocused();
+  await expect(saveStatusOf(page)).toHaveText('Saved');
+
+  await page.reload();
+  await expect(coloured(page)).toHaveText(['el libro']);
+  await expect(coloured(page)).not.toHaveAttribute('style');
+
+  await bodyOf(page).getByText('la mesa').click({ clickCount: 3 });
+  await page.keyboard.press('ControlOrMeta+Shift+h');
+
+  await expect(coloured(page)).toHaveText(['el libro', 'la mesa']);
+  await expect(
+    toolbar.getByRole('button', {
+      name: 'Last colour: blue text, yellow background',
+    }),
+  ).toBeVisible();
+});
+
 test('the caret going up a long doc never hides under the bar, at two rows beside the sidebar too', async ({
   page,
 }) => {

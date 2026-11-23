@@ -12,6 +12,7 @@ import { TOUCH_SCREEN, useMediaQuery, WIDE_SCREEN } from '@/ui/use-media-query';
 import type { Doc } from '../core/doc';
 import { DocKit } from '../core/doc-kit';
 import { SlashMenu } from '../ui/slash-menu';
+import { readLastColour } from './use-last-colour';
 
 export const ROOM_UNDER_THE_DOC_BAR_PX = 112;
 const ROOM_AROUND_THE_CARET_PX = { top: 64, right: 5, bottom: 96, left: 5 };
@@ -45,6 +46,7 @@ export function useDocEditor(content: Doc['content']) {
       DocKit.configure({
         checklistItemLabel: (item) =>
           item.textContent || words.get().emptyChecklistItem,
+        lastColour: readLastColour,
       }),
       Placeholder.configure({
         emptyNodeClass: ({ editor, node }) =>

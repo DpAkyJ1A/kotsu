@@ -75,6 +75,18 @@ const PALETTE = [
   'slate',
 ];
 
+const DOC_COLOURS = [
+  'gray',
+  'brown',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'pink',
+  'red',
+];
+
 // Text tokens on the surfaces they are used on; `backdrop` is under a translucent surface
 const PAIRS = [
   { text: 'foreground', surface: 'background' },
@@ -97,6 +109,11 @@ const PAIRS = [
   { text: 'primary', surface: 'background' },
   { text: 'destructive', surface: 'background' },
   ...PALETTE.map((color) => ({ text: `${color}-foreground`, surface: color })),
+  ...DOC_COLOURS.flatMap((color) => [
+    { text: `ink-${color}`, surface: 'background' },
+    { text: `ink-${color}`, surface: 'popover' },
+    { text: 'foreground', surface: `marker-${color}` },
+  ]),
 ];
 
 // Surfaces a form control can sit on, for its `input` edge
@@ -129,6 +146,20 @@ describe.for<Scheme>(['light', 'dark'])('%s theme', (scheme) => {
       expect(ratio).toBeGreaterThanOrEqual(4.5);
     },
   );
+
+  test('every ink in a doc reads on every marker', () => {
+    const page = parse(resolve('background', scheme));
+    for (const ink of DOC_COLOURS) {
+      for (const marker of DOC_COLOURS) {
+        const ratio = contrast(
+          parse(resolve(`ink-${ink}`, scheme)),
+          over(parse(resolve(`marker-${marker}`, scheme)), page),
+        );
+
+        expect(ratio, `${ink} on ${marker}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
 
   test.for(CONTROL_SURFACES)(
     'the input edge on %s passes WCAG 1.4.11',

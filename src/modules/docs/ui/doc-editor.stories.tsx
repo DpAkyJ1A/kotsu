@@ -9,6 +9,7 @@ import { TooltipProvider } from '@/ui/tooltip';
 
 import { saveDocAction } from '../actions';
 import { byteLengthOf } from '../core/byte-length';
+import { COLOURS } from '../core/colours';
 import type { Doc } from '../core/doc';
 import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import { ROOM_UNDER_THE_DOC_BAR_PX } from '../hooks/use-doc-editor';
@@ -1672,3 +1673,107 @@ export const LooksForANewerVersionWhenThePageComesBackWithNothingUnsaved: Story 
       await expect(getRouter().refresh).toHaveBeenCalledOnce();
     },
   };
+
+function colouredText(
+  value: string,
+  attrs: { color?: string; backgroundColor?: string },
+): JSONContent {
+  return {
+    type: 'text',
+    text: value,
+    marks: [
+      {
+        type: 'textStyle',
+        attrs: { color: null, backgroundColor: null, ...attrs },
+      },
+    ],
+  };
+}
+
+const EVERY_COLOUR_BODY: JSONContent = {
+  type: 'doc',
+  content: [
+    heading(2, 'Colours'),
+    ...COLOURS.map((colour) =>
+      paragraph(
+        colouredText(`${colour} text`, { color: colour }),
+        text(', '),
+        colouredText(`ordinary text on ${colour}`, { backgroundColor: colour }),
+        text(', '),
+        colouredText(`${colour} on ${colour}`, {
+          color: colour,
+          backgroundColor: colour,
+        }),
+      ),
+    ),
+    {
+      type: 'heading',
+      attrs: { level: 1 },
+      content: [
+        colouredText('El', { color: 'blue' }),
+        text(' and '),
+        colouredText('la', { color: 'red' }),
+      ],
+    },
+    list('bulletList', 'el libro', 'la mesa'),
+  ],
+};
+
+export const EveryColourReadsOnThePageAndUnderOrdinaryText: Story = {
+  args: { content: EVERY_COLOUR_BODY },
+  play: async ({ canvas }) => {
+    const body = canvas.getByRole('textbox', { name: 'Doc text' });
+
+    await waitFor(() => expect(body).toHaveTextContent('red on red'));
+    for (const colour of COLOURS) {
+      const span = body.querySelector(
+        `[data-color="${colour}"]:not([data-bg])`,
+      );
+      const marked = body.querySelector(
+        `[data-bg="${colour}"]:not([data-color])`,
+      );
+      await expect(span && getComputedStyle(span).color).not.toBe(
+        getComputedStyle(body).color,
+      );
+      await expect(marked && getComputedStyle(marked).backgroundColor).not.toBe(
+        'rgba(0, 0, 0, 0)',
+      );
+    }
+  },
+};
+
+export const TheColourPopoverColoursTheSelection: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const body = canvas.getByRole('textbox', { name: 'Doc text' });
+    await waitFor(() =>
+      expect(body).toHaveTextContent('Next: the past tense.'),
+    );
+    const from = positionOf(body, 'past tense');
+    editorOf(body)
+      .chain()
+      .focus()
+      .setTextSelection({ from, to: from + 'past tense'.length })
+      .run();
+    await untilFocused(body);
+
+    await userEvent.click(
+      within(formattingToolbar()).getByRole('button', { name: 'Colour' }),
+    );
+    await userEvent.click(
+      within(await screen.findByRole('radiogroup', { name: 'Text' })).getByRole(
+        'radio',
+        { name: 'Red' },
+      ),
+    );
+    await userEvent.click(
+      within(screen.getByRole('radiogroup', { name: 'Background' })).getByRole(
+        'radio',
+        { name: 'Yellow' },
+      ),
+    );
+
+    const span = body.querySelector('[data-color="red"][data-bg="yellow"]');
+    await expect(span).toHaveTextContent('past tense');
+    await expect(screen.getByRole('dialog', { name: 'Colour' })).toBeVisible();
+  },
+};

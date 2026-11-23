@@ -17,6 +17,15 @@ function docOf(...content: unknown[]) {
   return { type: 'doc', content };
 }
 
+function coloured(attrs: Record<string, unknown>) {
+  return docOf({
+    type: 'paragraph',
+    content: [
+      { type: 'text', text: 'hablo', marks: [{ type: 'textStyle', attrs }] },
+    ],
+  });
+}
+
 const EVERY_BLOCK_AT_ITS_DEFAULTS = docOf(
   { type: 'heading', attrs: { level: 1 }, content: [text('Verbs')] },
   paragraph('Regular verbs'),
@@ -83,6 +92,35 @@ describe('DocBody', () => {
     ).toBe(true);
   });
 
+  test('takes text in a colour and on a background of the palette', () => {
+    expect(
+      DocBody.safeParse(coloured({ color: 'red', backgroundColor: 'yellow' }))
+        .success,
+    ).toBe(true);
+    expect(DocBody.safeParse(coloured({ color: 'blue' })).success).toBe(true);
+  });
+
+  test('drops an attribute of a mark the schema does not know, as it does for a block', () => {
+    expect(DocBody.parse(coloured({ color: 'red', fontSize: '72px' }))).toEqual(
+      docOf({
+        type: 'paragraph',
+        attrs: { blockId: null },
+        content: [
+          {
+            type: 'text',
+            text: 'hablo',
+            marks: [
+              {
+                type: 'textStyle',
+                attrs: { color: 'red', backgroundColor: null },
+              },
+            ],
+          },
+        ],
+      }),
+    );
+  });
+
   test('drops an attribute the schema does not know instead of keeping it', () => {
     expect(
       DocBody.parse(docOf(paragraph('hola', { onclick: 'alert(1)' }))),
@@ -130,6 +168,16 @@ describe('DocBody', () => {
     [
       'a code block whose language is not text',
       docOf({ type: 'codeBlock', attrs: { language: 1 } }),
+    ],
+    ['a text colour outside the palette', coloured({ color: 'teal' })],
+    ['a text colour as a hex value', coloured({ color: '#ff0000' })],
+    [
+      'a background outside the palette',
+      coloured({ backgroundColor: 'rgb(255, 0, 0)' }),
+    ],
+    [
+      'a palette colour in another case',
+      coloured({ backgroundColor: 'Yellow' }),
     ],
     [
       'an unknown node type named like a property of every object',

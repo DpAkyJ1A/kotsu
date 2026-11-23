@@ -5,11 +5,10 @@ import { useEditorState } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { Fragment, type MouseEvent } from 'react';
 
-import { Kbd } from '@/ui/kbd';
-import { isApplePlatform, shortcutKeys } from '@/ui/shortcut';
 import { Toolbar, ToolbarButton, ToolbarSeparator } from '@/ui/toolbar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/tooltip';
 
+import { canColour, coloursAt } from '../core/apply-colour';
 import { applyFormat, canApplyFormat, isFormatOn } from '../core/apply-format';
 import {
   type Format,
@@ -19,15 +18,22 @@ import {
   SHORTCUTS,
 } from '../core/formats';
 import { ICONS } from './format-icons';
+import { PlatformKeys } from './platform-keys';
+import { TextColours } from './text-colours';
 
-const GROUPS: Format[][] = [
+const TEXT_GROUPS: Format[][] = [
   ['heading1', 'heading2', 'heading3'],
   ['bold', 'italic', 'strike', 'code'],
+];
+
+const BLOCK_GROUPS: Format[][] = [
   ['bulletList', 'orderedList', 'taskList'],
   ['blockquote', 'codeBlock', 'horizontalRule'],
 ];
 
-const FORMATS = GROUPS.flat();
+const FORMATS = [...TEXT_GROUPS, ...BLOCK_GROUPS].flat();
+
+const NO_COLOURS = { text: null, background: null };
 
 type DocToolbarProps = { editor: Editor | null };
 
@@ -39,22 +45,37 @@ export function DocToolbar({ editor }: DocToolbarProps) {
       snapshot.editor && formatsAtTheCaret(snapshot.editor),
   });
 
+  const buttonsOf = (group: Format[]) =>
+    group.map((format) => (
+      <FormatButton
+        key={format}
+        format={format}
+        isOn={caret?.on.includes(format) ?? false}
+        canApply={!caret?.unavailable.includes(format)}
+        onApply={() => {
+          if (editor) applyFormat(editor, format);
+        }}
+      />
+    ));
+
   return (
     <Toolbar aria-label={t('label')}>
-      {GROUPS.map((group, index) => (
+      {TEXT_GROUPS.map((group, index) => (
         <Fragment key={group.join()}>
           {index > 0 && <ToolbarSeparator />}
-          {group.map((format) => (
-            <FormatButton
-              key={format}
-              format={format}
-              isOn={caret?.on.includes(format) ?? false}
-              canApply={!caret?.unavailable.includes(format)}
-              onApply={() => {
-                if (editor) applyFormat(editor, format);
-              }}
-            />
-          ))}
+          {buttonsOf(group)}
+        </Fragment>
+      ))}
+      <ToolbarSeparator />
+      <TextColours
+        editor={editor}
+        current={caret?.colours ?? NO_COLOURS}
+        canColour={caret?.canColour ?? true}
+      />
+      {BLOCK_GROUPS.map((group) => (
+        <Fragment key={group.join()}>
+          <ToolbarSeparator />
+          {buttonsOf(group)}
         </Fragment>
       ))}
     </Toolbar>
@@ -65,6 +86,8 @@ function formatsAtTheCaret(editor: Editor) {
   return {
     on: FORMATS.filter((format) => isFormatOn(editor, format)),
     unavailable: FORMATS.filter((format) => !canApplyFormat(editor, format)),
+    colours: coloursAt(editor),
+    canColour: canColour(editor),
   };
 }
 
@@ -104,11 +127,6 @@ function FormatButton({ format, isOn, canApply, onApply }: FormatButtonProps) {
       </TooltipContent>
     </Tooltip>
   );
-}
-
-function PlatformKeys({ binding }: { binding: string }) {
-  const isApple = isApplePlatform(navigator.userAgent);
-  return <Kbd>{shortcutKeys(binding, { isApple })}</Kbd>;
 }
 
 function keepTheFocusInTheEditor(event: MouseEvent) {

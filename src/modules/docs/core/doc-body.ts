@@ -2,6 +2,7 @@ import { getSchema, type JSONContent } from '@tiptap/core';
 import { Node } from '@tiptap/pm/model';
 import { z } from 'zod';
 
+import { COLOURS } from './colours';
 import { DocKit, HEADING_LEVELS } from './doc-kit';
 
 const schema = getSchema([DocKit]);
@@ -15,6 +16,8 @@ const ATTRIBUTE_VALUES: Record<string, z.ZodType> = {
   start: z.int().nonnegative(),
   type: z.enum(ORDERED_LIST_STYLES).nullable(),
   language: z.string().nullable(),
+  color: z.enum(COLOURS).nullable(),
+  backgroundColor: z.enum(COLOURS).nullable(),
 };
 
 export const DocBody = z
@@ -51,8 +54,10 @@ function parsed(json: JSONContent) {
 function hasValidAttributes(doc: Node) {
   let isValid = true;
   doc.descendants((node) => {
-    isValid &&= Object.entries(node.attrs).every(
-      ([name, value]) => ATTRIBUTE_VALUES[name]?.safeParse(value).success,
+    isValid &&= [node, ...node.marks].every(({ attrs }) =>
+      Object.entries(attrs).every(
+        ([name, value]) => ATTRIBUTE_VALUES[name]?.safeParse(value).success,
+      ),
     );
     return isValid;
   });

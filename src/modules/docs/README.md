@@ -5,7 +5,7 @@ The doc editor, autosave, and conversion between docs and Markdown.
 A doc's body is ProseMirror JSON in `item.content`, edited with Tiptap. `DocKit` (`core/doc-kit.ts`) is the one list of
 what a doc may hold, and the editor and the server build their schema from it alike (`getSchema([DocKit])` runs in Node
 without a DOM): paragraphs, headings 1 to 3, bulleted, numbered and checklist lists (checklist items nest like the
-others), quotes, code blocks, lines and line breaks; bold, italic, strike and code. Underline (Markdown has no way to
+others), quotes, code blocks, lines and line breaks; bold, italic, strike, code and colour. Underline (Markdown has no way to
 write it) and the starter kit's link (Kotsu's own links come later) are left out. Every paragraph, heading, list and
 checklist item, quote and code block carries a `blockId`, a uuid set by Tiptap's UniqueID, so a link can point at a
 place in a doc and a card keeps its identity: Enter keeps the id with the text that stays, and a pasted copy gets a new
@@ -14,8 +14,9 @@ one, so no two blocks in a doc share an id.
 A body to save goes through `DocBody` (`core/doc-body.ts`), which adds what the schema check leaves out
 (`Node.fromJSON` and `check()` refuse unknown nodes and marks and a block in the wrong place, but not these): an
 attribute it doesn't know is dropped rather than refused, so what is stored is the parsed doc's `toJSON()`, not the JSON
-that came in; attribute values are checked against a list of their own (a heading level 7, a `blockId` that isn't a
-uuid or a checked state that isn't a boolean are refused); and the root must be a `doc`.
+that came in; attribute values, of nodes and of marks alike, are checked against a list of their own (a heading level
+7, a `blockId` that isn't a uuid, a checked state that isn't a boolean or a colour outside the palette are refused); and
+the root must be a `doc`.
 
 The domain: `getDoc({ id })` gives a doc's body, `version` and `sizeBytes`, or `null` for a doc that was never saved; another user's
 item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`. `saveDoc({ id, version,
@@ -148,7 +149,7 @@ built here rather than with `@tiptap/extension-table-of-contents`, which writes 
 would save itself on open), measures `offsetTop` with no reading line and reads the layout on every scroll event.
 
 The formatting toolbar (`ui/doc-toolbar.tsx`) is in the doc bar from the `md` breakpoint up (a phone, with its tab bar,
-has none): headings 1 to 3 | bold, italic, strike, inline code | the three lists | quote, code block, divider, the
+has none): headings 1 to 3 | bold, italic, strike, inline code | colour and the last colour (below) | the three lists | quote, code block, divider, the
 blocks with the slash menu's icons and labels (`ui/format-icons.ts`, `docs.slashMenu`; the marks have theirs in
 `docs.toolbar`). A button acts on the text, never on the title: a click keeps the focus where it is (the button takes no
 `mousedown`), and from the title or from the keyboard the button first gives the text the focus back at its old caret.
@@ -166,6 +167,32 @@ buttons that are off. A button's tooltip says its name, its shortcut and its Mar
 the page from the server never depends on it). The shortcuts and the Markdown are one list, `SHORTCUTS` in
 `core/formats.ts`, free of Tiptap, for a Shortcuts section in Settings later; browser tests press every shortcut and
 type every Markdown of the list and check that the button lights up, so the list can't drift from Tiptap's keymaps.
+
+Text takes a colour and a background (`core/text-colour.ts`): Tiptap's `TextStyle`, `Color` and `BackgroundColor`
+from `@tiptap/extension-text-style`, so both live in one `textStyle` mark with `color` and `backgroundColor`, each the
+name of one of the nine colours of the doc palette (`core/colours.ts`: gray, brown, orange, yellow, green, blue,
+purple, pink and red, as in Notion, apart from the shelves' palette), never a hex value. The doc keeps the name, and
+the page draws it with classes, `<span data-color="blue" data-bg="yellow" class="text-ink-blue bg-marker-yellow">`,
+never an inline style, so each colour has its own value in the light and the dark theme (`--ink-*` and `--marker-*` in
+`src/ui/theme.css`; `theme.test.ts` keeps every ink at 4.5:1 on the page, on a popover and on every marker, and
+ordinary text at 4.5:1 on every marker, in both themes). The same `<span>` is what a copy carries and what a paste
+reads, so text pasted from another Kotsu doc keeps its colours; from anywhere else (a colour in a `style`, as Google
+Docs and websites write it, or a name outside the palette) it comes in plain. The extension's own parsing and drawing
+(inline styles) are replaced; its commands are kept. A code block and inline code take no colour.
+
+In the toolbar, after the marks, «A» opens a popover (`ui/text-colours.tsx`) with two rows of swatches, text colours
+then backgrounds, each with Default first, which takes that colour off. Each row is a `SwatchGroup`: one Tab stop, the
+arrows move along it (Tab goes to the other row), Enter or a click picks, and the colours under the caret (or at the
+start of the selection) are checked; a click on the checked swatch still paints the whole selection, which may hold
+other colours. A pick paints the text at once and the popover stays open, so text and background go in one go; Escape,
+a click outside or a second click on «A» closes it, and the text gets the focus back with its selection, unless the
+click put the focus somewhere else. The button beside «A» paints the selection with the last colour, as does ⌘⇧H
+(Ctrl+Shift+H; the `lastColour` entry of `SHORTCUTS`): what was picked in the last opening of the popover, text,
+background or both (Default is not a colour, so it never changes it), and red text before the first pick. It shows
+that colour on its «A», and its name and tooltip say it ("Last colour: blue text, yellow background ⌘⇧H"). The last
+colour is kept on the device (`localStorage`, `hooks/use-last-colour.ts`, read again by the shortcut on every press
+and shared between tabs); where storage is blocked it stays red text. There are no colours in the slash menu: colour
+goes on selected text, where the menu doesn't open.
 
 The body saves itself (`hooks/save-queue.ts`, `hooks/use-doc-saving.ts`). Every edit restarts an 800 ms timer, and
 the save goes when it runs out, with the version the doc was opened at or last saved at. Only typing counts as an

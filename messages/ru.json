@@ -146,6 +146,26 @@
       "code": "Код в строке",
       "sampleText": "текст"
     },
+    "colours": {
+      "label": "Цвет",
+      "text": "Текст",
+      "background": "Фон",
+      "default": "По умолчанию",
+      "names": {
+        "gray": "Серый",
+        "brown": "Коричневый",
+        "orange": "Оранжевый",
+        "yellow": "Жёлтый",
+        "green": "Зелёный",
+        "blue": "Синий",
+        "purple": "Фиолетовый",
+        "pink": "Розовый",
+        "red": "Красный"
+      },
+      "last": "Последний цвет: {colours}",
+      "textPart": "{colour} текст",
+      "backgroundPart": "{colour} фон"
+    },
     "saveStatus": {
       "saving": "Сохранение…",
       "saved": "Сохранено",

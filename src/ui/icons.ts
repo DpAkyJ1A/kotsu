@@ -5,6 +5,7 @@
 // colour it like text, with classes: `size-5`, `text-muted-foreground`. Without an `aria-label` it is hidden
 // from screen readers.
 export {
+  BaselineIcon,
   BoldIcon,
   BoxIcon,
   CalendarIcon,

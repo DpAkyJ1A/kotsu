@@ -129,6 +129,26 @@
   --color-slate: var(--slate);
   --color-slate-foreground: var(--slate-foreground);
 
+  --color-ink-gray: var(--ink-gray);
+  --color-ink-brown: var(--ink-brown);
+  --color-ink-orange: var(--ink-orange);
+  --color-ink-yellow: var(--ink-yellow);
+  --color-ink-green: var(--ink-green);
+  --color-ink-blue: var(--ink-blue);
+  --color-ink-purple: var(--ink-purple);
+  --color-ink-pink: var(--ink-pink);
+  --color-ink-red: var(--ink-red);
+
+  --color-marker-gray: var(--marker-gray);
+  --color-marker-brown: var(--marker-brown);
+  --color-marker-orange: var(--marker-orange);
+  --color-marker-yellow: var(--marker-yellow);
+  --color-marker-green: var(--marker-green);
+  --color-marker-blue: var(--marker-blue);
+  --color-marker-purple: var(--marker-purple);
+  --color-marker-pink: var(--marker-pink);
+  --color-marker-red: var(--marker-red);
+
   --shadow-xs: 0 1px 3px light-dark(rgb(0 0 0 / 8%), transparent);
   --shadow-md: 0 10px 30px light-dark(rgb(24 24 27 / 10%), rgb(0 0 0 / 50%));
   --shadow-lg: 0 14px 36px light-dark(rgb(24 24 27 / 14%), rgb(0 0 0 / 50%));
@@ -271,6 +291,26 @@
     --teal-foreground: light-dark(#0f766e, #7ee0d2);
     --slate: light-dark(#eef0f4, #22262e);
     --slate-foreground: light-dark(#4b5563, #bac2cf);
+
+    /* Colours of text in a doc: ink reads on the page, a marker is a soft fill under ordinary text */
+    --ink-gray: light-dark(#686763, #a6a6ac);
+    --ink-brown: light-dark(#8c5a3c, #c9a083);
+    --ink-orange: light-dark(#b93e0b, #f2a25c);
+    --ink-yellow: light-dark(#985606, #e6c158);
+    --ink-green: light-dark(#29744a, #6fcf97);
+    --ink-blue: light-dark(#2563d6, #80aefc);
+    --ink-purple: light-dark(#8243c9, #c3a1f4);
+    --ink-pink: light-dark(#c0267a, #f28ac0);
+    --ink-red: light-dark(#c62a2a, #ff8b84);
+    --marker-gray: light-dark(#f0f0ee, #2c2c30);
+    --marker-brown: light-dark(#f4ece8, #3b2a22);
+    --marker-orange: light-dark(#fcebdc, #45301e);
+    --marker-yellow: light-dark(#fbf3d4, #40361a);
+    --marker-green: light-dark(#e6f3e8, #1e3527);
+    --marker-blue: light-dark(#e3f0fa, #1a2f45);
+    --marker-purple: light-dark(#f2ebfb, #33274a);
+    --marker-pink: light-dark(#fbe9f3, #41233a);
+    --marker-red: light-dark(#fde8e8, #47221f);
   }
 
   *,

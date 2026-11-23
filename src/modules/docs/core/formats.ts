@@ -10,7 +10,9 @@ export type Toggle = Exclude<Format, 'horizontalRule'>;
 
 type Shortcut = { keys?: string; markdown: string };
 
-export const SHORTCUTS: Record<Format, Shortcut> = {
+export const SHORTCUTS: Record<Format, Shortcut> & {
+  lastColour: { keys: string };
+} = {
   heading1: { keys: 'Mod-Alt-1', markdown: '#' },
   heading2: { keys: 'Mod-Alt-2', markdown: '##' },
   heading3: { keys: 'Mod-Alt-3', markdown: '###' },
@@ -24,6 +26,7 @@ export const SHORTCUTS: Record<Format, Shortcut> = {
   blockquote: { keys: 'Mod-Shift-b', markdown: '>' },
   codeBlock: { keys: 'Mod-Alt-c', markdown: '```' },
   horizontalRule: { markdown: '---' },
+  lastColour: { keys: 'Mod-Shift-h' },
 };
 
 export function isMark(format: Format): format is Mark {
