@@ -48,7 +48,9 @@ does the same with a click: three headings, bold, italic, strike and code, the t
 line. It lights up what the caret is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B
 **text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at
 the top of the window as you scroll: one row when the page is wide, with the buttons right over the text, two rows when
-it is narrower or the sidebar takes the room. The text saves itself once you pause (a grey dot pulses in that bar,
+it is narrower or the sidebar takes the room. Under it, in the right margin, the doc's headings make an outline that
+marks the one you are reading; a click scrolls to a heading. On a wide page it is a list, on a narrower one a column of
+dashes that opens the list on a hover. The text saves itself once you pause (a grey dot pulses in that bar,
 then a quiet check; a red "!" with "Offline", "Doc full", "Storage full" or "Not saved" when it can't), and once more
 as you close the tab, which asks before it closes only when the text can't be saved. A doc holds up to 500 KB of text
 and blocks, about 100–350 thousand characters; from 80 % a thin bar beside the check shows how full it is, and from

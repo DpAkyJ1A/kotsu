@@ -197,7 +197,10 @@
       "characters": "Characters",
       "savedAt": "Saved"
     },
-    "ceiling": "One doc holds up to {largest}, about 100–350 thousand characters."
+    "ceiling": "One doc holds up to {largest}, about 100–350 thousand characters.",
+    "outline": {
+      "label": "Outline"
+    }
   },
   "onboarding": {
     "title": "Pick a starting point",

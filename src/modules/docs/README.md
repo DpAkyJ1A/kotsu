@@ -33,7 +33,7 @@ otherwise `STORAGE_FULL`.
 The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
 `actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
 (below); and `index.ts` gives Settings → Storage `DocCeiling` (below) and the page `DocEditor`: the doc bar (below: `DocBreadcrumb` from `shelves`, drawn from the
-doc and shelf the page passes in, the formatting toolbar and the save status), then the title from `shelves`
+doc and shelf the page passes in, the formatting toolbar, the save status and the outline), then the title from `shelves`
 (`DocTitle`) above the body in a column; `DocEditor` draws both, since only it holds the editor that Enter in the title
 moves to. The page passes data, not a ready breadcrumb element: on a large doc React streams such an element in lazily,
 and in a list of siblings the dev build then warns about a missing `key`. The page keys it by the doc's id, so another
@@ -114,10 +114,38 @@ changing the window: from 72rem (`@6xl`) it is one row of three columns, the bre
 in an ellipsis when the row is short), the toolbar in the middle right over the text, and the status on the right; on a
 narrower page it is two rows of one bar, the breadcrumb and the status, then the toolbar. The layout is the same from
 the top of the page down, so scrolling never moves anything. The caret keeps 112 px from the top of the window
-(`useDocEditor`), the bar's height at two rows with some air, one number for both layouts, so it never hides under the
+(`ROOM_UNDER_THE_DOC_BAR_PX` in `useDocEditor`), the bar's height at two rows with some air, one number for both layouts, so it never hides under the
 bar. The bar's parts go in the order they are read on a wide page, the place, the toolbar, the status; on a narrower
 page the grid puts the status up beside the place. On a phone the bar is the plain page header and scrolls away with the
 text.
+
+The outline (`ui/doc-outline.tsx`) lists the doc's headings beside the text and says which one you are reading.
+`core/outline.ts` reads them from the doc: every heading with text, in lists and quotes too, with a line break read as a
+space, each indented by its level below the highest level in the doc (a doc of `##` and `###` starts at the margin), and
+with the position the editor finds it at. `useDocOutline` follows the doc through
+`useEditorState` (a new outline only for a new doc, not for a caret move). `useCurrentHeading`, mounted only while the
+doc has headings (so a doc that gets them back starts with none current), takes the last heading whose top is at or
+above the reading line, the same 112 px under the window's top the caret keeps, so the heading the bar just covered
+still counts; above the first heading none is current. It reads once a frame at most, when the page scrolls (the window
+scrolls the doc; a list or a code block scrolling inside it doesn't count), the window resizes, or the text changes
+height (a `ResizeObserver` on the editor, so an edit that pushes a heading past the line counts, and typing within a
+line costs nothing); it subscribes once per editor. A click on a heading scrolls to it (at once with reduced motion) and
+puts the caret at its start, but not on a touch screen, where it would open the keyboard; the clicked heading stays
+current until the next wheel, touch, key or pointer press, since a heading near the end of the doc can't scroll up to
+the line. The outline hangs from the doc bar: it is the bar's last child, placed right under it in the right margin
+(`absolute top-full`), so it sticks with the bar and needs no height of its own, and the save status's popover covers
+it while open. From `@6xl` the right margin is a third of the bar and the outline is a plain list there; on a narrower
+page it is a column of dashes under the status, one per heading, longer for a higher level, the current one dark, and a
+hover or a focus inside (Tab reaches the list, which is in the DOM all along) opens the list as a panel over the
+margin. Both are as tall as the window allows; a longer outline scrolls inside itself and keeps the current heading
+and its dash in view (`showTheCurrentInside`, which scrolls the list, never the page). Below `@3xl` the page has no margin for it and it is hidden, and on a phone (narrower than `md`) it isn't drawn
+at all, so it runs no listeners. Every element in the body keeps `scroll-margin-top: 112px` from `md` up
+(`md:**:scroll-mt-[112px]` on the article, in px like `ROOM_UNDER_THE_DOC_BAR_PX`, so a larger browser font moves
+neither), so a heading scrolled to, a checkbox or a link reached with Tab, or the title
+never land under the bar (WCAG 2.4.11). That is margin on the targets, not `scroll-padding-top` on the page: padding on
+the page also moves focus inside the bar itself, and a Tab to a toolbar button would scroll the page. The outline is
+built here rather than with `@tiptap/extension-table-of-contents`, which writes ids into the doc in transactions (a doc
+would save itself on open), measures `offsetTop` with no reading line and reads the layout on every scroll event.
 
 The formatting toolbar (`ui/doc-toolbar.tsx`) is in the doc bar from the `md` breakpoint up (a phone, with its tab bar,
 has none): headings 1 to 3 | bold, italic, strike, inline code | the three lists | quote, code block, divider, the

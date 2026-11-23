@@ -12,6 +12,7 @@ import { useDocEditor } from '../hooks/use-doc-editor';
 import { useDocSaving } from '../hooks/use-doc-saving';
 import { ConflictDialog } from './conflict-dialog';
 import { DocBar } from './doc-bar';
+import { DocOutline } from './doc-outline';
 import { DocSaveStatus } from './doc-save-status';
 import { DocToolbar } from './doc-toolbar';
 import { StorageFullBanner } from './storage-full-banner';
@@ -59,8 +60,9 @@ export function DocEditor({ doc, title, place, storageHref }: DocEditorProps) {
           />
         }
         toolbar={<DocToolbar editor={editor} />}
+        outline={<DocOutline editor={editor} />}
       />
-      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6">
+      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:**:scroll-mt-[112px]">
         {saving.status === 'storageFull' && (
           <StorageFullBanner storageHref={storageHref} />
         )}
