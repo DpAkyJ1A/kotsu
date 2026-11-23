@@ -9,7 +9,7 @@ import {
 } from './save-state';
 
 function stateWith(change: Partial<SaveState>): SaveState {
-  return { ...openedAt(1), ...change };
+  return { ...openedAt({ version: 1, sizeBytes: 0 }), ...change };
 }
 
 describe('statusOf', () => {

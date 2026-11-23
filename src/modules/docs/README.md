@@ -17,7 +17,7 @@ attribute it doesn't know is dropped rather than refused, so what is stored is t
 that came in; attribute values are checked against a list of their own (a heading level 7, a `blockId` that isn't a
 uuid or a checked state that isn't a boolean are refused); and the root must be a `doc`.
 
-The domain: `getDoc({ id })` gives a doc's body and `version`, or `null` for a doc that was never saved; another user's
+The domain: `getDoc({ id })` gives a doc's body, `version` and `sizeBytes`, or `null` for a doc that was never saved; another user's
 item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`. `saveDoc({ id, version,
 content })` stores a body only on top of the version it was based on: one `update … where version = $v returning
 version` writes the body, its text for search (`core/plain-text.ts`: each block on a line of its own, so the words of
@@ -32,7 +32,7 @@ otherwise `STORAGE_FULL`.
 
 The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
 `actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
-(below); and `index.ts` gives the page `DocEditor`: the doc bar (below: `DocBreadcrumb` from `shelves`, drawn from the
+(below); and `index.ts` gives Settings → Storage `DocCeiling` (below) and the page `DocEditor`: the doc bar (below: `DocBreadcrumb` from `shelves`, drawn from the
 doc and shelf the page passes in, the formatting toolbar and the save status), then the title from `shelves`
 (`DocTitle`) above the body in a column; `DocEditor` draws both, since only it holds the editor that Enter in the title
 moves to. The page passes data, not a ready breadcrumb element: on a large doc React streams such an element in lazily,
@@ -144,11 +144,36 @@ the save goes when it runs out, with the version the doc was opened at or last s
 edit: a transaction that changes the doc and is not kept out of the undo history (`core/user-edit.ts`). So UniqueID
 giving the blocks of an old doc their ids as it opens saves nothing, and neither does a newer version put in from the
 server. One save is on its way at a time; edits made meanwhile go in the next one, sent as soon as the answer comes,
-from the version it returned. The right of the doc bar says where things are (`ui/doc-save-status.tsx`, a
-`role="status"`): «Saving…», «Saved», or in red «Offline, not saved», «Too long to save» (a body over 500 KB is
-not sent, and `LIMIT` from the server reads the same), «Storage full» and «Not saved». With «Storage full» a banner
-over the doc says its changes aren't saved and links to Settings → Storage (`ui/storage-full-banner.tsx`); the link
-the page hands in opens the Settings window over the doc, so the unsaved text stays. A save that failed, found the
+from the version it returned. The right of the doc bar says where things are (`ui/doc-save-status.tsx`), quiet while
+all is well and loud when it isn't: a grey dot that pulses while a save is due or on its way (it stands still with
+reduced motion), a muted check once saved (green for a moment after a save from this tab, `animate-just-done`), and a red «!»
+with a word beside it when a save failed: «Offline», «Doc full», «Storage full», «Not saved». Each state has its own
+shape, so colour is never the only sign; the words for a screen reader stay in the `role="status"` («Saving…»,
+«Saved» are visually hidden). Which mark and whether the doc is filling up is `saveIndicatorOf` (`core/save-indicator.ts`):
+from 80 % of the 500 KB a thin bar beside the mark shows how full the doc is, from 90 % it turns amber and «Doc almost
+full» stands beside it, and over 100 % it is red. Under 80 % there is no bar, or an ordinary doc would show 0.5 % for
+years. The size is the save's own: the queue measures the body it is about to send (`JSON.stringify`, which it does
+anyway, so not on every key), and a doc opens with the `size_bytes` `getDoc` gives; a newer version from the server
+brings its size along. So while a save waits (offline) or failed, the size is that of the body that wasn't saved, not
+of the copy the server keeps. A body over 500 KB is not sent at all (the queue answers itself `TOO_LONG`, and `LIMIT` from the
+server reads the same), and saves again as soon as it is short enough. The status is a button: a hover (after 200 ms,
+leaving the focus where it was), a click, a tap or Enter opens a popover with the doc's details (`ui/doc-details.tsx`):
+the state in words and what to do about it, the size against the cap with its bar (over the cap rounded up, so it never
+reads «500 kB of 500 kB» beside «Doc full»), words and characters (`textCountsOf` in `core/text-counts.ts`, one walk
+over the text, counted again only when the doc changes, not when the caret moves: characters as the eye counts them,
+so an accent or an emoji is one, code points in a browser without `Intl.Segmenter`, and words split on any space, so
+lines of code count apart), when this tab last saved («2 minutes ago»,
+kept fresh while it is open; nothing before the first save), and the cap in words, «One doc holds up to 500 kB, about
+100–350 thousand characters» (`DocCeiling`, which Settings → Storage shows too, through a slot in `StorageUsage`, since
+`shelves` can't import `docs`). The popover never says how many characters are left: the cap is bytes of JSON, and
+the same 500 KB is 100 to 350 thousand characters depending on the language and the length of the lines. Hover opens
+it unpinned (`hooks/use-open-on-hover.ts`: it closes when the pointer leaves both, after 200 ms, and Escape closes it
+without moving the focus); a click or Enter while it is open pins it and moves the focus into it, as opening it that
+way does, and then it closes like any popover, on Escape (the focus goes back to the button), a click outside or a
+second click. With «Storage full» a
+banner over the doc says its changes aren't saved and links to Settings → Storage (`ui/storage-full-banner.tsx`), and
+the popover has the same link; the link the page hands in opens the Settings window over the doc, so the unsaved text
+stays. A save that failed, found the
 browser offline or found the storage full is tried again with the next edit, and when the tab comes back into view or
 back online.
 

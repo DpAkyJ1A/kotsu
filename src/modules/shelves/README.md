@@ -24,7 +24,7 @@ of each shelf and item command, `loaders.ts` gives pages `loadNavigation` and `l
 `index.ts` gives the app layout `ShelvesProvider`, `ShelfNav` (the sidebar's tree) and the folded-shelves cookie
 (`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`) and `StorageUsage` (Settings → Storage), the pages `ShelvesScreen` (the
 Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs), `DocBreadcrumb` (a doc page's header) and `docPath`, and other modules
-`ShelfDot` and `DocTitle` (the doc editor's title).
+`ShelfDot`, `DocTitle` (the doc editor's title) and `useFormatSize` (the doc's size in its details).
 `ShelvesProvider` holds the two lists every view shows, shelves and items, each with its own reducer from `core/`
 (`applyShelfChange`, `applyItemChange`): changes appear at once (`useOptimistic`) and the page is rendered again when
 the action answers; a refused one puts the list back and says why in a toast. Delete hides a shelf or a doc and waits
@@ -95,7 +95,9 @@ or the server's default (`STORAGE_QUOTA_MB`), and none on a server that sets nei
 `getStorage` (`loadStorage`) gives the total, the quota, and the five largest shelves and docs; `StorageUsage` draws
 them in Settings → Storage: a half-circle meter («32 MB of 50 MB»), calm below 80 %, amber «Running low» from 80 %,
 red «Almost full» from 95 % and «Full» at the quota, or just «12 MB used» without a quota; sizes in kB, MB and GB of
-a thousand. Two saves at once can each pass the check and go a little over: the quota is soft by one save.
+a thousand. Under the lists it says what one doc holds, a line `docs` draws (`DocCeiling`) and the page passes in
+(`docCeiling`), since `shelves` can't import `docs`. Two saves at once can each pass the check and go a little over:
+the quota is soft by one save.
 
 - **Writes:** `shelf`; `item` except its body (`content`, `plain_text`, `version`, `size_bytes`).
 - **Depends on:** no other module.

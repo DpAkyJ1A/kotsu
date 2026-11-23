@@ -12,3 +12,4 @@ export { ShelfScreen } from './ui/shelf-screen';
 export { ShelvesProvider } from './ui/shelves-provider';
 export { ShelvesScreen } from './ui/shelves-screen';
 export { StorageUsage } from './ui/storage-usage';
+export { useFormatSize } from './ui/use-format-size';

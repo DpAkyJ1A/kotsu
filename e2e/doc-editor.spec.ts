@@ -380,6 +380,33 @@ test.describe('saving', () => {
     ).toBeVisible();
   });
 
+  test('the save status opens the details of the doc: its size, words and characters, and when this tab saved it', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    await typeAndSave(page, 'hablo, hablas');
+
+    await saveStatusOf(page).getByRole('button').click();
+
+    const details = page.getByRole('dialog', { name: 'Doc details' });
+    await expect(details.getByText('All changes saved')).toBeVisible();
+    await expect(details.getByText(/^0\.\d kB of 500 kB$/)).toBeVisible();
+    await expect(details.getByText('Words').locator('+ dd')).toHaveText('2');
+    await expect(details.getByText('Characters').locator('+ dd')).toHaveText(
+      '13',
+    );
+    await expect(details.getByText(/seconds? ago|now/)).toBeVisible();
+    await expect(
+      details.getByText(
+        'One doc holds up to 500 kB, about 100–350 thousand characters.',
+      ),
+    ).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(details).toBeHidden();
+  });
+
   test('closing the tab right after typing keeps the text, and asks nothing', async ({
     page,
     context,
@@ -414,7 +441,7 @@ test.describe('saving', () => {
     await context.setOffline(true);
 
     await page.keyboard.type('hablo');
-    await expect(saveStatusOf(page)).toHaveText('Offline, not saved');
+    await expect(saveStatusOf(page)).toHaveText('Offline');
     const asked = page.waitForEvent('dialog');
     await page.close({ runBeforeUnload: true });
     const question = await asked;
