@@ -3,7 +3,7 @@ import { getRouter } from '@storybook/nextjs-vite/navigation.mock';
 import type { JSONContent, TiptapEditorHTMLElement } from '@tiptap/core';
 import { expect, mocked, screen, spyOn, waitFor, within } from 'storybook/test';
 
-import { DocBreadcrumb, ShelvesProvider } from '@/modules/shelves';
+import { ShelvesProvider } from '@/modules/shelves';
 import { SidebarInset, SidebarProvider } from '@/ui/sidebar';
 import { TooltipProvider } from '@/ui/tooltip';
 
@@ -113,7 +113,7 @@ const meta = {
     <DocEditor
       doc={{ id: VERBS.id, content, version: 1 }}
       title={VERBS.title}
-      breadcrumb={<DocBreadcrumb doc={VERBS} shelf={SPANISH} />}
+      place={{ doc: VERBS, shelf: SPANISH }}
       storageHref={STORAGE_HREF}
     />
   ),
