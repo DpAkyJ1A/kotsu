@@ -214,6 +214,55 @@ test('the caret going up a long doc never hides under the bar, at two rows besid
   await expect(titleOf(page)).toBeInViewport();
 });
 
+test('the outline beside a doc follows its headings and scrolls to the one picked, from the dashes of a narrower page too', async ({
+  page,
+}) => {
+  await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+  await expect(bodyOf(page)).toBeFocused();
+  await page.keyboard.type('# Present tense');
+  await page.keyboard.press('Enter');
+  await typeALongDoc(page);
+  await page.keyboard.type('## Past tense');
+  await page.keyboard.press('Enter');
+  await typeALongDoc(page);
+  const outline = page.getByRole('navigation', { name: 'Outline' });
+  const topOf = (name: string) =>
+    bodyOf(page)
+      .getByRole('heading', { name })
+      .evaluate((heading) => heading.getBoundingClientRect().top);
+
+  await expect(outline.getByRole('button')).toHaveText([
+    'Present tense',
+    'Past tense',
+  ]);
+  await expect(
+    outline.getByRole('button', { name: 'Past tense' }),
+  ).toHaveAttribute('aria-current', 'location');
+
+  await outline.getByRole('button', { name: 'Present tense' }).click();
+
+  await expect.poll(() => topOf('Present tense')).toBeCloseTo(112, 0);
+  await expect(
+    outline.getByRole('button', { name: 'Present tense' }),
+  ).toHaveAttribute('aria-current', 'location');
+
+  await page.mouse.move(0, 0);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect(outline.getByRole('list')).toHaveCSS('opacity', '0');
+  const dashes = await outline
+    .locator('[data-slot="doc-outline-dashes"]')
+    .boundingBox();
+  if (!dashes) throw new Error('No dashes beside the doc');
+  await page.mouse.move(dashes.x + dashes.width / 2, dashes.y + 4);
+  await expect(outline.getByRole('list')).toHaveCSS('opacity', '1');
+  await outline.getByRole('button', { name: 'Past tense' }).click();
+
+  await expect.poll(() => topOf('Past tense')).toBeCloseTo(112, 0);
+  await expect(
+    outline.getByRole('button', { name: 'Past tense' }),
+  ).toHaveAttribute('aria-current', 'location');
+});
+
 test('a mouse click anywhere under the text, down to the bottom of the window, puts the caret at its end', async ({
   page,
 }) => {

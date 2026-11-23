@@ -11,6 +11,7 @@ import { saveDocAction } from '../actions';
 import { byteLengthOf } from '../core/byte-length';
 import type { Doc } from '../core/doc';
 import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
+import { ROOM_UNDER_THE_DOC_BAR_PX } from '../hooks/use-doc-editor';
 import { DocEditor } from './doc-editor';
 
 const SPANISH = {
@@ -867,6 +868,489 @@ export const NoToolbarOnAPhone: Story = {
     await canvas.findByRole('textbox', { name: 'Doc text' });
 
     await expect(canvas.queryByRole('toolbar')).not.toBeInTheDocument();
+  },
+};
+
+function lines(topic: string, count: number) {
+  return Array.from({ length: count }, (_, line) =>
+    paragraph(text(`${topic}, line ${String(line + 1)}: yo hablo, tú hablas`)),
+  );
+}
+
+const OUTLINED_BODY: JSONContent = {
+  type: 'doc',
+  content: [
+    ...lines('Verbs', 3),
+    heading(1, 'Present tense'),
+    ...lines('Present', 12),
+    heading(2, 'Hablar, to speak'),
+    ...lines('Hablar', 12),
+    heading(3, 'Irregular stems'),
+    ...lines('Stems', 12),
+    heading(2, 'Comer, to eat'),
+    ...lines('Comer', 12),
+    heading(1, 'Past tense'),
+    ...lines('Past', 30),
+    heading(2, 'Vivir, to live'),
+    ...lines('Vivir', 2),
+  ],
+};
+
+const OUTLINE = [
+  'Present tense',
+  'Hablar, to speak',
+  'Irregular stems',
+  'Comer, to eat',
+  'Past tense',
+  'Vivir, to live',
+];
+
+function outline() {
+  return screen.getByRole('navigation', { name: 'Outline' });
+}
+
+function outlineItem(name: string) {
+  return within(outline()).getByRole('button', { name });
+}
+
+function namesInTheOutline() {
+  return within(outline())
+    .getAllByRole('button')
+    .map((item) => item.textContent);
+}
+
+function currentInTheOutline() {
+  return within(outline())
+    .queryAllByRole('button')
+    .filter((item) => item.getAttribute('aria-current') === 'location')
+    .map((item) => item.textContent);
+}
+
+function headingIn(body: HTMLElement, name: string) {
+  const found = within(body)
+    .getAllByRole('heading')
+    .find((heading) => heading.textContent === name);
+  if (!found) throw new Error(`No heading ${name}`);
+  return found;
+}
+
+async function scrollHeadingTo(body: HTMLElement, name: string, top: number) {
+  const scrolledTo = Math.round(
+    window.scrollY + boxOf(headingIn(body, name)).top - top,
+  );
+  window.scrollTo(0, scrolledTo);
+  await waitFor(() => expect(window.scrollY).toBe(scrolledTo));
+}
+
+function headingNodeAt(body: HTMLElement, name: string) {
+  const position = positionOf(body, name) - 1;
+  const node = editorOf(body).state.doc.nodeAt(position);
+  if (node?.type.name !== 'heading') throw new Error(`No heading ${name}`);
+  return { from: position, to: position + node.nodeSize };
+}
+
+async function anOutlinedDoc(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+) {
+  const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+  await waitFor(() => expect(namesInTheOutline()).toEqual(OUTLINE));
+  return body;
+}
+
+function dashesOf(nav: HTMLElement) {
+  const dashes = nav.querySelector('[data-slot="doc-outline-dashes"]');
+  if (!dashes) throw new Error('No dashes in the outline');
+  return dashes;
+}
+
+function listOf(nav: HTMLElement) {
+  const list = within(nav).getByRole('list');
+  return getComputedStyle(list);
+}
+
+export const OnAWidePageTheOutlineListsTheHeadingsBesideTheText: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await anOutlinedDoc(canvas);
+    const list = boxOf(within(outline()).getByRole('list'));
+    const [top, nested, deeper] = [
+      'Present tense',
+      'Hablar, to speak',
+      'Irregular stems',
+    ].map((name) => outlineItem(name).firstChild);
+
+    await expect(getComputedStyle(dashesOf(outline())).display).toBe('none');
+    await expect(list.left).toBeGreaterThanOrEqual(boxOf(body).right);
+    await expect(list.top).toBeGreaterThanOrEqual(boxOf(docBar()).bottom);
+    await expect(list.top).toBeGreaterThanOrEqual(boxOf(saveStatus()).bottom);
+    const lefts = [top, nested, deeper].map((item) => {
+      const range = document.createRange();
+      if (item) range.selectNodeContents(item);
+      return range.getBoundingClientRect().left;
+    });
+    await expect(lefts).toEqual([...lefts].sort((a, b) => a - b));
+    await expect(new Set(lefts).size).toBe(3);
+  },
+};
+
+export const TheOutlineFollowsTheHeadingsAsTheyChange: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await anOutlinedDoc(canvas);
+    const editor = editorOf(body);
+
+    editor.commands.insertContentAt(
+      editor.state.doc.content.size,
+      heading(2, 'Leer, to read'),
+    );
+    await waitFor(() =>
+      expect(namesInTheOutline()).toEqual([...OUTLINE, 'Leer, to read']),
+    );
+
+    editor.commands.insertContentAt(positionOf(body, 'Past tense'), 'Simple ');
+    await waitFor(() =>
+      expect(namesInTheOutline()).toContain('Simple Past tense'),
+    );
+
+    editor
+      .chain()
+      .setTextSelection(positionOf(body, 'Comer'))
+      .setParagraph()
+      .run();
+    await waitFor(() =>
+      expect(namesInTheOutline()).not.toContain('Comer, to eat'),
+    );
+
+    await scrollHeadingTo(body, 'Irregular stems', ROOM_UNDER_THE_DOC_BAR_PX);
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Irregular stems']),
+    );
+    editor.commands.deleteRange(headingNodeAt(body, 'Irregular stems'));
+    await waitFor(() =>
+      expect(namesInTheOutline()).toEqual([
+        'Present tense',
+        'Hablar, to speak',
+        'Simple Past tense',
+        'Vivir, to live',
+        'Leer, to read',
+      ]),
+    );
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Hablar, to speak']),
+    );
+  },
+};
+
+export const TheCurrentHeadingFollowsAnEditThatMovesIt: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await anOutlinedDoc(canvas);
+    const editor = editorOf(body);
+    document.documentElement.style.overflowAnchor = 'none';
+    await scrollHeadingTo(body, 'Comer, to eat', ROOM_UNDER_THE_DOC_BAR_PX);
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Comer, to eat']),
+    );
+    const scrolledTo = window.scrollY;
+
+    const { from } = headingNodeAt(body, 'Comer, to eat');
+    editor.view.dispatch(
+      editor.state.tr.insert(
+        from,
+        lines('Moved', 3).map((line) => editor.schema.nodeFromJSON(line)),
+      ),
+    );
+
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Irregular stems']),
+    );
+    await expect(window.scrollY).toBe(scrolledTo);
+    document.documentElement.style.overflowAnchor = '';
+  },
+};
+
+export const NoOutlineWithoutHeadings: Story = {
+  args: { content: LONG_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Line 60'));
+
+    await expect(
+      canvas.queryByRole('navigation', { name: 'Outline' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const NoOutlineOnAPhone: Story = {
+  args: { content: OUTLINED_BODY },
+  globals: { viewport: { value: 'mobile2' } },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Vivir, to live'));
+
+    await expect(
+      canvas.queryByRole('navigation', { name: 'Outline', hidden: true }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const NoOutlineBesideTheTextOfANarrowPageBesideTheSidebar: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aNarrowPageBesideTheSidebar],
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveTextContent('Vivir, to live'));
+
+    await expect(
+      screen.getByRole('navigation', { name: 'Outline', hidden: true }),
+    ).not.toBeVisible();
+  },
+};
+
+export const ClickingAHeadingInTheOutlineScrollsToItUnderTheBar: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas, userEvent }) => {
+    const body = await anOutlinedDoc(canvas);
+    const editor = editorOf(body);
+    const pastTense = headingIn(body, 'Past tense');
+
+    await userEvent.click(outlineItem('Past tense'));
+
+    await waitFor(() =>
+      expect(boxOf(pastTense).top).toBeCloseTo(ROOM_UNDER_THE_DOC_BAR_PX, 0),
+    );
+    await expect(boxOf(pastTense).top).toBeGreaterThan(boxOf(docBar()).bottom);
+    await expect(currentInTheOutline()).toEqual(['Past tense']);
+    await untilFocused(body);
+    await expect(editor.state.selection.from).toBe(
+      positionOf(body, 'Past tense'),
+    );
+  },
+};
+
+export const TheCurrentHeadingFollowsTheScroll: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const body = await anOutlinedDoc(canvas);
+
+    await expect(currentInTheOutline()).toEqual([]);
+
+    await scrollHeadingTo(body, 'Comer, to eat', ROOM_UNDER_THE_DOC_BAR_PX);
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Comer, to eat']),
+    );
+
+    await scrollHeadingTo(
+      body,
+      'Comer, to eat',
+      ROOM_UNDER_THE_DOC_BAR_PX + 40,
+    );
+    await waitFor(() =>
+      expect(currentInTheOutline()).toEqual(['Irregular stems']),
+    );
+
+    window.scrollTo(0, 0);
+    await waitFor(() => expect(currentInTheOutline()).toEqual([]));
+  },
+};
+
+export const AHeadingTooNearTheEndToReachTheBarIsMarkedWhenClicked: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas, userEvent }) => {
+    const body = await anOutlinedDoc(canvas);
+
+    await userEvent.click(outlineItem('Vivir, to live'));
+
+    await waitFor(() =>
+      expect(window.scrollY + window.innerHeight).toBeCloseTo(
+        document.documentElement.scrollHeight,
+        0,
+      ),
+    );
+    await pause(100);
+    await expect(boxOf(headingIn(body, 'Vivir, to live')).top).toBeGreaterThan(
+      ROOM_UNDER_THE_DOC_BAR_PX,
+    );
+    await expect(currentInTheOutline()).toEqual(['Vivir, to live']);
+
+    const readOffTheScroll = OUTLINE.findLast(
+      (name) => boxOf(headingIn(body, name)).top <= ROOM_UNDER_THE_DOC_BAR_PX,
+    );
+    await expect(readOffTheScroll).toBe('Past tense');
+
+    window.dispatchEvent(new WheelEvent('wheel'));
+
+    await waitFor(() => expect(currentInTheOutline()).toEqual(['Past tense']));
+  },
+};
+
+export const OnANarrowerPageTheOutlineIsDashesThatOpenOnFocus: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aNarrowerPage],
+  play: async ({ canvas }) => {
+    const body = await anOutlinedDoc(canvas);
+    const nav = outline();
+    const dashes = boxOf(dashesOf(nav));
+
+    await expect(dashes.left).toBeGreaterThanOrEqual(boxOf(body).right);
+    await expect(dashes.top).toBeGreaterThanOrEqual(boxOf(docBar()).bottom);
+    await expect(dashes.top).toBeGreaterThanOrEqual(boxOf(saveStatus()).bottom);
+    await expect(dashesOf(nav).children).toHaveLength(OUTLINE.length);
+    await expect(listOf(nav).opacity).toBe('0');
+    await expect(listOf(nav).pointerEvents).toBe('none');
+
+    outlineItem('Present tense').focus();
+
+    await waitFor(() => expect(listOf(nav).opacity).toBe('1'));
+    await expect(listOf(nav).pointerEvents).toBe('auto');
+    await expectInsideTheWindow(within(nav).getByRole('list'));
+
+    outlineItem('Present tense').blur();
+
+    await waitFor(() => expect(listOf(nav).opacity).toBe('0'));
+  },
+};
+
+export const TheDashesMarkTheCurrentHeading: Story = {
+  args: { content: OUTLINED_BODY },
+  decorators: [aNarrowerPage],
+  play: async ({ canvas, userEvent }) => {
+    await anOutlinedDoc(canvas);
+    const marked = () =>
+      [...dashesOf(outline()).children].map((dash) =>
+        dash.hasAttribute('data-current'),
+      );
+
+    outlineItem('Comer, to eat').focus();
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() =>
+      expect(marked()).toEqual([false, false, false, true, false, false]),
+    );
+  },
+};
+
+const MANY_HEADINGS = Array.from(
+  { length: 100 },
+  (_, verb) => `Verb ${String(verb + 1)}`,
+);
+
+const MANY_HEADINGS_BODY: JSONContent = {
+  type: 'doc',
+  content: MANY_HEADINGS.flatMap((name) => [
+    heading(2, name),
+    ...lines(name, 2),
+  ]),
+};
+
+async function expectInside(item: Element, list: Element) {
+  const [inner, outer] = [boxOf(item), boxOf(list)];
+  await expect(inner.top).toBeGreaterThanOrEqual(outer.top);
+  await expect(inner.bottom).toBeLessThanOrEqual(outer.bottom);
+}
+
+async function aDocOfManyHeadingsScrolledTo(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+  name: string,
+) {
+  const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+  await waitFor(() => expect(namesInTheOutline()).toEqual(MANY_HEADINGS));
+  await scrollHeadingTo(body, name, ROOM_UNDER_THE_DOC_BAR_PX);
+  const farDown = () => {
+    const [current = ''] = currentInTheOutline();
+    return MANY_HEADINGS.indexOf(current) > 80 ? current : undefined;
+  };
+  await waitFor(() => expect(farDown()).toBeDefined());
+  return { current: farDown() ?? '', scrolledTo: window.scrollY };
+}
+
+export const ALongOutlineKeepsTheCurrentHeadingInView: Story = {
+  args: { content: MANY_HEADINGS_BODY },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const { current, scrolledTo } = await aDocOfManyHeadingsScrolledTo(
+      canvas,
+      'Verb 90',
+    );
+    const list = within(outline()).getByRole('list');
+
+    await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
+    await waitFor(() => expectInside(outlineItem(current), list));
+    await expect(window.scrollY).toBe(scrolledTo);
+
+    await scrollHeadingTo(
+      canvas.getByRole('textbox', { name: 'Doc text' }),
+      'Verb 5',
+      ROOM_UNDER_THE_DOC_BAR_PX,
+    );
+    await waitFor(() => expect(currentInTheOutline()).toEqual(['Verb 5']));
+    await waitFor(() => expectInside(outlineItem('Verb 5'), list));
+  },
+};
+
+export const LongDashesKeepTheCurrentOneInView: Story = {
+  args: { content: MANY_HEADINGS_BODY },
+  decorators: [aNarrowerPage],
+  play: async ({ canvas }) => {
+    const { current, scrolledTo } = await aDocOfManyHeadingsScrolledTo(
+      canvas,
+      'Verb 90',
+    );
+    const dashes = dashesOf(outline());
+    const currentDash = dashes.querySelector('[data-current]');
+    if (!currentDash) throw new Error('No current dash');
+
+    await expect(dashes.scrollHeight).toBeGreaterThan(dashes.clientHeight);
+    await waitFor(() => expectInside(currentDash, dashes));
+    await waitFor(() =>
+      expectInside(outlineItem(current), within(outline()).getByRole('list')),
+    );
+    await expect(window.scrollY).toBe(scrolledTo);
+  },
+};
+
+export const FocusingACheckboxUnderTheBarScrollsItClear: Story = {
+  args: {
+    content: {
+      type: 'doc',
+      content: [
+        ...lines('Before', 20),
+        {
+          type: 'taskList',
+          content: [
+            {
+              type: 'taskItem',
+              attrs: { checked: false },
+              content: [paragraph(text('Conjugate ten verbs'))],
+            },
+          ],
+        },
+        ...lines('After', 30),
+      ],
+    },
+  },
+  decorators: [aWidePage],
+  play: async ({ canvas }) => {
+    const checkbox = await canvas.findByRole('checkbox');
+    const scrolledTo = Math.round(window.scrollY + boxOf(checkbox).top - 20);
+    window.scrollTo(0, scrolledTo);
+    await waitFor(() => expect(window.scrollY).toBe(scrolledTo));
+    await expect(boxOf(checkbox).top).toBeLessThan(boxOf(docBar()).bottom);
+
+    checkbox.focus();
+
+    await waitFor(() =>
+      expect(boxOf(checkbox).top).toBeGreaterThanOrEqual(
+        boxOf(docBar()).bottom,
+      ),
+    );
   },
 };
 

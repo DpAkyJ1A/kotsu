@@ -27,7 +27,8 @@ and `shortcutKeys` writes a binding for the platform (`Mod-Alt-2` is ⌘⌥2 on 
 in Settings, the templates at onboarding); a picker that needs another picture size sets it on
 `data-slot="radio-card-picture"`. `useActionMutation` wraps a Server Action for a component: it runs it, when it fails
 shows the error code's message (`errors.*`) in a toast, and answers whether it went through. `useMediaQuery` follows a
-CSS media query (false on the server). `Toolbar` is Radix's toolbar: one Tab stop, and the arrows, Home and End move
+CSS media query (false on the server); the queries the modules share sit beside it (`WIDE_SCREEN` from `md` up,
+`TOUCH_SCREEN`, `REDUCED_MOTION`). `Toolbar` is Radix's toolbar: one Tab stop, and the arrows, Home and End move
 along its buttons and pass the disabled ones by; `ToolbarSeparator` splits them into groups, and `ToolbarButton` is a
 small icon button that turns violet while its `aria-pressed` is true.
 

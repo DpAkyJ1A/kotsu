@@ -7,16 +7,18 @@ import { useEditor } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { useMediaQuery } from '@/ui/use-media-query';
+import { TOUCH_SCREEN, useMediaQuery, WIDE_SCREEN } from '@/ui/use-media-query';
 
 import type { Doc } from '../core/doc';
 import { DocKit } from '../core/doc-kit';
 import { SlashMenu } from '../ui/slash-menu';
 
-const TOUCH_SCREEN = '(pointer: coarse)';
-const WIDE_SCREEN = '(min-width: 48rem)';
+export const ROOM_UNDER_THE_DOC_BAR_PX = 112;
 const ROOM_AROUND_THE_CARET_PX = { top: 64, right: 5, bottom: 96, left: 5 };
-const ROOM_UNDER_THE_DOC_BAR_PX = { ...ROOM_AROUND_THE_CARET_PX, top: 112 };
+const ROOM_AROUND_THE_CARET_UNDER_THE_DOC_BAR_PX = {
+  ...ROOM_AROUND_THE_CARET_PX,
+  top: ROOM_UNDER_THE_DOC_BAR_PX,
+};
 const SHOWS_HINT = 'shows-hint';
 
 type Words = {
@@ -35,7 +37,7 @@ export function useDocEditor(content: Doc['content']) {
   );
   const [translations] = useState(() => cellOf(t));
   const roomAroundTheCaret = useMediaQuery(WIDE_SCREEN)
-    ? ROOM_UNDER_THE_DOC_BAR_PX
+    ? ROOM_AROUND_THE_CARET_UNDER_THE_DOC_BAR_PX
     : ROOM_AROUND_THE_CARET_PX;
 
   const editor = useEditor({

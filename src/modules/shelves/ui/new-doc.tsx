@@ -22,12 +22,10 @@ import {
 } from '@/ui/drawer';
 import { Input } from '@/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover';
-import { useMediaQuery } from '@/ui/use-media-query';
+import { useMediaQuery, WIDE_SCREEN } from '@/ui/use-media-query';
 
 import { ITEM_TITLE_MAX_LENGTH } from '../core/item';
 import { useItems } from '../hooks/use-items';
-
-const WIDE_SCREEN = '(min-width: 48rem)';
 
 type NewDocProps = {
   shelfId: string;

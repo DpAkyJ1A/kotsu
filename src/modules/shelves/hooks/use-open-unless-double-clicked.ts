@@ -2,8 +2,9 @@ import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { type MouseEvent, type RefObject, useEffect, useRef } from 'react';
 
+import { TOUCH_SCREEN } from '@/ui/use-media-query';
+
 export const DOUBLE_CLICK_WAIT_MS = 300;
-const TOUCH_SCREEN = '(pointer: coarse)';
 
 type OpenUnlessDoubleClickedOptions<T extends string> = {
   href: Route<T>;
