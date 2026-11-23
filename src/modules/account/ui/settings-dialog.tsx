@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Dialog, DialogContent, DialogTitle } from '@/ui/dialog';
 import { useShortcut } from '@/ui/use-shortcut';
@@ -22,12 +22,14 @@ type SettingsDialogProps = {
   account: Account;
   settings: Settings;
   googleLink: GoogleLink;
+  storage: ReactNode;
 };
 
 export function SettingsDialog({
   account,
   settings,
   googleLink,
+  storage,
 }: SettingsDialogProps) {
   const t = useTranslations('settings');
   const { section, close } = useSettingsDialog();
@@ -83,6 +85,7 @@ export function SettingsDialog({
             account={account}
             settings={settings}
             googleLink={googleLink}
+            storage={storage}
           />
         </section>
       </DialogContent>

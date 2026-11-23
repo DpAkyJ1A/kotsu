@@ -18,10 +18,12 @@ body, so a rename never conflicts with an open editor. Another user's shelf or i
 on another shelf, answers `NOT_FOUND`.
 
 The doors: `api.ts` gives other modules' domain code `createShelf` (onboarding makes a template's shelves with it),
-`actions.ts` makes a Server Action of each shelf and item command, `loaders.ts` gives pages `loadNavigation`, and
+`hasRoomForBody` (the doc save adds it to its `update … where`, so it only fits a statement on `item`) and
+`ITEM_ROW_BYTES` (the docs tests count with it), `actions.ts` makes a Server Action
+of each shelf and item command, `loaders.ts` gives pages `loadNavigation` and `loadStorage`, and
 `index.ts` gives the app layout `ShelvesProvider`, `ShelfNav` (the sidebar's tree) and the folded-shelves cookie
-(`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`), the pages `ShelvesScreen` (the
-Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs) and `DocBreadcrumb` (a doc page's header), and other modules
+(`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`) and `StorageUsage` (Settings → Storage), the pages `ShelvesScreen` (the
+Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs), `DocBreadcrumb` (a doc page's header) and `docPath`, and other modules
 `ShelfDot` and `DocTitle` (the doc editor's title).
 `ShelvesProvider` holds the two lists every view shows, shelves and items, each with its own reducer from `core/`
 (`applyShelfChange`, `applyItemChange`): changes appear at once (`useOptimistic`) and the page is rendered again when
@@ -82,6 +84,17 @@ after the one before it has answered, so a slow first save can't land after a la
 `createDoc(shelfId, title)` (creates, opens, and resolves to whether it worked), `rename(id, title)`,
 `move(id, shelfId, after)` (`undefined` for `after` puts it first) and `delete(item)` (the item, not its id: the toast names
 it).
+
+Storage: every item counts the size of its body (`size_bytes`, which `docs` writes on save) and 1 kB for itself
+(`ITEM_ROW_BYTES` in `core/storage.ts`), so a thousand empty docs aren't free; nothing else keeps a total that could
+drift. `domain/storage.ts` has the one count (`bytesOf`, `usedBytes`) and `hasRoomForBody`, the condition `docs` adds to
+its save: the body shrinks or stays, or the user's total with the new body fits in the quota. `createItem` refuses
+an item whose 1 kB doesn't fit (`STORAGE_FULL`). The quota is the user's own (`user_settings.storage_quota_bytes`)
+or the server's default (`STORAGE_QUOTA_MB`), and none on a server that sets neither (`src/server/storage-quota.ts`).
+`getStorage` (`loadStorage`) gives the total, the quota, and the five largest shelves and docs; `StorageUsage` draws
+them in Settings → Storage: a half-circle meter («32 MB of 50 MB»), calm below 80 %, amber «Running low» from 80 %,
+red «Almost full» from 95 % and «Full» at the quota, or just «12 MB used» without a quota; sizes in kB, MB and GB of
+a thousand. Two saves at once can each pass the check and go a little over: the quota is soft by one save.
 
 - **Writes:** `shelf`; `item` except its body (`content`, `plain_text`, `version`, `size_bytes`).
 - **Depends on:** no other module.

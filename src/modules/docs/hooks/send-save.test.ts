@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { saveDocAction } from '../actions';
 import type { DocSave } from '../core/doc';
 import {
+  LARGEST_DOC_BYTES,
   LARGEST_KEEPALIVE_BYTES,
-  LARGEST_SAVE_BYTES,
 } from '../core/save-limits';
 import { saveTransport } from './send-save';
 
@@ -24,6 +24,11 @@ function saveOf(line: string): DocSave {
 
 function saveOfBytes(bytes: number) {
   const empty = JSON.stringify(saveOf('')).length;
+  return saveOf('a'.repeat(bytes - empty));
+}
+
+function saveWithABodyOfBytes(bytes: number) {
+  const empty = JSON.stringify(saveOf('').content).length;
   return saveOf('a'.repeat(bytes - empty));
 }
 
@@ -80,6 +85,7 @@ describe('a save from the open page', () => {
   test.each([
     ['CONFLICT', 'CONFLICT'],
     ['LIMIT', 'TOO_LONG'],
+    ['STORAGE_FULL', 'STORAGE_FULL'],
     ['NOT_FOUND', 'FAILED'],
     ['VALIDATION', 'FAILED'],
     ['INTERNAL', 'FAILED'],
@@ -119,12 +125,16 @@ describe('a save from the open page', () => {
     });
   });
 
-  test('answers TOO_LONG without sending a body longer than a save may be', async () => {
+  test('answers TOO_LONG without sending a body longer than a doc may be, as the server measures it', async () => {
     expect(
-      await send(saveOfBytes(LARGEST_SAVE_BYTES), { isLeaving: false }),
+      await send(saveWithABodyOfBytes(LARGEST_DOC_BYTES), {
+        isLeaving: false,
+      }),
     ).toEqual({ ok: true, version: 2 });
     expect(
-      await send(saveOfBytes(LARGEST_SAVE_BYTES + 1), { isLeaving: false }),
+      await send(saveWithABodyOfBytes(LARGEST_DOC_BYTES + 1), {
+        isLeaving: false,
+      }),
     ).toEqual({ ok: false, failure: 'TOO_LONG' });
     expect(saveDocAction).toHaveBeenCalledOnce();
   });

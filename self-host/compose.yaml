@@ -20,6 +20,7 @@ services:
       SIGN_IN_CODES_IN_LOG: ${SIGN_IN_CODES_IN_LOG:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      STORAGE_QUOTA_MB: ${STORAGE_QUOTA_MB:-}
     ports:
       # Only this machine reaches it: the internet comes in through your HTTPS proxy
       - 127.0.0.1:3000:3000

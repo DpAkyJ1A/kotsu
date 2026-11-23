@@ -1,13 +1,16 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import type { Ctx } from '@/server/ctx/load-ctx';
 import { item, shelf } from '@/server/db/schema/shelves';
+import { storageQuotaOf } from '@/server/storage-quota';
 
 import type { Item } from '../core/item';
 import type { Shelf } from '../core/shelf';
+import { ITEM_ROW_BYTES, LARGEST_LISTED, type Storage } from '../core/storage';
 import { itemDto, shelfDto } from './dto';
+import { bytesOf, usedBytes } from './storage';
 
 export async function getNavigation(
   ctx: Ctx,
@@ -25,4 +28,45 @@ export async function getNavigation(
       .orderBy(item.shelfId, item.position, item.id),
   ]);
   return { shelves, items };
+}
+
+export async function getStorage(ctx: Ctx): Promise<Storage> {
+  const [[used], shelves, docs] = await Promise.all([
+    usedBytes(ctx),
+    largestShelves(ctx),
+    largestDocs(ctx),
+  ]);
+  return {
+    usedBytes: used?.bytes ?? 0,
+    quotaBytes: storageQuotaOf(ctx.settings),
+    shelves,
+    docs,
+  };
+}
+
+function largestShelves(ctx: Ctx) {
+  const bytes = bytesOf(item);
+  return ctx.db
+    .select({ ...shelfDto, bytes })
+    .from(shelf)
+    .innerJoin(item, eq(item.shelfId, shelf.id))
+    .where(eq(shelf.userId, ctx.userId))
+    .groupBy(shelf.id)
+    .orderBy(desc(bytes), shelf.position, shelf.id)
+    .limit(LARGEST_LISTED);
+}
+
+function largestDocs(ctx: Ctx) {
+  return ctx.db
+    .select({
+      id: item.id,
+      title: item.title,
+      color: shelf.color,
+      bytes: sql<number>`${item.sizeBytes} + ${ITEM_ROW_BYTES}`.mapWith(Number),
+    })
+    .from(item)
+    .innerJoin(shelf, eq(shelf.id, item.shelfId))
+    .where(and(eq(item.userId, ctx.userId), eq(item.kind, 'doc')))
+    .orderBy(desc(item.sizeBytes), item.id)
+    .limit(LARGEST_LISTED);
 }

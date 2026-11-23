@@ -22,8 +22,9 @@ import {
   collapsedShelvesFrom,
   ShelfNav,
   ShelvesProvider,
+  StorageUsage,
 } from '@/modules/shelves';
-import { loadNavigation } from '@/modules/shelves/loaders';
+import { loadNavigation, loadStorage } from '@/modules/shelves/loaders';
 import { CommandGroup } from '@/ui/command';
 import { CommandPalette, CommandPaletteLink } from '@/ui/command-palette';
 import {
@@ -58,6 +59,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     settings,
     googleLink,
     navigation,
+    storage,
     cookieStore,
     headerStore,
     t,
@@ -66,6 +68,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     loadSettings(),
     loadGoogleLink(),
     loadNavigation(),
+    loadStorage(),
     cookies(),
     headers(),
     getTranslations('nav'),
@@ -154,6 +157,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
         account={account}
         settings={settings}
         googleLink={googleLink}
+        storage={<StorageUsage storage={storage} />}
       />
       <SessionRefresh />
       <Toaster />

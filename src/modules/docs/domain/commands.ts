@@ -2,6 +2,7 @@ import 'server-only';
 
 import { and, eq, sql } from 'drizzle-orm';
 
+import { hasRoomForBody } from '@/modules/shelves/api';
 import type { Ctx } from '@/server/ctx/load-ctx';
 import { item } from '@/server/db/schema/shelves';
 import { AppError, command } from '@/server/domain';
@@ -9,6 +10,7 @@ import { AppError, command } from '@/server/domain';
 import { byteLengthOf } from '../core/byte-length';
 import { type DocSave, type SavedDoc, SaveDocInput } from '../core/doc';
 import { plainTextOf } from '../core/plain-text';
+import { LARGEST_DOC_BYTES } from '../core/save-limits';
 import { ownDoc } from './own-doc';
 
 const PROGRAM_LIMIT_EXCEEDED = '54000';
@@ -16,23 +18,35 @@ const PROGRAM_LIMIT_EXCEEDED = '54000';
 export const saveDoc = command(
   SaveDocInput,
   async (ctx, save): Promise<SavedDoc> => {
-    const saved = await writeBody(ctx, save);
+    const sizeBytes = byteLengthOf(JSON.stringify(save.content));
+    if (sizeBytes > LARGEST_DOC_BYTES) throw new AppError('LIMIT');
+    const saved = await writeBody(ctx, save, sizeBytes);
     if (saved) return saved;
-    throw new AppError((await exists(ctx, save.id)) ? 'CONFLICT' : 'NOT_FOUND');
+    throw new AppError(await refusalOf(ctx, save));
   },
 );
 
-async function writeBody(ctx: Ctx, { id, version, content }: DocSave) {
+async function writeBody(
+  ctx: Ctx,
+  { id, version, content }: DocSave,
+  sizeBytes: number,
+) {
   try {
     const [saved] = await ctx.db
       .update(item)
       .set({
         content,
         plainText: plainTextOf(content),
-        sizeBytes: byteLengthOf(JSON.stringify(content)),
+        sizeBytes,
         version: sql`${item.version} + 1`,
       })
-      .where(and(ownDoc(ctx, id), eq(item.version, version)))
+      .where(
+        and(
+          ownDoc(ctx, id),
+          eq(item.version, version),
+          hasRoomForBody(ctx, sizeBytes),
+        ),
+      )
       .returning({ version: item.version });
     return saved;
   } catch (error) {
@@ -51,10 +65,11 @@ function isOverAPostgresLimit(error: unknown) {
   );
 }
 
-async function exists(ctx: Ctx, id: string) {
+async function refusalOf(ctx: Ctx, { id, version }: DocSave) {
   const [found] = await ctx.db
-    .select({ id: item.id })
+    .select({ version: item.version })
     .from(item)
     .where(ownDoc(ctx, id));
-  return found !== undefined;
+  if (!found) return 'NOT_FOUND';
+  return found.version === version ? 'STORAGE_FULL' : 'CONFLICT';
 }

@@ -1,4 +1,9 @@
-export const SETTINGS_SECTIONS = ['account', 'appearance', 'security'] as const;
+export const SETTINGS_SECTIONS = [
+  'account',
+  'appearance',
+  'security',
+  'storage',
+] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 
@@ -18,6 +23,10 @@ export function settingsDialogSection(
   searchParams: Pick<URLSearchParams, 'get'>,
 ) {
   return settingsSectionFrom(searchParams.get(DIALOG_PARAM));
+}
+
+export function settingsDialogLink(pathname: string, section: SettingsSection) {
+  return { pathname, query: { [DIALOG_PARAM]: section } };
 }
 
 export function settingsDialogHref(

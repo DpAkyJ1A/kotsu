@@ -20,6 +20,11 @@ describe('statusOf', () => {
     ['everything saved', { edits: 2, savedEdits: 2, version: 2 }, 'saved'],
     ['a save that failed offline', { edits: 1, failure: 'OFFLINE' }, 'offline'],
     ['a body too long to save', { edits: 1, failure: 'TOO_LONG' }, 'tooLong'],
+    [
+      'a save past the storage quota',
+      { edits: 1, failure: 'STORAGE_FULL' },
+      'storageFull',
+    ],
     ['a save the server refused', { edits: 1, failure: 'FAILED' }, 'notSaved'],
     [
       'a conflict waiting for a choice',

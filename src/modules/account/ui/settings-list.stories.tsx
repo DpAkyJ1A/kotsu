@@ -38,6 +38,10 @@ export const Default: Story = {
     await expect(
       canvas.getByRole('link', { name: 'Sign-in & passkeys' }),
     ).toHaveAttribute('href', '/settings/security');
+    await expect(canvas.getByRole('link', { name: 'Storage' })).toHaveAttribute(
+      'href',
+      '/settings/storage',
+    );
   },
 };
 

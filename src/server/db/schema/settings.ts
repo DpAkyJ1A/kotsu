@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   check,
   pgEnum,
   pgTable,
@@ -36,6 +37,7 @@ export const userSettings = pgTable(
     weekStart: weekStart('week_start').default('monday').notNull(),
     timeFormat: timeFormat('time_format').default('h24').notNull(),
     onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
+    storageQuotaBytes: bigint('storage_quota_bytes', { mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -52,6 +54,10 @@ export const userSettings = pgTable(
     check(
       'user_settings_day_ends_at_range',
       sql`${table.dayEndsAt} between '00:00' and '06:00'`,
+    ),
+    check(
+      'user_settings_storage_quota_bytes_not_negative',
+      sql`${table.storageQuotaBytes} >= 0`,
     ),
   ],
 );

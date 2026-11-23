@@ -2,15 +2,15 @@ import type { JSONContent } from '@tiptap/core';
 import { and, eq, sql } from 'drizzle-orm';
 import { describe, expect } from 'vitest';
 
-import { createShelf } from '@/modules/shelves/api';
+import { createShelf, ITEM_ROW_BYTES } from '@/modules/shelves/api';
 import { createUser } from '@/server/auth/testing';
 import type { Ctx } from '@/server/ctx/load-ctx';
-import { ctxOf } from '@/server/ctx/testing';
+import { ctxOf, withStorageQuota } from '@/server/ctx/testing';
 import type { Db } from '@/server/db/client';
 import { item } from '@/server/db/schema/shelves';
 import { dbTest as test } from '@/server/db/testing';
 
-import { LARGEST_SAVE_BYTES } from '../core/save-limits';
+import { LARGEST_DOC_BYTES } from '../core/save-limits';
 import { saveDoc } from './commands';
 import { getDoc } from './queries';
 
@@ -265,58 +265,139 @@ describe('saveDoc', () => {
     }
   });
 
-  test('keeps a body as long as a save may be searchable when its words repeat, as the words of a text do', async ({
+  test('keeps a doc as long as a doc may be, searchable even when no word repeats', async ({
     db,
   }) => {
     const ada = await signIn(db, 'ada@example.com');
     const id = await insertItem(ada);
-    const content = docOf(paragraph(textOf(LARGEST_SAVE_BYTES, repeatedWord)));
+    const content = bodyOfDifferentWords(LARGEST_DOC_BYTES);
 
     await saveDoc(ada, { id, version: 1, content });
 
-    expect((await rowOf(db, id))?.sizeBytes).toBeGreaterThan(
-      LARGEST_SAVE_BYTES * 0.98,
-    );
-    expect(await isFoundBySearch(db, id, 'hablamos')).toBe(true);
+    expect((await rowOf(db, id))?.sizeBytes).toBe(LARGEST_DOC_BYTES);
+    expect(await isFoundBySearch(db, id, uniqueWord(70_000))).toBe(true);
   });
 
-  test('answers LIMIT for a body with more different words than the search index can hold', async ({
+  test('answers LIMIT for a body longer than a doc may be, and writes nothing', async ({
     db,
   }) => {
     const ada = await signIn(db, 'ada@example.com');
     const id = await insertItem(ada);
-    const content = docOf(paragraph(textOf(LARGEST_SAVE_BYTES, uniqueWord)));
+    const content = bodyOfDifferentWords(LARGEST_DOC_BYTES + 1);
 
     await expect(
       saveDoc(ada, { id, version: 1, content }),
     ).rejects.toMatchObject({ code: 'LIMIT' });
+    expect(await rowOf(db, id)).toMatchObject({ content: null, version: 1 });
   });
 });
 
-const VERB_FORMS = [
-  'hablo',
-  'hablas',
-  'habla',
-  'hablamos',
-  'habláis',
-  'hablan',
-];
+describe('saveDoc against the storage quota', () => {
+  const SHORT = docOf(paragraph('hablo'));
+  const LONG = docOf(paragraph('hablo, hablas, habla, hablamos, habláis'));
 
-function repeatedWord(index: number) {
-  return VERB_FORMS[index % VERB_FORMS.length] ?? '';
-}
+  test('answers STORAGE_FULL for a save that would take the user past the quota, and keeps what is there', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = await insertItem(ada);
+    await saveDoc(ada, { id, version: 1, content: SHORT });
+    const full = await withStorageQuota(ada, sizeOf(SHORT) + ITEM_ROW_BYTES);
+
+    await expect(
+      saveDoc(full, { id, version: 2, content: LONG }),
+    ).rejects.toMatchObject({ code: 'STORAGE_FULL' });
+    expect(await rowOf(db, id)).toMatchObject({ content: SHORT, version: 2 });
+  });
+
+  test('saves a body that grows up to the quota itself', async ({ db }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = await insertItem(ada);
+    await saveDoc(ada, { id, version: 1, content: SHORT });
+    const full = await withStorageQuota(ada, sizeOf(LONG) + ITEM_ROW_BYTES);
+
+    expect(await saveDoc(full, { id, version: 2, content: LONG })).toEqual({
+      version: 3,
+    });
+  });
+
+  test('lets a save that keeps or shrinks the body through even past the quota, so room can be made', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = await insertItem(ada);
+    await saveDoc(ada, { id, version: 1, content: LONG });
+    const over = await withStorageQuota(ada, 0);
+    const sameSize = docOf(
+      paragraph('hablo, hablas, habla, hablamos, habláin'),
+    );
+
+    expect(await saveDoc(over, { id, version: 2, content: sameSize })).toEqual({
+      version: 3,
+    });
+    expect(await saveDoc(over, { id, version: 3, content: SHORT })).toEqual({
+      version: 4,
+    });
+    expect((await rowOf(db, id))?.sizeBytes).toBe(sizeOf(SHORT));
+  });
+
+  test("counts the user's other items and 1 kB for each, but never another user's", async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const bea = await signIn(db, 'bea@example.com');
+    const id = await insertItem(ada);
+    const other = await insertItem(ada);
+    await saveDoc(ada, { id: other, version: 1, content: VERBS_BODY });
+    const beasDoc = await insertItem(bea);
+    await saveDoc(bea, { id: beasDoc, version: 1, content: LONG });
+    const room = sizeOf(VERBS_BODY) + sizeOf(LONG) + 2 * ITEM_ROW_BYTES;
+
+    await expect(
+      saveDoc(await withStorageQuota(ada, room - 1), {
+        id,
+        version: 1,
+        content: LONG,
+      }),
+    ).rejects.toMatchObject({ code: 'STORAGE_FULL' });
+    expect(
+      await saveDoc(await withStorageQuota(ada, room), {
+        id,
+        version: 1,
+        content: LONG,
+      }),
+    ).toEqual({ version: 2 });
+  });
+
+  test('answers CONFLICT, not STORAGE_FULL, for a save from a version the doc has moved past', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = await insertItem(ada);
+    await saveDoc(ada, { id, version: 1, content: SHORT });
+    const full = await withStorageQuota(ada, 0);
+
+    await expect(
+      saveDoc(full, { id, version: 1, content: LONG }),
+    ).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+});
 
 function uniqueWord(index: number) {
   return `w${index.toString(36)}`;
 }
 
-function textOf(bytes: number, wordAt: (index: number) => string) {
+function sizeOf(content: JSONContent) {
+  return new TextEncoder().encode(JSON.stringify(content)).byteLength;
+}
+
+function bodyOfDifferentWords(bytes: number) {
+  const room = bytes - sizeOf(docOf(paragraph('')));
   const words: string[] = [];
-  let length = 0;
-  for (let index = 0; length < bytes * 0.98; index++) {
-    const word = wordAt(index);
-    words.push(word);
-    length += new TextEncoder().encode(word).byteLength + 1;
+  let length = -1;
+  for (let index = 0; length + 1 + uniqueWord(index).length <= room; index++) {
+    words.push(uniqueWord(index));
+    length += 1 + uniqueWord(index).length;
   }
-  return words.join(' ');
+  return docOf(paragraph(words.join(' ') + 'z'.repeat(room - length)));
 }

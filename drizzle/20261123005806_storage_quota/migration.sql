@@ -1,0 +1,2 @@
+ALTER TABLE "user_settings" ADD COLUMN "storage_quota_bytes" bigint;--> statement-breakpoint
+ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_storage_quota_bytes_not_negative" CHECK ("storage_quota_bytes" >= 0);

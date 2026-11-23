@@ -6,11 +6,12 @@ import { describe, expect } from 'vitest';
 
 import { createUser } from '@/server/auth/testing';
 import type { Ctx } from '@/server/ctx/load-ctx';
-import { ctxOf } from '@/server/ctx/testing';
+import { ctxOf, withStorageQuota } from '@/server/ctx/testing';
 import type { Db } from '@/server/db/client';
 import { item } from '@/server/db/schema/shelves';
 import { dbTest as test } from '@/server/db/testing';
 
+import { ITEM_ROW_BYTES } from '../core/storage';
 import { createShelf, deleteShelf } from './commands';
 import { createItem, deleteItem, moveItem, renameItem } from './item-commands';
 import { getNavigation } from './queries';
@@ -35,6 +36,10 @@ async function titlesOn(ctx: Ctx, shelfId: string) {
   return items
     .filter((onShelf) => onShelf.shelfId === shelfId)
     .map(({ title }) => title);
+}
+
+async function setSize(db: Db, id: string, sizeBytes: number) {
+  await db.update(item).set({ sizeBytes }).where(eq(item.id, id));
 }
 
 async function rowOf(db: Db, id: string) {
@@ -172,6 +177,61 @@ describe('createItem', () => {
     }
     expect((await getNavigation(ada)).items).toEqual([]);
     expect((await getNavigation(bea)).items).toEqual([]);
+  });
+
+  test('creates an item while its 1 kB still fits in the quota, up to the quota itself', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const spanish = await createShelf(ada, { name: 'Spanish' });
+    const verbs = await createDoc(ada, spanish.id, 'Verbs');
+    await setSize(db, verbs.id, 3_000);
+    const full = await withStorageQuota(ada, 3_000 + 2 * ITEM_ROW_BYTES);
+
+    await createDoc(full, spanish.id, 'Food');
+
+    expect(await titlesOn(full, spanish.id)).toEqual(['Verbs', 'Food']);
+  });
+
+  test('answers STORAGE_FULL for an item that would take the user past the quota, and creates nothing', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const spanish = await createShelf(ada, { name: 'Spanish' });
+    const verbs = await createDoc(ada, spanish.id, 'Verbs');
+    await setSize(db, verbs.id, 3_000);
+    const full = await withStorageQuota(ada, 3_000 + 2 * ITEM_ROW_BYTES - 1);
+
+    await expect(createDoc(full, spanish.id, 'Food')).rejects.toMatchObject({
+      code: 'STORAGE_FULL',
+    });
+    expect(await titlesOn(full, spanish.id)).toEqual(['Verbs']);
+  });
+
+  test("counts only the user's own items against the quota", async ({ db }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const bea = await signIn(db, 'bea@example.com');
+    const chess = await createShelf(bea, { name: 'Chess' });
+    const openings = await createDoc(bea, chess.id, 'Openings');
+    await setSize(db, openings.id, 1_000_000);
+    const spanish = await createShelf(ada, { name: 'Spanish' });
+    const full = await withStorageQuota(ada, ITEM_ROW_BYTES);
+
+    await createDoc(full, spanish.id, 'Verbs');
+
+    expect(await titlesOn(full, spanish.id)).toEqual(['Verbs']);
+  });
+
+  test("answers NOT_FOUND, not STORAGE_FULL, for another user's shelf when the storage is full", async ({
+    db,
+  }) => {
+    const ada = await withStorageQuota(await signIn(db, 'ada@example.com'), 0);
+    const bea = await signIn(db, 'bea@example.com');
+    const chess = await createShelf(bea, { name: 'Chess' });
+
+    await expect(createDoc(ada, chess.id, 'Openings')).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
   });
 });
 

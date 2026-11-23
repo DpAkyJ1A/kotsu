@@ -25,6 +25,8 @@ export type SaveTransport = {
 
 type ConflictChoice = 'later' | 'reload' | 'keepMine';
 
+const RETRIED = new Set<SaveFailure>(['OFFLINE', 'STORAGE_FULL', 'FAILED']);
+
 const CONFLICT_AFTER: Record<ConflictChoice, SaveState['conflict']> = {
   later: 'postponed',
   reload: 'reloading',
@@ -137,7 +139,7 @@ export function createSaveQueue(doc: Doc, transport: SaveTransport) {
     },
 
     retry() {
-      if (state.failure === 'OFFLINE' || state.failure === 'FAILED') saveNow();
+      if (state.failure !== null && RETRIED.has(state.failure)) saveNow();
     },
 
     choose(choice: ConflictChoice) {

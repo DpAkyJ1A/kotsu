@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { settingsDialogLink } from '@/modules/account';
 import { DocEditor } from '@/modules/docs';
 import { loadDoc } from '@/modules/docs/loaders';
-import { DocBreadcrumb } from '@/modules/shelves';
+import { DocBreadcrumb, docPath } from '@/modules/shelves';
 import { loadNavigation } from '@/modules/shelves/loaders';
 
 async function placeOf(itemId: string) {
@@ -34,6 +35,7 @@ export default async function DocPage({ params }: PageProps<'/docs/[itemId]'>) {
       doc={doc}
       title={item.title}
       breadcrumb={<DocBreadcrumb doc={item} shelf={shelf} />}
+      storageHref={settingsDialogLink(docPath(itemId), 'storage')}
     />
   );
 }

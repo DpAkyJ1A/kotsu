@@ -1,11 +1,12 @@
 import 'server-only';
 
-import { and, eq, gt, max, min, ne } from 'drizzle-orm';
+import { and, eq, gt, max, min, ne, sql } from 'drizzle-orm';
 import { generateKeyBetween } from 'fractional-indexing';
 
 import type { Ctx } from '@/server/ctx/load-ctx';
 import { item, shelf } from '@/server/db/schema/shelves';
 import { AppError, command } from '@/server/domain';
+import { storageQuotaOf } from '@/server/storage-quota';
 
 import {
   CreateItemInput,
@@ -14,12 +15,17 @@ import {
   MoveItemInput,
   RenameItemInput,
 } from '../core/item';
+import { fitsInQuota, ITEM_ROW_BYTES } from '../core/storage';
 import { itemDto } from './dto';
+import { usedBytes } from './storage';
 
 export const createItem = command(
   CreateItemInput,
   async (ctx, { id, shelfId, kind, title }): Promise<Item> => {
-    const last = await lastPositionOn(ctx, shelfId);
+    const { last, used } = await placeOn(ctx, shelfId);
+    if (!fitsInQuota(used + ITEM_ROW_BYTES, storageQuotaOf(ctx.settings))) {
+      throw new AppError('STORAGE_FULL');
+    }
     const [created] = await ctx.db
       .insert(item)
       .values({
@@ -80,15 +86,18 @@ function ownShelf(ctx: Ctx, id: string) {
   return and(eq(shelf.userId, ctx.userId), eq(shelf.id, id));
 }
 
-async function lastPositionOn(ctx: Ctx, shelfId: string) {
+async function placeOn(ctx: Ctx, shelfId: string) {
   const [found] = await ctx.db
-    .select({ last: max(item.position) })
+    .select({
+      last: max(item.position),
+      used: sql`(${usedBytes(ctx)})`.mapWith(Number),
+    })
     .from(shelf)
     .leftJoin(item, eq(item.shelfId, shelf.id))
     .where(ownShelf(ctx, shelfId))
     .groupBy(shelf.id);
   if (!found) throw new AppError('NOT_FOUND');
-  return found.last;
+  return found;
 }
 
 async function positionOn(ctx: Ctx, shelfId: string, id: string) {

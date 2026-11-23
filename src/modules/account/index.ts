@@ -1,4 +1,7 @@
-export { settingsSectionFrom } from './core/settings-sections';
+export {
+  settingsDialogLink,
+  settingsSectionFrom,
+} from './core/settings-sections';
 export { SIGN_IN_CANCELLED, toNextPath } from './core/sign-in-paths';
 export { AccountMenu } from './ui/account-menu';
 export { CodeForm } from './ui/code-form';

@@ -9,6 +9,9 @@ Action that takes the user from the session, refreshes the page after a write an
 (`{ ok: true, data }`, or `{ ok: false, error: { code } }` with an `AppError` code; any other failure is logged and
 answered as `INTERNAL`). `answer()` in the same file answers the same way without the refresh, for a route handler
 (which can't refresh a page) that has to stand in for an action, as the save a closing tab sends with `keepalive` does.
+`storageQuotaOf()` in `storage-quota.ts` gives a user's storage quota in bytes: their own
+(`user_settings.storage_quota_bytes`, for a plan with more room later), else `STORAGE_QUOTA_MB` megabytes of a
+million bytes, else `null`, no limit, as on a server of your own.
 
 Server only: every file starts with `import 'server-only'`. Imports only from `src/server` and `src/lib`.
 `env.ts` is the only file that reads `process.env`.
