@@ -30,7 +30,7 @@ export function ToolbarButton({
         data-slot="toolbar-button"
         size="sm"
         className={cn(
-          'aria-pressed:bg-violet aria-pressed:text-violet-foreground',
+          'size-7 aria-pressed:bg-violet aria-pressed:text-violet-foreground',
           className,
         )}
         {...props}

@@ -30,7 +30,10 @@ shows the error code's message (`errors.*`) in a toast, and answers whether it w
 CSS media query (false on the server); the queries the modules share sit beside it (`WIDE_SCREEN` from `md` up,
 `TOUCH_SCREEN`, `REDUCED_MOTION`). `Toolbar` is Radix's toolbar: one Tab stop, and the arrows, Home and End move
 along its buttons and pass the disabled ones by; `ToolbarSeparator` splits them into groups, and `ToolbarButton` is a
-small icon button that turns violet while its `aria-pressed` is true.
+small icon button (28 px) that turns violet while its `aria-pressed` is true. `SwatchGroup` is a row of `Swatch`es, one
+of them picked (Radix's toggle group, one value): the arrows, Home and End move the focus without picking, Enter or a
+click picks, a screen reader hears "Red, radio button, checked"; a swatch draws only the ring of the picked one and its
+own focus outline, and its look comes from what it holds.
 
 Every component has a `*.stories.tsx` next to it; `pnpm storybook` shows them, with the tokens and icons
 under Foundations. Its behaviour (keyboard, focus, disabled) is tested in the stories' `play` functions.

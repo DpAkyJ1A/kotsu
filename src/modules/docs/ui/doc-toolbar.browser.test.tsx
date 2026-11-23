@@ -55,6 +55,7 @@ const FORMATS: Format[] = [
 
 afterEach(() => {
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 function text(value: string, mark?: string): JSONContent {
@@ -349,7 +350,7 @@ describe('a button', () => {
   });
 });
 
-test('the toolbar has a button for every format: headings, marks, lists, then the other blocks', async () => {
+test('the toolbar has a button for every format: headings, marks, colours, lists, then the other blocks', async () => {
   await renderDoc(null);
 
   const names = toolbar()
@@ -357,7 +358,12 @@ test('the toolbar has a button for every format: headings, marks, lists, then th
     .elements()
     .map((element) => element.getAttribute('aria-label'));
 
-  expect(names).toEqual(Object.values(LABELS));
+  expect(names).toEqual([
+    ...FORMATS.slice(0, 7).map((format) => LABELS[format]),
+    'Colour',
+    'Last colour: red text',
+    ...FORMATS.slice(7).map((format) => LABELS[format]),
+  ]);
 });
 
 test('a doc that opens on a heading lights that heading before anything is clicked', async () => {
@@ -515,5 +521,417 @@ describe('what a tooltip promises', () => {
     await userEvent.keyboard(markdownOf('horizontalRule', 'hablo'));
 
     expect(linesOf(body)[0]).toBe('hr:');
+  });
+});
+
+function colouredText(
+  value: string,
+  attrs: { color?: string; backgroundColor?: string },
+): JSONContent {
+  return {
+    type: 'text',
+    text: value,
+    marks: [
+      {
+        type: 'textStyle',
+        attrs: { color: null, backgroundColor: null, ...attrs },
+      },
+    ],
+  };
+}
+
+function colourButton() {
+  return toolbar().getByRole('button', { name: 'Colour', exact: true });
+}
+
+function lastColourButton() {
+  return toolbar().getByRole('button', { name: /^Last colour/ });
+}
+
+function row(name: 'Text' | 'Background') {
+  return page.getByRole('radiogroup', { name });
+}
+
+function swatch(rowName: 'Text' | 'Background', name: string) {
+  return row(rowName).getByRole('radio', { name, exact: true });
+}
+
+function swatchNames(rowName: 'Text' | 'Background') {
+  return row(rowName)
+    .getByRole('radio')
+    .elements()
+    .map((element) => element.getAttribute('aria-label'));
+}
+
+function checkedSwatch(rowName: 'Text' | 'Background') {
+  return row(rowName)
+    .getByRole('radio', { checked: true })
+    .element()
+    .getAttribute('aria-label');
+}
+
+function colouredSpans(body: Locator) {
+  return [
+    ...body
+      .element()
+      .querySelectorAll<HTMLElement>('span[data-color], span[data-bg]'),
+  ].map(
+    ({ textContent, dataset }) =>
+      `${textContent}:${dataset.color ?? '-'}/${dataset.bg ?? '-'}`,
+  );
+}
+
+async function pickColours(...picks: ['Text' | 'Background', string][]) {
+  await userEvent.click(colourButton());
+  for (const [rowName, name] of picks) {
+    await userEvent.click(swatch(rowName, name));
+  }
+  await userEvent.keyboard('{Escape}');
+  await expect.element(row('Text')).not.toBeInTheDocument();
+}
+
+describe('colours', () => {
+  test('the Colour button opens a row of text colours and a row of backgrounds, Default first, the colours at the caret checked', async () => {
+    const body = await renderDoc(
+      docOf(
+        paragraph(
+          text('yo '),
+          colouredText('hablo', { color: 'blue', backgroundColor: 'yellow' }),
+        ),
+      ),
+    );
+    await caretIn(body, 'hablo');
+
+    await userEvent.click(colourButton());
+
+    const names = [
+      'Default',
+      'Gray',
+      'Brown',
+      'Orange',
+      'Yellow',
+      'Green',
+      'Blue',
+      'Purple',
+      'Pink',
+      'Red',
+    ];
+    await expect
+      .element(page.getByRole('dialog', { name: 'Colour' }))
+      .toBeVisible();
+    expect(swatchNames('Text')).toEqual(names);
+    expect(swatchNames('Background')).toEqual(names);
+    expect(checkedSwatch('Text')).toBe('Blue');
+    expect(checkedSwatch('Background')).toBe('Yellow');
+
+    await userEvent.keyboard('{Escape}');
+    await caretIn(body, 'yo');
+    await userEvent.click(colourButton());
+
+    expect(checkedSwatch('Text')).toBe('Default');
+    expect(checkedSwatch('Background')).toBe('Default');
+  });
+
+  test('a swatch colours the selected text and leaves the popover open for the other row', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    await userEvent.click(colourButton());
+
+    await userEvent.click(swatch('Text', 'Red'));
+
+    expect(colouredSpans(body)).toEqual(['hablo:red/-']);
+    await expect
+      .element(swatch('Text', 'Red'))
+      .toHaveAttribute('aria-checked', 'true');
+
+    await userEvent.click(swatch('Background', 'Yellow'));
+
+    expect(colouredSpans(body)).toEqual(['hablo:red/yellow']);
+    await expect
+      .element(swatch('Background', 'Yellow'))
+      .toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('the swatch checked for the start of a selection in two colours still colours all of it', async () => {
+    const body = await renderDoc(
+      docOf(paragraph(colouredText('la', { color: 'red' }), text(' mesa'))),
+    );
+    const from = positionOf(body, 'la');
+    editorOf(body)
+      .chain()
+      .focus()
+      .setTextSelection({ from, to: from + 'la mesa'.length })
+      .run();
+    await expect.element(body).toHaveFocus();
+    await userEvent.click(colourButton());
+    await expect
+      .element(swatch('Text', 'Red'))
+      .toHaveAttribute('aria-checked', 'true');
+
+    await userEvent.click(swatch('Text', 'Red'));
+
+    expect(colouredSpans(body)).toEqual(['la mesa:red/-']);
+  });
+
+  test('Default takes off the colour of its row and leaves the other', async () => {
+    const body = await renderDoc(
+      docOf(
+        paragraph(
+          colouredText('hablo', { color: 'blue', backgroundColor: 'yellow' }),
+        ),
+      ),
+    );
+    await select(body, 'hablo');
+    await userEvent.click(colourButton());
+
+    await userEvent.click(swatch('Text', 'Default'));
+
+    expect(colouredSpans(body)).toEqual(['hablo:-/yellow']);
+
+    await userEvent.click(swatch('Background', 'Default'));
+
+    expect(colouredSpans(body)).toEqual([]);
+    expect(body.element().querySelector('span')).toBeNull();
+  });
+
+  test('from the keyboard: Enter opens it on the checked swatch, the arrows move, Enter picks, Escape gives the text back the focus and the selection', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    colourButton().element().focus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(swatch('Text', 'Default')).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(swatch('Text', 'Gray')).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(swatch('Text', 'Brown')).toHaveFocus();
+    expect(colouredSpans(body)).toEqual([]);
+
+    await userEvent.keyboard('{Enter}');
+    expect(colouredSpans(body)).toEqual(['hablo:brown/-']);
+
+    await userEvent.tab();
+    await expect.element(swatch('Background', 'Default')).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    await expect.element(swatch('Background', 'Red')).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(colouredSpans(body)).toEqual(['hablo:brown/red']);
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(row('Text')).not.toBeInTheDocument();
+    await expect.element(body).toHaveFocus();
+    expect(getSelection()?.toString()).toBe('hablo');
+  });
+
+  test('one Escape closes it, wherever the arrows left the focus', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    colourButton().element().focus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(swatch('Text', 'Default')).toHaveFocus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(swatch('Text', 'Red')).toHaveFocus();
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(row('Text')).not.toBeInTheDocument();
+    await expect.element(body).toHaveFocus();
+    expect(colouredSpans(body)).toEqual([]);
+  });
+
+  test('the Colour button pressed while the title has the focus colours the text where its selection was, and closing gives the text the focus', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    await userEvent.click(page.getByRole('textbox', { name: 'Doc title' }));
+
+    await pickColours(['Text', 'Green']);
+
+    expect(colouredSpans(body)).toEqual(['hablo:green/-']);
+    await expect.element(body).toHaveFocus();
+  });
+
+  test('the focus moving out of the popover closes it, and the focus stays where it moved', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    await userEvent.click(colourButton());
+    const title = page.getByRole('textbox', { name: 'Doc title' });
+
+    title.element().focus();
+
+    await expect.element(row('Text')).not.toBeInTheDocument();
+    await expect.element(title).toHaveFocus();
+  });
+
+  test('a click outside on nothing that takes the focus gives it back to the text', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    await userEvent.click(colourButton());
+
+    await userEvent.click(page.elementLocator(document.documentElement), {
+      position: { x: 200, y: 700 },
+    });
+
+    await expect.element(row('Text')).not.toBeInTheDocument();
+    await expect.element(body).toHaveFocus();
+  });
+
+  test('the last colour is red text before the first pick, and its button colours the selection without taking the focus', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
+    await expect
+      .element(lastColourButton())
+      .toHaveAccessibleName('Last colour: red text');
+    await expect
+      .element(lastColourButton())
+      .not.toHaveAttribute('aria-pressed');
+
+    await userEvent.click(lastColourButton());
+
+    expect(colouredSpans(body)).toEqual(['hablo:red/-']);
+    await expect.element(body).toHaveFocus();
+  });
+
+  test('what was picked in one opening, text and background, is the last colour', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'yo');
+
+    await pickColours(['Text', 'Blue'], ['Background', 'Yellow']);
+    await select(body, 'hablo');
+    await userEvent.click(lastColourButton());
+
+    expect(colouredSpans(body)).toEqual([
+      'yo:blue/yellow',
+      'hablo:blue/yellow',
+    ]);
+    await expect
+      .element(lastColourButton())
+      .toHaveAccessibleName('Last colour: blue text, yellow background');
+  });
+
+  test('a new opening starts the last colour afresh, so a background alone leaves the text colour as it is', async () => {
+    const body = await renderDoc(
+      docOf(paragraph(text('yo '), colouredText('hablo', { color: 'pink' }))),
+    );
+    await select(body, 'yo');
+    await pickColours(['Text', 'Blue']);
+    await pickColours(['Background', 'Yellow']);
+
+    await select(body, 'hablo');
+    await userEvent.click(lastColourButton());
+
+    expect(colouredSpans(body)).toEqual([
+      'yo:blue/yellow',
+      'hablo:pink/yellow',
+    ]);
+    await expect
+      .element(lastColourButton())
+      .toHaveAccessibleName('Last colour: yellow background');
+  });
+
+  test('a Default picked is not a colour, so the last colour stays', async () => {
+    const body = await renderDoc(
+      docOf(paragraph(colouredText('hablo', { color: 'blue' }))),
+    );
+    await select(body, 'hablo');
+
+    await pickColours(['Text', 'Default']);
+
+    await expect
+      .element(lastColourButton())
+      .toHaveAccessibleName('Last colour: red text');
+  });
+
+  test('the last colour is kept on this device, so a doc opened later starts with it', async () => {
+    const first = await render(
+      <IntlTestProvider locale="en">
+        <Body content={docOf(paragraph(text('yo hablo')))} />
+      </IntlTestProvider>,
+    );
+    const body = first.getByRole('textbox', { name: 'Doc text' });
+    await select(body, 'hablo');
+    await pickColours(['Background', 'Green']);
+    await first.unmount();
+
+    await renderDoc(docOf(paragraph(text('tú hablas'))));
+
+    await expect
+      .element(lastColourButton())
+      .toHaveAccessibleName('Last colour: green background');
+  });
+
+  test('without storage on the device, colours still work and the last colour stays red text', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Full', 'QuotaExceededError');
+    });
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'yo');
+
+    await pickColours(['Text', 'Blue']);
+    await select(body, 'hablo');
+    await userEvent.click(lastColourButton());
+
+    expect(colouredSpans(body)).toEqual(['yo:blue/-', 'hablo:red/-']);
+  });
+
+  test('both buttons turn off in a code block and in inline code, which take no colour', async () => {
+    const body = await renderDoc(
+      docOf(paragraph(text('yo '), text('hablo', 'code')), {
+        type: 'codeBlock',
+        content: [text('tú hablas')],
+      }),
+    );
+
+    for (const word of ['hablo', 'hablas']) {
+      await caretIn(body, word);
+      await expect.element(colourButton()).toBeDisabled();
+      await expect.element(lastColourButton()).toBeDisabled();
+    }
+    await caretIn(body, 'yo');
+    await expect.element(colourButton()).toBeEnabled();
+  });
+
+  test('the tooltip of the last colour says its colour and its shortcut', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(MAC);
+    await renderDoc(docOf(paragraph(text('yo hablo'))));
+
+    await expectTooltip(lastColourButton(), 'Last colour: red text ⌘⇧H');
+    await expectTooltip(colourButton(), 'Colour');
+  });
+
+  test('its shortcut colours the selection with the last colour', async () => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'yo');
+    await pickColours(['Text', 'Purple']);
+    await select(body, 'hablo');
+
+    await userEvent.keyboard(keysToPress(SHORTCUTS.lastColour.keys));
+
+    expect(colouredSpans(body)).toEqual(['yo:purple/-', 'hablo:purple/-']);
+  });
+
+  test('in Russian names the rows, the colours and the last colour in Russian', async () => {
+    await renderDoc(docOf(paragraph(text('yo hablo'))), 'ru');
+    const russian = page.getByRole('toolbar', { name: 'Форматирование' });
+
+    await expect
+      .element(
+        russian.getByRole('button', { name: 'Последний цвет: красный текст' }),
+      )
+      .toBeInTheDocument();
+    await userEvent.click(
+      russian.getByRole('button', { name: 'Цвет', exact: true }),
+    );
+
+    await expect
+      .element(
+        page
+          .getByRole('radiogroup', { name: 'Фон' })
+          .getByRole('radio', { name: 'Жёлтый' }),
+      )
+      .toBeInTheDocument();
   });
 });

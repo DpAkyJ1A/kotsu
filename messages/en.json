@@ -146,6 +146,26 @@
       "code": "Inline code",
       "sampleText": "text"
     },
+    "colours": {
+      "label": "Colour",
+      "text": "Text",
+      "background": "Background",
+      "default": "Default",
+      "names": {
+        "gray": "Gray",
+        "brown": "Brown",
+        "orange": "Orange",
+        "yellow": "Yellow",
+        "green": "Green",
+        "blue": "Blue",
+        "purple": "Purple",
+        "pink": "Pink",
+        "red": "Red"
+      },
+      "last": "Last colour: {colours}",
+      "textPart": "{colour} text",
+      "backgroundPart": "{colour} background"
+    },
     "saveStatus": {
       "saving": "Saving…",
       "saved": "Saved",

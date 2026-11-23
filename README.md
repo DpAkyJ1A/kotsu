@@ -45,8 +45,10 @@ so does the empty line you are on: "Type / for blocks"): what follows narrows it
 that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves the text as it is. A block picked on an
 empty line takes that line; on a line with text it goes below it. On a wider screen a row of buttons above the title
 does the same with a click: three headings, bold, italic, strike and code, the three lists, a quote, a code block and a
-line. It lights up what the caret is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B
-**text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at
+line, and colour: «A» opens a row of nine text colours and a row of nine backgrounds (gray to red, as in Notion, each
+readable in the light and the dark theme), each with Default to take it off, and the button beside it paints the
+selection with the last colour picked (red text until the first pick; ⌘⇧H does the same). It lights up what the caret
+is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B **text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at
 the top of the window as you scroll: one row when the page is wide, with the buttons right over the text, two rows when
 it is narrower or the sidebar takes the room. Under it, in the right margin, the doc's headings make an outline that
 marks the one you are reading; a click scrolls to a heading. On a wide page it is a list, on a narrower one a column of

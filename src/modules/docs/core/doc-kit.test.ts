@@ -43,6 +43,17 @@ const EVERY_BLOCK = docOf(
     text('-ir', ['code']),
     text('; '),
     text('hablo', ['strike']),
+    text(', '),
+    {
+      type: 'text',
+      text: 'él',
+      marks: [
+        {
+          type: 'textStyle',
+          attrs: { color: 'blue', backgroundColor: 'yellow' },
+        },
+      ],
+    },
   ),
   { type: 'heading', attrs: { level: 3 }, content: [text('Practice')] },
   {
@@ -69,7 +80,7 @@ const EVERY_BLOCK = docOf(
   paragraph(text('Line one'), { type: 'hardBreak' }, text('line two')),
 );
 
-test('builds the schema in Node, without a DOM, with the blocks and marks of Markdown only', () => {
+test('builds the schema in Node, without a DOM, with the blocks and marks of Markdown and the colours of text', () => {
   expect(typeof document).toBe('undefined');
   expect(Object.keys(schema.nodes).sort()).toEqual([
     'blockquote',
@@ -91,6 +102,7 @@ test('builds the schema in Node, without a DOM, with the blocks and marks of Mar
     'code',
     'italic',
     'strike',
+    'textStyle',
   ]);
 });
 

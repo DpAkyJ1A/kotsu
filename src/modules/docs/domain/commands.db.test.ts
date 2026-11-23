@@ -210,6 +210,37 @@ describe('saveDoc', () => {
     expect((await rowOf(db, id))?.content).toEqual(docOf(paragraph('hola')));
   });
 
+  test('stores coloured text with the names of its colours, and searches its words alone', async ({
+    db,
+  }) => {
+    const ada = await signIn(db, 'ada@example.com');
+    const id = await insertItem(ada);
+    const coloured = docOf({
+      type: 'paragraph',
+      attrs: { blockId: BLOCK_ID },
+      content: [
+        text('yo '),
+        {
+          ...text('hablo'),
+          marks: [
+            {
+              type: 'textStyle',
+              attrs: { color: 'red', backgroundColor: 'yellow' },
+            },
+          ],
+        },
+      ],
+    });
+
+    await saveDoc(ada, { id, version: 1, content: coloured });
+
+    const row = await rowOf(db, id);
+    expect(row?.content).toEqual(coloured);
+    expect(row?.plainText).toBe('yo hablo');
+    expect(await isFoundBySearch(db, id, 'hablo')).toBe(true);
+    expect(await isFoundBySearch(db, id, 'red')).toBe(false);
+  });
+
   test.for<[string, unknown]>([
     ['a root that is not a doc', paragraph('hola')],
     ['a node the editor does not have', docOf({ type: 'image' })],
@@ -225,6 +256,30 @@ describe('saveDoc', () => {
       docOf({ type: 'heading', attrs: { level: 7 }, content: [text('hola')] }),
     ],
     ['a block id that is not a uuid', docOf(paragraph('hola', 'verbs'))],
+    [
+      'a text colour outside the palette',
+      docOf({
+        type: 'paragraph',
+        content: [
+          {
+            ...text('hola'),
+            marks: [{ type: 'textStyle', attrs: { color: '#ff0000' } }],
+          },
+        ],
+      }),
+    ],
+    [
+      'a background outside the palette',
+      docOf({
+        type: 'paragraph',
+        content: [
+          {
+            ...text('hola'),
+            marks: [{ type: 'textStyle', attrs: { backgroundColor: 'teal' } }],
+          },
+        ],
+      }),
+    ],
     [
       'a checklist item ticked with something other than true or false',
       docOf({

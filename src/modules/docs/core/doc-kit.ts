@@ -4,6 +4,10 @@ import { UniqueID } from '@tiptap/extension-unique-id';
 import type { Node } from '@tiptap/pm/model';
 import { StarterKit } from '@tiptap/starter-kit';
 
+import type { Colouring } from './apply-colour';
+import { FIRST_LAST_COLOUR } from './last-colour';
+import { TextColour } from './text-colour';
+
 export const HEADING_LEVELS = [1, 2, 3] as const;
 
 const BLOCKS_WITH_AN_ID = [
@@ -17,13 +21,17 @@ const BLOCKS_WITH_AN_ID = [
 
 type DocKitOptions = {
   checklistItemLabel: (item: Node) => string;
+  lastColour: () => Colouring;
 };
 
 export const DocKit = Extension.create<DocKitOptions>({
   name: 'docKit',
 
   addOptions() {
-    return { checklistItemLabel: (item) => item.textContent };
+    return {
+      checklistItemLabel: (item) => item.textContent,
+      lastColour: () => FIRST_LAST_COLOUR,
+    };
   },
 
   addExtensions() {
@@ -38,6 +46,7 @@ export const DocKit = Extension.create<DocKitOptions>({
         nested: true,
         a11y: { checkboxLabel: this.options.checklistItemLabel },
       }),
+      TextColour.configure({ lastColour: this.options.lastColour }),
       UniqueID.configure({
         attributeName: 'blockId',
         types: BLOCKS_WITH_AN_ID,
