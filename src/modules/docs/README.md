@@ -32,9 +32,11 @@ otherwise `STORAGE_FULL`.
 
 The doors: `loaders.ts` gives the doc page `loadDoc`, which turns `NOT_FOUND` and `VALIDATION` into the not-found page;
 `actions.ts` gives the editor `saveDocAction`; `routes.ts` gives `src/app/api/docs/save` the save a closing tab sends
-(below); and `index.ts` gives the page `DocEditor`: the page header row (the breadcrumb the page passes in, and the save
-status on its right), then the title from `shelves` (`DocTitle`) above the body in a column; `DocEditor` draws both,
-since only it holds the editor that Enter in the title moves to. The page keys it by the doc's id, so another doc
+(below); and `index.ts` gives the page `DocEditor`: the page header row (`DocBreadcrumb` from `shelves`, drawn from the
+doc and shelf the page passes in, and the save status on its right), then the title from `shelves` (`DocTitle`) above
+the body in a column; `DocEditor` draws both, since only it holds the editor that Enter in the title moves to. The page
+passes data, not a ready breadcrumb element: on a large doc React streams such an element in lazily, and in a list of
+siblings the dev build then warns about a missing `key`. The page keys it by the doc's id, so another doc
 always gets a new editor. A new doc (no body yet) opens with the caret in its text, except on a touch screen
 (`pointer: coarse`), where a phone would show the keyboard only for a tap; the price is that an iPad with a trackpad or
 a touch laptop whose main pointer is the screen also opens without the caret. A doc with text leaves the focus where it

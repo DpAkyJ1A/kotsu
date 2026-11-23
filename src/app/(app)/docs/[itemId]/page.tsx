@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { settingsDialogLink } from '@/modules/account';
 import { DocEditor } from '@/modules/docs';
 import { loadDoc } from '@/modules/docs/loaders';
-import { DocBreadcrumb, docPath } from '@/modules/shelves';
+import { docPath } from '@/modules/shelves';
 import { loadNavigation } from '@/modules/shelves/loaders';
 
 async function placeOf(itemId: string) {
@@ -34,7 +34,7 @@ export default async function DocPage({ params }: PageProps<'/docs/[itemId]'>) {
       key={doc.id}
       doc={doc}
       title={item.title}
-      breadcrumb={<DocBreadcrumb doc={item} shelf={shelf} />}
+      place={{ doc: item, shelf }}
       storageHref={settingsDialogLink(docPath(itemId), 'storage')}
     />
   );
