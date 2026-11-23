@@ -1,7 +1,8 @@
 import type { Editor, EditorEvents, JSONContent } from '@tiptap/core';
 
+import { byteLengthOf } from '../core/byte-length';
 import type { Doc, DocSave } from '../core/doc';
-import { SAVE_AFTER_MS } from '../core/save-limits';
+import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import {
   hasEditsNotOnTheirWay,
   hasUnsavedEdits,
@@ -25,6 +26,8 @@ export type SaveTransport = {
 
 type ConflictChoice = 'later' | 'reload' | 'keepMine';
 
+const TOO_LONG: SaveAnswer = { ok: false, failure: 'TOO_LONG' };
+
 const RETRIED = new Set<SaveFailure>(['OFFLINE', 'STORAGE_FULL', 'FAILED']);
 
 const CONFLICT_AFTER: Record<ConflictChoice, SaveState['conflict']> = {
@@ -46,7 +49,7 @@ const NO_BODY: Body = {
 export type SaveQueue = ReturnType<typeof createSaveQueue>;
 
 export function createSaveQueue(doc: Doc, transport: SaveTransport) {
-  let state = openedAt(doc.version);
+  let state = openedAt(doc);
   let body = NO_BODY;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
@@ -71,7 +74,12 @@ export function createSaveQueue(doc: Doc, transport: SaveTransport) {
     if (!hasUnsavedEdits(state) || isWaitingForAChoice(state)) return;
     const edits = state.edits;
     const save = saveOfNow();
-    update({ sendingEdits: edits, isDue: false });
+    const sizeBytes = byteLengthOf(JSON.stringify(save.content));
+    update({ sendingEdits: edits, isDue: false, sizeBytes });
+    if (sizeBytes > LARGEST_DOC_BYTES) {
+      answered(edits, TOO_LONG);
+      return;
+    }
     void transport.send(save, { isLeaving }).then((answer) => {
       answered(edits, answer);
     });
@@ -93,6 +101,7 @@ export function createSaveQueue(doc: Doc, transport: SaveTransport) {
       sendingEdits: null,
       failure: null,
       conflict: null,
+      savedAt: Date.now(),
     });
     if (state.isDue) saveNow();
   }
@@ -146,7 +155,7 @@ export function createSaveQueue(doc: Doc, transport: SaveTransport) {
       update({ conflict: CONFLICT_AFTER[choice] });
     },
 
-    serverHas({ version, content }: Doc) {
+    serverHas({ version, content, sizeBytes }: Doc) {
       if (version <= state.version) return;
       if (state.conflict === 'keepingMine') {
         update({ version, failure: null, conflict: null });
@@ -157,6 +166,7 @@ export function createSaveQueue(doc: Doc, transport: SaveTransport) {
       body.write(content);
       update({
         version,
+        sizeBytes,
         savedEdits: state.edits,
         failure: null,
         conflict: null,

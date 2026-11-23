@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { saveDocAction } from '../actions';
 import { byteLengthOf } from '../core/byte-length';
 import type { DocSave } from '../core/doc';
-import {
-  LARGEST_DOC_BYTES,
-  LARGEST_KEEPALIVE_BYTES,
-} from '../core/save-limits';
+import { LARGEST_KEEPALIVE_BYTES } from '../core/save-limits';
 import type { SaveFailure } from '../core/save-state';
 import type { SaveAnswer, SaveTransport } from './save-queue';
 
@@ -30,7 +27,6 @@ async function sendSave(
   { isLeaving }: { isLeaving: boolean },
 ): Promise<SaveAnswer> {
   if (!isOnline()) return failed('OFFLINE');
-  if (isTooLong(save)) return failed('TOO_LONG');
   const json = JSON.stringify(save);
   try {
     return answerOf(
@@ -67,10 +63,6 @@ function failureOf(code: string): SaveFailure {
 
 function failed(failure: SaveFailure): SaveAnswer {
   return { ok: false, failure };
-}
-
-function isTooLong({ content }: DocSave) {
-  return byteLengthOf(JSON.stringify(content)) > LARGEST_DOC_BYTES;
 }
 
 function fitsAKeepalive(json: string) {

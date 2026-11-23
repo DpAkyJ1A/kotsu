@@ -1,3 +1,5 @@
+import type { Doc } from './doc';
+
 export type SaveFailure =
   'CONFLICT' | 'OFFLINE' | 'TOO_LONG' | 'STORAGE_FULL' | 'FAILED';
 
@@ -11,12 +13,17 @@ export type SaveState = {
   isDue: boolean;
   failure: SaveFailure | null;
   conflict: Conflict | null;
+  sizeBytes: number;
+  savedAt: number | null;
 };
 
 export type SaveStatus =
   'saved' | 'saving' | 'offline' | 'tooLong' | 'storageFull' | 'notSaved';
 
-export function openedAt(version: number): SaveState {
+export function openedAt({
+  version,
+  sizeBytes,
+}: Pick<Doc, 'version' | 'sizeBytes'>): SaveState {
   return {
     version,
     edits: 0,
@@ -25,6 +32,8 @@ export function openedAt(version: number): SaveState {
     isDue: false,
     failure: null,
     conflict: null,
+    sizeBytes,
+    savedAt: null,
   };
 }
 

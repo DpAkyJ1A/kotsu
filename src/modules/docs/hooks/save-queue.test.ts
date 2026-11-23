@@ -1,8 +1,9 @@
 import { Editor, type JSONContent } from '@tiptap/core';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { byteLengthOf } from '../core/byte-length';
 import { DocKit } from '../core/doc-kit';
-import { SAVE_AFTER_MS } from '../core/save-limits';
+import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import { statusOf } from '../core/save-state';
 import {
   createSaveQueue,
@@ -60,17 +61,18 @@ function textOf(content: JSONContent) {
   return content.content?.[0]?.content?.[0]?.text ?? '';
 }
 
-function openDoc({ line = 'hablo', version = 1 } = {}) {
+function serverDoc(line: string, version: number, sizeBytes = 0) {
+  return { id: DOC_ID, content: bodyOf(line), version, sizeBytes };
+}
+
+function openDoc({ line = 'hablo', version = 1, sizeBytes = 0 } = {}) {
   const editor = new Editor({
     element: null,
     extensions: [DocKit],
     content: bodyOf(line),
   });
   const { transport, sent, canLeave } = fakeTransport();
-  const queue = createSaveQueue(
-    { id: DOC_ID, content: bodyOf(line), version },
-    transport,
-  );
+  const queue = createSaveQueue(serverDoc(line, version, sizeBytes), transport);
   const disconnect = queue.connect(editor);
   return {
     editor,
@@ -86,6 +88,17 @@ function openDoc({ line = 'hablo', version = 1 } = {}) {
     },
     status: () => statusOf(queue.getState()),
   };
+}
+
+function bytesOfTheBody(editor: Editor) {
+  return byteLengthOf(JSON.stringify(editor.getJSON()));
+}
+
+function openDocWithABodyOfBytes(bytes: number) {
+  const probe = openDoc({ line: 'a' });
+  const withoutTheLine = bytesOfTheBody(probe.editor) - 1;
+  probe.disconnect();
+  return openDoc({ line: 'a'.repeat(bytes - withoutTheLine) });
 }
 
 function waitTheQuiet() {
@@ -201,6 +214,81 @@ describe('one save at a time', () => {
   });
 });
 
+describe('how long the doc is', () => {
+  test('starts from the size the server has for the doc', () => {
+    const doc = openDoc({ sizeBytes: 1200 });
+
+    expect(doc.queue.getState().sizeBytes).toBe(1200);
+  });
+
+  test('measures the body as it sends it, as the server measures it, and sends a body as long as a doc may be', () => {
+    const doc = openDocWithABodyOfBytes(LARGEST_DOC_BYTES - 1);
+
+    doc.type('!');
+    waitTheQuiet();
+
+    expect(doc.queue.getState().sizeBytes).toBe(LARGEST_DOC_BYTES);
+    expect(doc.sent).toHaveLength(1);
+  });
+
+  test('sends nothing longer than a doc may be and says the doc is full, then saves again once the doc is short enough', async () => {
+    const doc = openDocWithABodyOfBytes(LARGEST_DOC_BYTES);
+
+    doc.type('!');
+    waitTheQuiet();
+    expect(doc.sent).toHaveLength(0);
+    expect(doc.status()).toBe('tooLong');
+    expect(doc.queue.getState().sizeBytes).toBe(LARGEST_DOC_BYTES + 1);
+    expect(doc.queue.mustAskBeforeLeaving()).toBe(true);
+
+    const end = doc.editor.state.doc.content.size - 1;
+    doc.editor.commands.deleteRange({ from: end - 2, to: end });
+    waitTheQuiet();
+    expect(doc.sent).toMatchObject([{ version: 1 }]);
+    expect(doc.queue.getState().sizeBytes).toBe(LARGEST_DOC_BYTES - 1);
+
+    await doc.sent[0]?.answer(SAVED(2));
+    expect(doc.status()).toBe('saved');
+  });
+
+  test('takes the size of a newer version from the server along with its text, and not while it keeps its own', () => {
+    const doc = openDoc({ sizeBytes: 100 });
+
+    doc.queue.serverHas(serverDoc('como', 3, 140));
+    expect(doc.queue.getState().sizeBytes).toBe(140);
+
+    doc.type('!');
+    doc.queue.serverHas(serverDoc('como', 4, 900));
+    expect(doc.queue.getState().sizeBytes).toBe(140);
+  });
+});
+
+describe('when the doc was saved', () => {
+  test('is unknown until this tab saves it, set by a save, and kept through a failed one', async () => {
+    vi.setSystemTime(new Date('2026-03-02T09:00:00Z'));
+    const doc = openDoc();
+    expect(doc.queue.getState().savedAt).toBeNull();
+
+    doc.type(', hablas');
+    waitTheQuiet();
+    await doc.sent[0]?.answer(CONFLICT);
+    expect(doc.queue.getState().savedAt).toBeNull();
+
+    doc.queue.choose('later');
+    doc.type('!');
+    waitTheQuiet();
+    await doc.sent[1]?.answer(SAVED(2));
+    const savedAt = Date.now();
+    expect(doc.queue.getState().savedAt).toBe(savedAt);
+
+    vi.advanceTimersByTime(60_000);
+    doc.type('!');
+    waitTheQuiet();
+    await doc.sent[2]?.answer({ ok: false, failure: 'OFFLINE' });
+    expect(doc.queue.getState().savedAt).toBe(savedAt);
+  });
+});
+
 describe('a conflict', () => {
   async function conflicted() {
     const doc = openDoc();
@@ -229,7 +317,7 @@ describe('a conflict', () => {
     waitTheQuiet();
     expect(doc.sent).toHaveLength(1);
 
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('como'), version: 5 });
+    doc.queue.serverHas(serverDoc('como', 5));
     expect(doc.sent[1]).toMatchObject({ version: 5, line: 'hablo, hablas!' });
     expect(doc.editor.getText()).toBe('hablo, hablas!');
 
@@ -241,7 +329,7 @@ describe('a conflict', () => {
     const doc = await conflicted();
 
     doc.queue.choose('reload');
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('como'), version: 5 });
+    doc.queue.serverHas(serverDoc('como', 5));
 
     expect(doc.editor.getText()).toBe('como');
     expect(doc.status()).toBe('saved');
@@ -270,7 +358,7 @@ describe('a newer version from the server', () => {
   test('replaces the text when nothing is unsaved, and the change is not an edit to save', () => {
     const doc = openDoc();
 
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('como'), version: 3 });
+    doc.queue.serverHas(serverDoc('como', 3));
 
     expect(doc.editor.getText()).toBe('como');
     expect(doc.queue.getState().version).toBe(3);
@@ -283,7 +371,7 @@ describe('a newer version from the server', () => {
     const doc = openDoc();
     doc.type(', hablas');
 
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('como'), version: 3 });
+    doc.queue.serverHas(serverDoc('como', 3));
 
     expect(doc.editor.getText()).toBe('hablo, hablas');
     waitTheQuiet();
@@ -295,7 +383,7 @@ describe('a newer version from the server', () => {
     doc.type(', hablas');
     waitTheQuiet();
 
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('como'), version: 3 });
+    doc.queue.serverHas(serverDoc('como', 3));
 
     expect(doc.editor.getText()).toBe('hablo, hablas');
   });
@@ -306,8 +394,8 @@ describe('a newer version from the server', () => {
     waitTheQuiet();
     await doc.sent[0]?.answer(SAVED(2));
 
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('hablo'), version: 2 });
-    doc.queue.serverHas({ id: DOC_ID, content: bodyOf('hablo'), version: 1 });
+    doc.queue.serverHas(serverDoc('hablo', 2));
+    doc.queue.serverHas(serverDoc('hablo', 1));
 
     expect(doc.editor.getText()).toBe('hablo, hablas');
   });

@@ -149,10 +149,11 @@
     "saveStatus": {
       "saving": "Saving…",
       "saved": "Saved",
-      "offline": "Offline, not saved",
-      "tooLong": "Too long to save",
+      "offline": "Offline",
+      "tooLong": "Doc full",
       "notSaved": "Not saved",
-      "storageFull": "Storage full"
+      "storageFull": "Storage full",
+      "almostFull": "Doc almost full"
     },
     "conflict": {
       "title": "This doc changed elsewhere",
@@ -164,7 +165,39 @@
       "title": "Storage full — changes aren't saved",
       "hint": "Delete docs you no longer need, then keep typing and the doc saves.",
       "link": "See what takes space"
-    }
+    },
+    "details": {
+      "label": "Doc details",
+      "summary": {
+        "saving": {
+          "title": "Saving…",
+          "hint": "Changes save a moment after you stop typing."
+        },
+        "saved": {
+          "title": "All changes saved",
+          "hint": "Kotsu saves the doc as you type."
+        },
+        "offline": {
+          "title": "You're offline",
+          "hint": "Your changes stay in this tab and save once you're back online."
+        },
+        "tooLong": {
+          "title": "This doc is full — changes aren't saved",
+          "hint": "Move part of it into a new doc, and this one saves again."
+        },
+        "notSaved": {
+          "title": "Changes aren't saved",
+          "hint": "Keep typing and the doc tries again."
+        }
+      },
+      "almostFull": "This doc is almost full. Start the next part in a new doc.",
+      "size": "Size",
+      "sizeOf": "{size} of {largest}",
+      "words": "Words",
+      "characters": "Characters",
+      "savedAt": "Saved"
+    },
+    "ceiling": "One doc holds up to {largest}, about 100–350 thousand characters."
   },
   "onboarding": {
     "title": "Pick a starting point",

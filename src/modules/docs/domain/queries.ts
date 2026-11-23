@@ -15,6 +15,7 @@ export const getDoc = query(GetDocInput, async (ctx, { id }): Promise<Doc> => {
       id: item.id,
       content: sql<JSONContent | null>`${item.content}`,
       version: item.version,
+      sizeBytes: item.sizeBytes,
     })
     .from(item)
     .where(ownDoc(ctx, id));

@@ -48,6 +48,9 @@ const DOCS: Storage['docs'] = [
   },
 ];
 
+const DOC_CEILING =
+  'One doc holds up to 500 kB, about 100–350 thousand characters.';
+
 function storageOf(usedBytes: number, quotaBytes: number | null = QUOTA) {
   return { usedBytes, quotaBytes, shelves: SHELVES, docs: DOCS };
 }
@@ -55,7 +58,10 @@ function storageOf(usedBytes: number, quotaBytes: number | null = QUOTA) {
 const meta = {
   title: 'Shelves/StorageUsage',
   component: StorageUsage,
-  args: { storage: storageOf(33_300_000) },
+  args: {
+    storage: storageOf(33_300_000),
+    docCeiling: <p className="text-xs text-muted-foreground">{DOC_CEILING}</p>,
+  },
   decorators: [
     (Story) => (
       <div className="w-96 bg-background p-6">
@@ -82,6 +88,7 @@ export const PlentyOfRoom: Story = {
     await expect(
       canvas.getByRole('link', { name: 'Training plan 640 kB' }),
     ).toHaveAttribute('href', `/docs/${DOCS[2]?.id ?? ''}`);
+    await expect(canvas.getByText(DOC_CEILING)).toBeVisible();
   },
 };
 
@@ -130,12 +137,20 @@ export const NothingYet: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Nothing takes room yet.')).toBeVisible();
+    await expect(canvas.getByText(DOC_CEILING)).toBeVisible();
     await expect(canvas.queryByRole('list')).not.toBeInTheDocument();
   },
 };
 
 export const InRussian: Story = {
-  args: { storage: storageOf(41_000_000) },
+  args: {
+    storage: storageOf(41_000_000),
+    docCeiling: (
+      <p className="text-xs text-muted-foreground">
+        В один док помещается до 500 кБ, примерно 100–350 тысяч символов.
+      </p>
+    ),
+  },
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {
     await expect(

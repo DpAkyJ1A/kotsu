@@ -48,11 +48,14 @@ does the same with a click: three headings, bold, italic, strike and code, the t
 line. It lights up what the caret is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B
 **text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at
 the top of the window as you scroll: one row when the page is wide, with the buttons right over the text, two rows when
-it is narrower or the sidebar takes the room. The text saves itself once you pause ("Saving…", "Saved" in that bar,
-or "Offline, not saved" until the connection is back), and once more as you close the tab, which asks before it
-closes only when the text can't be saved. A doc holds up to 500 KB of text and blocks. Each account has room for so
-much (the server sets it); Settings → Storage shows how much is taken on a half-circle meter, amber when it runs low
-and red when it is almost full, with the largest shelves and docs under it. Once it is full, a doc that grows says so
+it is narrower or the sidebar takes the room. The text saves itself once you pause (a grey dot pulses in that bar,
+then a quiet check; a red "!" with "Offline", "Doc full", "Storage full" or "Not saved" when it can't), and once more
+as you close the tab, which asks before it closes only when the text can't be saved. A doc holds up to 500 KB of text
+and blocks, about 100–350 thousand characters; from 80 % a thin bar beside the check shows how full it is, and from
+90 % it says "Doc almost full". A click, a tap or a hover on the status shows the doc's size, words and characters and
+when it was last saved. Each account has room for so much (the server sets it); Settings → Storage shows how much is
+taken on a half-circle meter, amber when it runs low and red when it is almost full, with the largest shelves and docs
+under it and what one doc holds. Once it is full, a doc that grows says so
 in a banner, keeps your text on screen and saves it as soon as there is room again, and a new doc isn't created.
 A tab you come back to shows what another tab saved meanwhile; if both were edited, it asks which text to keep. The title saves itself once you pause or leave it, Enter goes on to the text, and
 the sidebar and the line above it ("Spanish › Verbs") follow at once. On a shelf's page a double-click on a doc's title

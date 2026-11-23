@@ -7,6 +7,7 @@ export type Doc = {
   id: string;
   content: JSONContent | null;
   version: number;
+  sizeBytes: number;
 };
 
 export type SavedDoc = { version: number };

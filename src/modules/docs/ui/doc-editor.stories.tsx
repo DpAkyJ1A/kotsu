@@ -8,8 +8,9 @@ import { SidebarInset, SidebarProvider } from '@/ui/sidebar';
 import { TooltipProvider } from '@/ui/tooltip';
 
 import { saveDocAction } from '../actions';
+import { byteLengthOf } from '../core/byte-length';
 import type { Doc } from '../core/doc';
-import { SAVE_AFTER_MS } from '../core/save-limits';
+import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import { DocEditor } from './doc-editor';
 
 const SPANISH = {
@@ -99,6 +100,10 @@ const VERBS_BODY: JSONContent = {
 
 type DocEditorStoryArgs = { content: Doc['content'] };
 
+function sizeOf(content: Doc['content']) {
+  return content === null ? 0 : byteLengthOf(JSON.stringify(content));
+}
+
 const STORAGE_HREF = {
   pathname: `/docs/${VERBS.id}`,
   query: { settings: 'storage' },
@@ -111,7 +116,7 @@ const meta = {
   globals: { viewport: { value: 'desktop' } },
   render: ({ content }) => (
     <DocEditor
-      doc={{ id: VERBS.id, content, version: 1 }}
+      doc={{ id: VERBS.id, content, version: 1, sizeBytes: sizeOf(content) }}
       title={VERBS.title}
       place={{ doc: VERBS, shelf: SPANISH }}
       storageHref={STORAGE_HREF}
@@ -782,7 +787,12 @@ const A_LONG_DOC = {
 function withLongNames({ content }: DocEditorStoryArgs) {
   return (
     <DocEditor
-      doc={{ id: A_LONG_DOC.id, content, version: 1 }}
+      doc={{
+        id: A_LONG_DOC.id,
+        content,
+        version: 1,
+        sizeBytes: sizeOf(content),
+      }}
       title={A_LONG_DOC.title}
       place={{ doc: A_LONG_DOC, shelf: A_LONG_SHELF }}
       storageHref={STORAGE_HREF}
@@ -1044,10 +1054,9 @@ export const SaysWhenItCannotSaveOfflineAndAsksBeforeLeaving: Story = {
 
     await userEvent.keyboard(' Hablaré.');
 
-    await waitFor(
-      () => expect(saveStatus()).toHaveTextContent('Offline, not saved'),
-      { timeout: SAVED_AFTER_AN_ANSWER_MS },
-    );
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Offline'), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
     await expect(saveDocAction).not.toHaveBeenCalled();
     await expect(isLeavingStopped()).toBe(true);
 
@@ -1094,6 +1103,42 @@ export const SaysWhenStorageIsFullKeepsTheTextAndSavesOnceThereIsRoom: Story = {
     await expect(
       screen.queryByText("Storage full — changes aren't saved"),
     ).not.toBeInTheDocument();
+  },
+};
+
+function aDocOfBytes(bytes: number): JSONContent {
+  const empty = sizeOf({ type: 'doc', content: [paragraph(text('-'))] }) - 1;
+  return {
+    type: 'doc',
+    content: [paragraph(text('a'.repeat(bytes - empty)))],
+  };
+}
+
+export const WarnsWhenTheDocIsAlmostFullAndSendsNothingOverTheCap: Story = {
+  args: { content: aDocOfBytes((LARGEST_DOC_BYTES * 95) / 100) },
+  play: async ({ canvas }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await expect(saveStatus()).toHaveTextContent('Doc almost full');
+
+    editorOf(body).commands.insertContentAt(
+      editorOf(body).state.doc.content.size - 1,
+      'b'.repeat((LARGEST_DOC_BYTES * 6) / 100),
+    );
+
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Doc full'), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
+    await expect(saveStatus()).not.toHaveTextContent('Doc almost full');
+    await expect(saveDocAction).not.toHaveBeenCalled();
+    await expect(isLeavingStopped()).toBe(true);
+
+    editorOf(body).commands.undo();
+
+    await waitFor(() => expect(saveDocAction).toHaveBeenCalledOnce(), {
+      timeout: SAVED_AFTER_AN_ANSWER_MS,
+    });
+    await waitFor(() => expect(saveStatus()).toHaveTextContent('Saved'));
+    await expect(saveStatus()).toHaveTextContent('Doc almost full');
   },
 };
 

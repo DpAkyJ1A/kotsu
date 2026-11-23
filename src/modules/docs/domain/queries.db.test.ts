@@ -45,7 +45,9 @@ async function insertItem(ctx: Ctx, kind: 'doc' | 'sheet' = 'doc') {
 }
 
 describe('getDoc', () => {
-  test('gives a new doc as an empty body at version 1', async ({ db }) => {
+  test('gives a new doc as an empty body at version 1, taking no room', async ({
+    db,
+  }) => {
     const ada = await signIn(db, 'ada@example.com');
     const id = await insertItem(ada);
 
@@ -53,23 +55,25 @@ describe('getDoc', () => {
       id,
       content: null,
       version: 1,
+      sizeBytes: 0,
     });
   });
 
-  test('gives a saved doc its body and version as they were saved', async ({
+  test('gives a saved doc its body, version and size as they were saved', async ({
     db,
   }) => {
     const ada = await signIn(db, 'ada@example.com');
     const id = await insertItem(ada);
     await db
       .update(item)
-      .set({ content: SAVED_BODY, version: 3 })
+      .set({ content: SAVED_BODY, version: 3, sizeBytes: 2048 })
       .where(eq(item.id, id));
 
     expect(await getDoc(ada, { id })).toEqual({
       id,
       content: SAVED_BODY,
       version: 3,
+      sizeBytes: 2048,
     });
   });
 

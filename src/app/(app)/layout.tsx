@@ -15,6 +15,7 @@ import {
   loadGoogleLink,
   loadSettings,
 } from '@/modules/account/loaders';
+import { DocCeiling } from '@/modules/docs';
 import { onboardingPath } from '@/modules/onboarding';
 import { isOnboarded } from '@/modules/onboarding/loaders';
 import {
@@ -157,7 +158,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
         account={account}
         settings={settings}
         googleLink={googleLink}
-        storage={<StorageUsage storage={storage} />}
+        storage={<StorageUsage storage={storage} docCeiling={<DocCeiling />} />}
       />
       <SessionRefresh />
       <Toaster />

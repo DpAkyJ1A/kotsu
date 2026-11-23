@@ -49,7 +49,15 @@ export function DocEditor({ doc, title, place, storageHref }: DocEditorProps) {
     <div className="@container flex flex-1 flex-col">
       <DocBar
         place={<DocBreadcrumb {...place} />}
-        status={<DocSaveStatus status={saving.status} />}
+        status={
+          <DocSaveStatus
+            status={saving.status}
+            sizeBytes={saving.sizeBytes}
+            savedAt={saving.savedAt}
+            editor={editor}
+            storageHref={storageHref}
+          />
+        }
         toolbar={<DocToolbar editor={editor} />}
       />
       <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6">

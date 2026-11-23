@@ -101,6 +101,11 @@ test('Settings → Storage shows the room taken against the quota and the larges
   await expect(
     settings.getByRole('link', { name: /^Spanish 1\.\d kB$/ }),
   ).toBeVisible();
+  await expect(
+    settings.getByText(
+      'One doc holds up to 500 kB, about 100–350 thousand characters.',
+    ),
+  ).toBeVisible();
 
   await settings.getByRole('link', { name: /^Verbs 1\.\d kB$/ }).click();
 

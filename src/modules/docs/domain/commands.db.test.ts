@@ -138,10 +138,12 @@ describe('saveDoc', () => {
     });
 
     expect(second).toEqual({ version: 3 });
+    const content = docOf(paragraph('hablo, hablas'));
     expect(await getDoc(ada, { id })).toEqual({
       id,
-      content: docOf(paragraph('hablo, hablas')),
+      content,
       version: 3,
+      sizeBytes: new TextEncoder().encode(JSON.stringify(content)).byteLength,
     });
   });
 

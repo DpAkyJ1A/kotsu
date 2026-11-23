@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import type { PaletteColor } from '@/lib/palette-colors';
 
@@ -10,9 +11,9 @@ import { ShelfDot } from './shelf-dot';
 import { StorageGauge } from './storage-gauge';
 import { useFormatSize } from './use-format-size';
 
-type StorageUsageProps = { storage: Storage };
+type StorageUsageProps = { storage: Storage; docCeiling: ReactNode };
 
-export function StorageUsage({ storage }: StorageUsageProps) {
+export function StorageUsage({ storage, docCeiling }: StorageUsageProps) {
   const t = useTranslations('shelves.storage');
   const formatSize = useFormatSize();
   const { usedBytes, quotaBytes, shelves, docs } = storage;
@@ -57,9 +58,12 @@ export function StorageUsage({ storage }: StorageUsageProps) {
           )}
         </>
       )}
-      <p className="text-xs text-muted-foreground">
-        {t('rowCost', { size: formatSize(ITEM_ROW_BYTES) })}
-      </p>
+      <div className="grid gap-1">
+        {docCeiling}
+        <p className="text-xs text-muted-foreground">
+          {t('rowCost', { size: formatSize(ITEM_ROW_BYTES) })}
+        </p>
+      </div>
     </div>
   );
 }

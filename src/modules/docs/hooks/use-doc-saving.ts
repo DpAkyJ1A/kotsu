@@ -17,6 +17,16 @@ export function useDocSaving(editor: Editor | null, doc: Doc) {
     () => statusOf(queue.getState()),
     () => statusOf(queue.getState()),
   );
+  const sizeBytes = useSyncExternalStore(
+    queue.subscribe,
+    () => queue.getState().sizeBytes,
+    () => queue.getState().sizeBytes,
+  );
+  const savedAt = useSyncExternalStore(
+    queue.subscribe,
+    () => queue.getState().savedAt,
+    () => null,
+  );
   const isAskingAboutAConflict = useSyncExternalStore(
     queue.subscribe,
     () => queue.getState().conflict === 'asking',
@@ -41,6 +51,8 @@ export function useDocSaving(editor: Editor | null, doc: Doc) {
 
   return {
     status,
+    sizeBytes,
+    savedAt,
     isAskingAboutAConflict,
     reload: () => {
       choose('reload');

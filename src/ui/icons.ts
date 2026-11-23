@@ -13,6 +13,7 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronUpIcon,
+  CircleAlertIcon,
   ClockIcon,
   CodeIcon,
   ContrastIcon,
