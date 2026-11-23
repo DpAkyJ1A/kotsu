@@ -10,20 +10,27 @@ import { AppError, type AppErrorCode } from './domain';
 export type ActionResult<Result> =
   { ok: true; data: Result } | { ok: false; error: { code: AppErrorCode } };
 
-export function defineAction<Input, Result>(
-  run: (ctx: Ctx, input: Input) => Promise<Result>,
-) {
+type Run<Input, Result> = (ctx: Ctx, input: Input) => Promise<Result>;
+
+export function defineAction<Input, Result>(run: Run<Input, Result>) {
   return async (input: Input): Promise<ActionResult<Result>> => {
-    const ctx = await getCtx();
-    try {
-      const data = await run(ctx, input);
-      refresh();
-      return { ok: true, data };
-    } catch (error) {
-      unstable_rethrow(error);
-      return { ok: false, error: { code: codeOf(error) } };
-    }
+    const result = await answer(run, input);
+    if (result.ok) refresh();
+    return result;
   };
+}
+
+export async function answer<Input, Result>(
+  run: Run<Input, Result>,
+  input: Input,
+): Promise<ActionResult<Result>> {
+  const ctx = await getCtx();
+  try {
+    return { ok: true, data: await run(ctx, input) };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { ok: false, error: { code: codeOf(error) } };
+  }
 }
 
 function codeOf(error: unknown): AppErrorCode {

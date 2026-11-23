@@ -215,7 +215,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/server/**', 'src/modules/*/{api,loaders,mcp}.ts'],
+    files: ['src/server/**', 'src/modules/*/{api,loaders,mcp,routes}.ts'],
     ignores: [
       'src/server/**/*.test.ts',
       // drizzle-kit loads the schema in plain Node, where `server-only` throws
@@ -260,14 +260,20 @@ export default defineConfig([
             allow(
               element('app'),
               element('app', ...SHARED_FOLDERS),
-              door(['index.ts', 'actions.ts', 'loaders.ts', 'mcp.ts']),
+              door([
+                'index.ts',
+                'actions.ts',
+                'loaders.ts',
+                'mcp.ts',
+                'routes.ts',
+              ]),
             ),
             allow(
               door(['index.ts']),
               ownModule('module-core', 'module-ui', 'module-hooks'),
             ),
             allow(
-              door(['api.ts', 'loaders.ts', 'mcp.ts']),
+              door(['api.ts', 'loaders.ts', 'mcp.ts', 'routes.ts']),
               ownModule('module-core', 'module-domain'),
               element('server', 'lib'),
             ),

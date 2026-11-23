@@ -49,6 +49,39 @@ function bodyOf(page: Page) {
   return page.getByRole('textbox', { name: 'Doc text' });
 }
 
+function saveStatusOf(page: Page) {
+  return page.getByRole('main').getByRole('status');
+}
+
+async function typeAndSave(page: Page, text: string) {
+  await page.keyboard.type(text);
+  await expect(saveStatusOf(page)).toHaveText('Saving…');
+  await expect(saveStatusOf(page)).toHaveText('Saved');
+}
+
+async function openInASecondTab(page: Page) {
+  const second = await page.context().newPage();
+  await second.goto(page.url());
+  await expect(bodyOf(second)).toHaveAttribute('aria-placeholder', /^Start/);
+  return second;
+}
+
+async function hideAndShow(page: Page) {
+  await page.evaluate(() => {
+    for (const visibility of ['hidden', 'visible']) {
+      Object.defineProperty(document, 'visibilityState', {
+        value: visibility,
+        configurable: true,
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }
+  });
+}
+
+function conflictDialogOf(page: Page) {
+  return page.getByRole('alertdialog', { name: 'This doc changed elsewhere' });
+}
+
 async function createDocOnANewShelf(page: Page, shelf: string, doc: string) {
   const sidebar = sidebarShelvesOf(page);
   await sidebar.getByRole('button', { name: 'New shelf' }).click();
@@ -277,4 +310,188 @@ test('a doc that is not there, or not a doc id at all, is not found', async ({
     const response = await page.goto(`/docs/${id}`);
     expect(response?.status()).toBe(404);
   }
+});
+
+test.describe('saving', () => {
+  test('the text saves once the typing pauses, says Saved, and is there after a reload', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    await expect(saveStatusOf(page)).toHaveText('Saved');
+
+    await typeAndSave(page, 'hablo, hablas');
+    await page.keyboard.press('Enter');
+    await typeAndSave(page, '[] Conjugate ten verbs');
+
+    await page.reload();
+    await expect(bodyOf(page).locator('p')).toHaveText([
+      'hablo, hablas',
+      'Conjugate ten verbs',
+      '',
+    ]);
+    await expect(
+      bodyOf(page).getByRole('checkbox', { name: 'Conjugate ten verbs' }),
+    ).toBeVisible();
+  });
+
+  test('closing the tab right after typing keeps the text, and asks nothing', async ({
+    page,
+    context,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    const docUrl = page.url();
+    let isAsked = false;
+    page.on('dialog', () => {
+      isAsked = true;
+    });
+
+    await page.keyboard.type('hablo, hablas');
+    await page.close({ runBeforeUnload: true });
+
+    const next = await context.newPage();
+    await expect(async () => {
+      await next.goto(docUrl);
+      await expect(bodyOf(next)).toHaveText('hablo, hablas', {
+        timeout: 1_000,
+      });
+    }).toPass();
+    expect(isAsked).toBe(false);
+  });
+
+  test('offline, the doc says it is not saved, asks before the tab closes, and saves once back online', async ({
+    page,
+    context,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    await context.setOffline(true);
+
+    await page.keyboard.type('hablo');
+    await expect(saveStatusOf(page)).toHaveText('Offline, not saved');
+    const asked = page.waitForEvent('dialog');
+    await page.close({ runBeforeUnload: true });
+    const question = await asked;
+    expect(question.type()).toBe('beforeunload');
+    await question.dismiss();
+
+    await context.setOffline(false);
+    await expect(saveStatusOf(page)).toHaveText('Saved');
+    await page.reload();
+    await expect(bodyOf(page)).toHaveText('hablo');
+  });
+
+  test('a tab behind the other asks what to keep when it saves, and Keep mine saves its text over the other', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    const second = await openInASecondTab(page);
+
+    await typeAndSave(page, 'hablo, hablas');
+    await bodyOf(second).click();
+    await second.keyboard.type('como, comes');
+
+    const dialog = conflictDialogOf(second);
+    await expect(dialog).toBeVisible();
+    await expect(saveStatusOf(page)).toHaveText('Saved');
+    await dialog.getByRole('button', { name: 'Keep mine' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(saveStatusOf(second)).toHaveText('Saved');
+    await expect(bodyOf(second)).toHaveText('como, comes');
+
+    await page.reload();
+    await expect(bodyOf(page)).toHaveText('como, comes');
+  });
+
+  test('Reload in that question takes the text the other tab saved', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    const second = await openInASecondTab(page);
+
+    await typeAndSave(page, 'hablo, hablas');
+    await bodyOf(second).click();
+    await second.keyboard.type('como, comes');
+    const dialog = conflictDialogOf(second);
+    await dialog.getByRole('button', { name: 'Reload' }).click();
+
+    await expect(bodyOf(second)).toHaveText('hablo, hablas');
+    await expect(saveStatusOf(second)).toHaveText('Saved');
+    await bodyOf(second).press('End');
+    await typeAndSave(second, ', habla');
+    await page.reload();
+    await expect(bodyOf(page)).toHaveText('hablo, hablas, habla');
+  });
+
+  test('a tab that comes back into view with nothing unsaved takes the newer text without asking', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    await expect(bodyOf(page)).toBeFocused();
+    const second = await openInASecondTab(page);
+    await typeAndSave(page, 'hablo, hablas');
+
+    await hideAndShow(second);
+
+    await expect(bodyOf(second)).toHaveText('hablo, hablas');
+    await expect(conflictDialogOf(second)).toBeHidden();
+    await bodyOf(second).click();
+    await second.keyboard.press('End');
+    await typeAndSave(second, ', habla');
+    await expect(conflictDialogOf(second)).toBeHidden();
+  });
+
+  test('the save route takes only saves sent from the page itself', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    const id = page.url().split('/').at(-1);
+
+    const response = await page.request.post('/api/docs/save', {
+      data: {
+        id,
+        version: 1,
+        content: {
+          type: 'doc',
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'hola' }] },
+          ],
+        },
+      },
+    });
+
+    expect(response.status()).toBe(403);
+    await page.reload();
+    await expect(bodyOf(page)).toHaveAttribute('aria-placeholder', /^Start/);
+  });
+
+  test('the save route takes no more than a closing tab sends', async ({
+    page,
+  }) => {
+    await createDocOnANewShelf(page, 'Spanish', 'Verbs');
+    const id = page.url().split('/').at(-1);
+    const saveOf = (text: string) => ({
+      headers: { 'sec-fetch-site': 'same-origin' },
+      data: {
+        id,
+        version: 1,
+        content: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+        },
+      },
+    });
+
+    const tooLong = await page.request.post(
+      '/api/docs/save',
+      saveOf('hablo '.repeat(12_000)),
+    );
+    const fits = await page.request.post('/api/docs/save', saveOf('hablo'));
+
+    expect(tooLong.status()).toBe(413);
+    expect(await fits.json()).toEqual({ ok: true, data: { version: 2 } });
+  });
 });

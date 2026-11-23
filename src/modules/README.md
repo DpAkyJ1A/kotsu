@@ -12,6 +12,7 @@ data access. See [ADR 0001](../../docs/adr/0001-modular-monolith.md) for why.
 | `loaders.ts` | reads for Server Components                                | server only                    |
 | `mcp.ts`     | MCP tool definitions                                       | server only                    |
 | `api.ts`     | functions that other modules' server code may call         | server only                    |
+| `routes.ts`  | Route Handlers that `src/app/api` re-exports               | server only                    |
 | `core/`      | types, Zod schemas and pure rules                          | client and server              |
 | `domain/`    | queries, commands and DTOs                                 | server only                    |
 | `ui/`        | components                                                 | client and server              |

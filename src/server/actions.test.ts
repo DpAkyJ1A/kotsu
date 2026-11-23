@@ -2,7 +2,7 @@ import { refresh } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { defineAction } from './actions';
+import { answer, defineAction } from './actions';
 import { AppError } from './domain';
 
 vi.mock('next/cache', () => ({ refresh: vi.fn() }));
@@ -54,5 +54,21 @@ describe('defineAction', () => {
     });
 
     await expect(action(undefined)).rejects.toThrow('NEXT_REDIRECT');
+  });
+});
+
+describe('answer', () => {
+  test('runs for the signed-in user and answers as an action does, without refreshing a page, so a route handler can use it', async () => {
+    const run = (ctx: { userId: string }, name: string) =>
+      Promise.resolve(`${name} for ${ctx.userId}`);
+
+    expect(await answer(run, 'Dark')).toEqual({
+      ok: true,
+      data: 'Dark for ada',
+    });
+    expect(
+      await answer(() => Promise.reject(new AppError('CONFLICT')), undefined),
+    ).toEqual({ ok: false, error: { code: 'CONFLICT' } });
+    expect(refresh).not.toHaveBeenCalled();
   });
 });

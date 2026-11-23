@@ -1,12 +1,13 @@
 import 'server-only';
 
 import type { JSONContent } from '@tiptap/core';
-import { and, eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 import { item } from '@/server/db/schema/shelves';
 import { AppError, query } from '@/server/domain';
 
 import { type Doc, GetDocInput } from '../core/doc';
+import { ownDoc } from './own-doc';
 
 export const getDoc = query(GetDocInput, async (ctx, { id }): Promise<Doc> => {
   const [doc] = await ctx.db
@@ -16,9 +17,7 @@ export const getDoc = query(GetDocInput, async (ctx, { id }): Promise<Doc> => {
       version: item.version,
     })
     .from(item)
-    .where(
-      and(eq(item.userId, ctx.userId), eq(item.id, id), eq(item.kind, 'doc')),
-    );
+    .where(ownDoc(ctx, id));
   if (!doc) throw new AppError('NOT_FOUND');
   return doc;
 });
