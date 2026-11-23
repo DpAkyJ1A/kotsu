@@ -34,7 +34,7 @@ export function DocBreadcrumb({
       </Link>
       <nav aria-label={t('breadcrumb')} className="min-w-0 max-md:hidden">
         <ol className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
-          <li className="shrink-0">
+          <li className="min-w-0">
             <Link
               href={shelfPath(shelf.id)}
               className="block max-w-60 truncate rounded-xs transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

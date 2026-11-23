@@ -40,10 +40,7 @@ export function DocToolbar({ editor }: DocToolbarProps) {
   });
 
   return (
-    <Toolbar
-      aria-label={t('label')}
-      className="sticky top-0 z-10 -mx-2 mb-4 border-b bg-background py-1.5 max-md:hidden"
-    >
+    <Toolbar aria-label={t('label')}>
       {GROUPS.map((group, index) => (
         <Fragment key={group.join()}>
           {index > 0 && <ToolbarSeparator />}

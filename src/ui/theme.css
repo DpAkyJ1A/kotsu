@@ -151,6 +151,20 @@
   }
 }
 
+@utility border-b-on-scroll {
+  border-bottom-width: 1px;
+  border-bottom-color: transparent;
+  animation: border-on-scroll linear both;
+  animation-timeline: scroll();
+  animation-range: 0 1px;
+}
+
+@keyframes border-on-scroll {
+  to {
+    border-bottom-color: var(--border);
+  }
+}
+
 @layer base {
   :root {
     color-scheme: light dark;

@@ -14,6 +14,10 @@ import { findSlashBlocks, type SlashBlock } from '../core/slash-blocks';
 import { ICONS } from './format-icons';
 
 const STEPS: Partial<Record<string, number>> = { ArrowDown: 1, ArrowUp: -1 };
+const SCROLL_THE_LIST_ONLY = {
+  block: 'nearest',
+  container: 'nearest',
+} as const;
 
 export type SlashMenuListHandle = {
   onKeyDown: (event: KeyboardEvent) => boolean;
@@ -71,7 +75,7 @@ export function SlashMenuList({
   useEffect(() => {
     listRef.current
       ?.querySelector('[aria-selected="true"]')
-      ?.scrollIntoView({ block: 'nearest' });
+      ?.scrollIntoView(SCROLL_THE_LIST_ONLY);
   }, [activeId]);
 
   return (

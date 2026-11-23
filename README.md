@@ -45,9 +45,11 @@ so does the empty line you are on: "Type / for blocks"): what follows narrows it
 that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves the text as it is. A block picked on an
 empty line takes that line; on a line with text it goes below it. On a wider screen a row of buttons above the title
 does the same with a click: three headings, bold, italic, strike and code, the three lists, a quote, a code block and a
-line. It stays at the top of the window as you scroll, lights up what the caret is in, and each button's tooltip shows
-its shortcut and its Markdown ("Bold ⌘B **text**"). The text saves itself once you pause ("Saving…", "Saved" in the
-corner, or "Offline, not saved" until the connection is back), and once more as you close the tab, which asks before it
+line. It lights up what the caret is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B
+**text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at
+the top of the window as you scroll: one row when the page is wide, with the buttons right over the text, two rows when
+it is narrower or the sidebar takes the room. The text saves itself once you pause ("Saving…", "Saved" in that bar,
+or "Offline, not saved" until the connection is back), and once more as you close the tab, which asks before it
 closes only when the text can't be saved. A doc holds up to 500 KB of text and blocks. Each account has room for so
 much (the server sets it); Settings → Storage shows how much is taken on a half-circle meter, amber when it runs low
 and red when it is almost full, with the largest shelves and docs under it. Once it is full, a doc that grows says so
