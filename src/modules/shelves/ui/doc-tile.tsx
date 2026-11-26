@@ -11,6 +11,7 @@ import { FileTextIcon, GripVerticalIcon } from '@/ui/icons';
 
 import { docPath } from '../core/doc-path';
 import { type Item, ITEM_TITLE_MAX_LENGTH } from '../core/item';
+import type { DocCardCounts } from '../core/shelf';
 import { DOC } from '../hooks/sortable-kinds';
 import { useItems } from '../hooks/use-items';
 import { useOpenUnlessDoubleClicked } from '../hooks/use-open-unless-double-clicked';
@@ -21,9 +22,14 @@ import { NameInput } from './name-input';
 const TILE_CLASS_NAME =
   'flex aspect-4/3 flex-col justify-between gap-3 rounded-xl border bg-card p-3';
 
-type DocTileProps = { doc: Item; index: number; onLeave: () => void };
+type DocTileProps = {
+  doc: Item;
+  cardCounts: DocCardCounts | undefined;
+  index: number;
+  onLeave: () => void;
+};
 
-export function DocTile({ doc, index, onLeave }: DocTileProps) {
+export function DocTile({ doc, cardCounts, index, onLeave }: DocTileProps) {
   const t = useTranslations('shelves');
   const items = useItems();
   const linkRef = useRef<HTMLAnchorElement>(null);
@@ -76,11 +82,18 @@ export function DocTile({ doc, index, onLeave }: DocTileProps) {
           onClick={handleClick}
         >
           <DocIcon />
-          <span
-            ref={titleRef}
-            className="line-clamp-2 text-sm font-semibold wrap-break-word"
-          >
-            {doc.title}
+          <span className="grid gap-0.5">
+            <span
+              ref={titleRef}
+              className="line-clamp-2 text-sm font-semibold wrap-break-word"
+            >
+              {doc.title}
+            </span>
+            {cardCounts && (
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {t('docs.cardCounts', cardCounts)}
+              </span>
+            )}
           </span>
         </Link>
       )}

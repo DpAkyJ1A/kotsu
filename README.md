@@ -35,8 +35,9 @@ then jump to a section, open Settings or switch between the light and dark theme
 the sidebar lists your shelves, and on a phone the Shelves tab does. The + makes one (type a name, Enter), each shelf
 gets its own colour, and its ⋯ menu renames it, recolours it or deletes it, with Undo for five seconds. Drag a shelf to
 reorder (on a phone, press and hold it first; from the keyboard, Tab to its move handle, then Space and the arrows). A
-shelf opens its own page with its docs as tiles. The dashed + tile first in line makes a doc: type its title, Enter, and
-the doc opens with the caret in its text (on a phone, tap the page: the keyboard opens only for a tap). A doc is a
+shelf opens its own page with its docs as tiles, each counting its doc's cards and those to review ("24 cards · 8 to
+review"). The dashed + tile first in line makes a doc: type its title, Enter, and the doc opens with the caret in its
+text (on a phone, tap the page: the keyboard opens only for a tap). A doc is a
 column of text with its title on top, and a click or tap anywhere under the text goes on at its end: type and use
 Markdown as you go (`#`, `##` and `###` for headings, `-` or `*` for a list, `1.` for a numbered one, `[]` for a
 checklist, `>` for a quote, three backticks for code, `---` for a line, `??` for a card, and `**bold**`, `*italic*`, `~~strike~~`,

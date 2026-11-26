@@ -17,4 +17,5 @@ through `syncCards(ctx, itemId, cards)` (`api.ts`), inside its own transaction, 
 
 So a card cut and pasted back (or brought back with ⌘Z) within seven days keeps its status, a copy in another doc is a
 new row, and one back after more than seven days is new again. Readers see only live cards, through
-`domain/live-cards.ts`; `cardStatusesIn(ctx, itemId)` gives the statuses of a doc's live cards by block id.
+`domain/live-cards.ts`, and other modules through `api.ts` (`getShelf` in `shelves` counts a shelf's cards with it);
+`cardStatusesIn(ctx, itemId)` gives the statuses of a doc's live cards by block id.

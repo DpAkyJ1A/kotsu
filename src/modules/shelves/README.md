@@ -20,7 +20,7 @@ on another shelf, answers `NOT_FOUND`.
 The doors: `api.ts` gives other modules' domain code `createShelf` (onboarding makes a template's shelves with it),
 `hasRoomForBody` (the doc save adds it to its `update … where`, so it only fits a statement on `item`) and
 `ITEM_ROW_BYTES` (the docs tests count with it), `actions.ts` makes a Server Action
-of each shelf and item command, `loaders.ts` gives pages `loadNavigation` and `loadStorage`, and
+of each shelf and item command, `loaders.ts` gives pages `loadNavigation`, `loadShelf` and `loadStorage`, and
 `index.ts` gives the app layout `ShelvesProvider`, `ShelfNav` (the sidebar's tree) and the folded-shelves cookie
 (`COLLAPSED_SHELVES_COOKIE`, `collapsedShelvesFrom`) and `StorageUsage` (Settings → Storage), the pages `ShelvesScreen` (the
 Shelves tab), `ShelfHeading`, `ShelfScreen` (a shelf's docs), `DocBreadcrumb` (a doc page's header) and `docPath`, and other modules
@@ -52,6 +52,14 @@ Server Actions one at a time, so every earlier change has reached the server bef
 tile's title renames the doc in place, like a shelf's name; since the tile is a link that leaves the page, a click on
 its title waits 300 ms for a second one before the doc opens (`useOpenUnlessDoubleClicked`). A click anywhere else on the tile, Enter and a ⌘-click open at once, and touch
 screens (whose ⋯ buttons are always shown) never wait.
+
+Under a tile's title a line counts the doc's cards and those to review ("24 cards · 8 to review"): a doc without cards
+has no line, and "to review" is left out at zero. The counts come from `getShelf` (`loadShelf`), which counts the live
+cards of each doc on the shelf with `liveCards` from `cards/api.ts` and lists only the docs that have some. The tiles
+still come from the shared list and find their counts by the doc's id, so a doc made a moment ago, or one just moved
+here from the sidebar, has none until the page is loaded again. A
+missing shelf or another user's answers `NOT_FOUND`, an id that isn't a uuid `VALIDATION`, and the page turns both into
+a 404.
 
 In the sidebar each shelf lists its docs under its row (`ShelfTree` → `ShelfBranch` → `DocRow`). Every shelf starts
 open, its docs one step in along a thin line that falls from the shelf's dot. On hover or keyboard focus the dot of a
@@ -100,4 +108,4 @@ a thousand. Under the lists it says what one doc holds, a line `docs` draws (`Do
 the quota is soft by one save.
 
 - **Writes:** `shelf`; `item` except its body (`content`, `plain_text`, `version`, `size_bytes`).
-- **Depends on:** no other module.
+- **Depends on:** cards (`liveCards`, to count a shelf's cards).

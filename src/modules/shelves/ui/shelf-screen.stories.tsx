@@ -18,7 +18,7 @@ import {
   renameItemAction,
 } from '../actions';
 import type { Item } from '../core/item';
-import type { Shelf } from '../core/shelf';
+import type { CardCountsByDoc, Shelf } from '../core/shelf';
 import { DOUBLE_CLICK_WAIT_MS } from '../hooks/use-open-unless-double-clicked';
 import { ShelfScreen } from './shelf-screen';
 import {
@@ -47,31 +47,49 @@ function doc(id: string, shelf: Shelf, title: string): Item {
 }
 
 const VERBS = doc('019a9c3e-0101-7000-8000-000000000101', SPANISH, 'Verbs');
-const SPANISH_DOCS = [
-  VERBS,
-  doc('019a9c3e-0102-7000-8000-000000000102', SPANISH, 'Kitchen & food'),
-  doc(
-    '019a9c3e-0103-7000-8000-000000000103',
-    SPANISH,
-    'Travel phrases for asking the way, buying tickets and checking into a hostel',
-  ),
-  doc('019a9c3e-0104-7000-8000-000000000104', SPANISH, 'Numbers 1–100'),
-];
+const KITCHEN = doc(
+  '019a9c3e-0102-7000-8000-000000000102',
+  SPANISH,
+  'Kitchen & food',
+);
+const TRAVEL = doc(
+  '019a9c3e-0103-7000-8000-000000000103',
+  SPANISH,
+  'Travel phrases for asking the way, buying tickets and checking into a hostel',
+);
+const NUMBERS = doc(
+  '019a9c3e-0104-7000-8000-000000000104',
+  SPANISH,
+  'Numbers 1–100',
+);
+const SPANISH_DOCS = [VERBS, KITCHEN, TRAVEL, NUMBERS];
+const CARD_COUNTS: CardCountsByDoc = {
+  [KITCHEN.id]: { cards: 24, toReview: 8 },
+  [TRAVEL.id]: { cards: 1, toReview: 1 },
+  [NUMBERS.id]: { cards: 100, toReview: 0 },
+};
 const CHORDS = doc('019a9c3e-0201-7000-8000-000000000201', GUITAR, 'Chords');
 
 const UUID_V7 = /^[\da-f]{8}-[\da-f]{4}-7/;
 
-type ShelfScreenStoryArgs = { shelves: Shelf[]; items: Item[] };
+type ShelfScreenStoryArgs = {
+  shelves: Shelf[];
+  items: Item[];
+  cardCounts: CardCountsByDoc;
+};
 
 const meta = {
   title: 'Shelves/ShelfScreen',
   args: {
     shelves: [SPANISH, GUITAR, RUNNING],
     items: [...SPANISH_DOCS, CHORDS],
+    cardCounts: CARD_COUNTS,
   },
   parameters: { nextjs: { appDirectory: true } },
   globals: { viewport: { value: 'desktop' } },
-  render: () => <ShelfScreen shelfId={SPANISH.id} />,
+  render: ({ cardCounts }) => (
+    <ShelfScreen shelfId={SPANISH.id} cardCounts={cardCounts} />
+  ),
   decorators: [
     (Story) => (
       <ShelvesFromServer>
@@ -99,6 +117,34 @@ export const OnAPhone: Story = {
 };
 
 export const InRussian: Story = { globals: { locale: 'ru' } };
+
+export const ShowsEachDocsCardsAndHowManyAreToReview: Story = {
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('link', {
+        name: 'Kitchen & food 24 cards · 8 to review',
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole('link', {
+        name: /^Travel phrases .* 1 card · 1 to review$/,
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole('link', { name: 'Numbers 1–100 100 cards' }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('link', { name: 'Verbs' })).toBeVisible();
+  },
+};
+
+export const CountsCardsInRussian: Story = {
+  globals: { locale: 'ru' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('24 карточки · 8 повторить')).toBeVisible();
+    await expect(canvas.getByText('1 карточка · 1 повторить')).toBeVisible();
+    await expect(canvas.getByText('100 карточек')).toBeVisible();
+  },
+};
 
 export const PutsTheNewDocTileFirst: Story = {
   play: async ({ canvas }) => {
@@ -441,12 +487,10 @@ export const MovesATileWithTheKeyboard: Story = {
       shelfId: SPANISH.id,
       after: SPANISH_DOCS[1]?.id,
     });
-    await expect(
-      canvas
-        .getAllByRole('link')
-        .slice(0, 2)
-        .map((link) => link.textContent),
-    ).toEqual(['Kitchen & food', 'Verbs']);
+    await expect(canvas.getAllByRole('link').slice(0, 2)).toEqual([
+      canvas.getByRole('link', { name: /^Kitchen & food/ }),
+      canvas.getByRole('link', { name: 'Verbs' }),
+    ]);
     await expect(getRouter().push).not.toHaveBeenCalled();
   },
 };

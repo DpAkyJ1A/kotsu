@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { ShelfHeading, ShelfScreen } from '@/modules/shelves';
-import { loadNavigation } from '@/modules/shelves/loaders';
+import { loadNavigation, loadShelf } from '@/modules/shelves/loaders';
 import { ChevronLeftIcon } from '@/ui/icons';
 import { PageHeader } from '@/ui/page-header';
 
@@ -26,7 +26,12 @@ export async function generateMetadata({
 export default async function ShelfPage({
   params,
 }: PageProps<'/shelves/[shelfId]'>) {
-  const [shelf, t] = await Promise.all([shelfOf(params), getTranslations()]);
+  const { shelfId } = await params;
+  const [shelf, { cardCounts }, t] = await Promise.all([
+    shelfOf(params),
+    loadShelf(shelfId),
+    getTranslations(),
+  ]);
 
   return (
     <>
@@ -40,7 +45,7 @@ export default async function ShelfPage({
         </Link>
         <ShelfHeading shelf={shelf} />
       </PageHeader>
-      <ShelfScreen shelfId={shelf.id} />
+      <ShelfScreen shelfId={shelf.id} cardCounts={cardCounts} />
     </>
   );
 }

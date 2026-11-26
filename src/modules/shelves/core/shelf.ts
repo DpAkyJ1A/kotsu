@@ -36,3 +36,11 @@ export const MoveShelfInput = z
   .refine(({ id, after }) => id !== after);
 
 export const DeleteShelfInput = z.strictObject({ id: ShelfId });
+
+export const GetShelfInput = z.strictObject({ id: ShelfId });
+
+export type DocCardCounts = { cards: number; toReview: number };
+
+export type CardCountsByDoc = Record<string, DocCardCounts>;
+
+export type ShelfContents = { cardCounts: CardCountsByDoc };

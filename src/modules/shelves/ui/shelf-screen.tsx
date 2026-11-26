@@ -5,15 +5,19 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRef } from 'react';
 
 import { itemsOn } from '../core/item-change';
+import type { CardCountsByDoc } from '../core/shelf';
 import { DRAG_SENSORS, spokenDragPlugins } from '../hooks/drag-setup';
 import { useItems } from '../hooks/use-items';
 import { useTileDragging } from '../hooks/use-tile-dragging';
 import { DocTile } from './doc-tile';
 import { NewDocTile } from './new-doc-tile';
 
-type ShelfScreenProps = { shelfId: string };
+type ShelfScreenProps = {
+  shelfId: string;
+  cardCounts: CardCountsByDoc;
+};
 
-export function ShelfScreen({ shelfId }: ShelfScreenProps) {
+export function ShelfScreen({ shelfId, cardCounts }: ShelfScreenProps) {
   const t = useTranslations('shelves');
   const { items } = useItems();
   const docs = itemsOn(items, shelfId);
@@ -44,6 +48,7 @@ export function ShelfScreen({ shelfId }: ShelfScreenProps) {
             <DocTile
               key={doc.id}
               doc={doc}
+              cardCounts={cardCounts[doc.id]}
               index={index}
               onLeave={() => newDocButton.current?.focus()}
             />
