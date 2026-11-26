@@ -233,6 +233,12 @@
         "new": "Новая",
         "review": "Повторить",
         "got_it": "Знаю"
+      },
+      "counts": {
+        "cards": "{count, plural, one {# карточка} few {# карточки} many {# карточек} other {# карточки}}",
+        "got_it": "{count, plural, other {# знаю}}",
+        "review": "{count, plural, other {# повторить}}",
+        "new": "{count, plural, one {# новая} few {# новые} other {# новых}}"
       }
     }
   },

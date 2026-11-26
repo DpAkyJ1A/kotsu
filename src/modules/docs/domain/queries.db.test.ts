@@ -56,6 +56,7 @@ describe('getDoc', () => {
       content: null,
       version: 1,
       sizeBytes: 0,
+      cardStatuses: {},
     });
   });
 
@@ -74,6 +75,7 @@ describe('getDoc', () => {
       content: SAVED_BODY,
       version: 3,
       sizeBytes: 2048,
+      cardStatuses: {},
     });
   });
 

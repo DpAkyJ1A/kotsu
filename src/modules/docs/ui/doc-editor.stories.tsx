@@ -13,7 +13,6 @@ import { COLOURS } from '../core/colours';
 import type { Doc } from '../core/doc';
 import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import { ROOM_UNDER_THE_DOC_BAR_PX } from '../hooks/use-doc-editor';
-import { CardStatusesContext } from './card-statuses';
 import { DocEditor } from './doc-editor';
 
 const SPANISH = {
@@ -101,7 +100,10 @@ const VERBS_BODY: JSONContent = {
   ],
 };
 
-type DocEditorStoryArgs = { content: Doc['content'] };
+type DocEditorStoryArgs = {
+  content: Doc['content'];
+  cardStatuses?: Doc['cardStatuses'];
+};
 
 function sizeOf(content: Doc['content']) {
   return content === null ? 0 : byteLengthOf(JSON.stringify(content));
@@ -117,9 +119,15 @@ const meta = {
   args: { content: VERBS_BODY },
   parameters: { nextjs: { appDirectory: true } },
   globals: { viewport: { value: 'desktop' } },
-  render: ({ content }) => (
+  render: ({ content, cardStatuses = {} }) => (
     <DocEditor
-      doc={{ id: VERBS.id, content, version: 1, sizeBytes: sizeOf(content) }}
+      doc={{
+        id: VERBS.id,
+        content,
+        version: 1,
+        sizeBytes: sizeOf(content),
+        cardStatuses,
+      }}
       title={VERBS.title}
       place={{ doc: VERBS, shelf: SPANISH }}
       storageHref={STORAGE_HREF}
@@ -795,6 +803,7 @@ function withLongNames({ content }: DocEditorStoryArgs) {
         content,
         version: 1,
         sizeBytes: sizeOf(content),
+        cardStatuses: {},
       }}
       title={A_LONG_DOC.title}
       place={{ doc: A_LONG_DOC, shelf: A_LONG_SHELF }}
@@ -1835,14 +1844,6 @@ const CARDS_BODY: JSONContent = {
   ],
 };
 
-const withCardStatuses: Decorator = (Story) => (
-  <CardStatusesContext
-    value={{ [CARD_IDS.aboutMe]: 'got_it', [CARD_IDS.newRole]: 'review' }}
-  >
-    <Story />
-  </CardStatusesContext>
-);
-
 async function openedCards(
   canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
 ) {
@@ -1854,8 +1855,13 @@ async function openedCards(
 }
 
 export const Cards: Story = {
-  args: { content: CARDS_BODY },
-  decorators: [withCardStatuses],
+  args: {
+    content: CARDS_BODY,
+    cardStatuses: {
+      [CARD_IDS.aboutMe]: 'got_it',
+      [CARD_IDS.newRole]: 'review',
+    },
+  },
   play: async ({ canvas, userEvent }) => {
     const body = await openedCards(canvas);
 
@@ -1869,6 +1875,10 @@ export const Cards: Story = {
     await expect(canvas.getByText('Got it')).toBeVisible();
     await expect(canvas.getByText('Review')).toBeVisible();
     await expect(canvas.getByText('New')).toBeVisible();
+    await expect(canvas.getByText('3 cards')).toBeVisible();
+    await expect(canvas.getByText('1 got it')).toBeVisible();
+    await expect(canvas.getByText('1 to review')).toBeVisible();
+    await expect(canvas.getByText('1 new')).toBeVisible();
   },
 };
 
@@ -1886,6 +1896,25 @@ export const CardsInRussian: Story = {
     await expect(canvas.getByText('Знаю')).toBeVisible();
     await expect(canvas.getByText('Повторить')).toBeVisible();
     await expect(canvas.getByText('Новая')).toBeVisible();
+    await expect(canvas.getByText('3 карточки')).toBeVisible();
+    await expect(canvas.getByText('1 знаю')).toBeVisible();
+    await expect(canvas.getByText('1 повторить')).toBeVisible();
+    await expect(canvas.getByText('1 новая')).toBeVisible();
+  },
+};
+
+export const ANewCardCountsAtOnce: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveFocus());
+    await expect(canvas.queryByText(/^\d+ cards?$/)).not.toBeInTheDocument();
+
+    await userEvent.keyboard('/card{Enter}');
+
+    await expect(canvas.getByText('1 card')).toBeVisible();
+    await expect(canvas.getByText('1 new')).toBeVisible();
+    await expect(canvas.queryByText(/got it$/)).not.toBeInTheDocument();
   },
 };
 

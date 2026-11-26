@@ -10,8 +10,10 @@ import { DocBreadcrumb, DocTitle } from '@/modules/shelves';
 import type { Doc } from '../core/doc';
 import { useDocEditor } from '../hooks/use-doc-editor';
 import { useDocSaving } from '../hooks/use-doc-saving';
+import { CardStatusesContext } from './card-statuses';
 import { ConflictDialog } from './conflict-dialog';
 import { DocBar } from './doc-bar';
+import { DocCardCounts } from './doc-card-counts';
 import { DocOutline } from './doc-outline';
 import { DocSaveStatus } from './doc-save-status';
 import { DocToolbar } from './doc-toolbar';
@@ -47,38 +49,41 @@ export function DocEditor({ doc, title, place, storageHref }: DocEditorProps) {
   const saving = useDocSaving(editor, doc);
 
   return (
-    <div className="@container flex flex-1 flex-col">
-      <DocBar
-        place={<DocBreadcrumb {...place} />}
-        status={
-          <DocSaveStatus
-            status={saving.status}
-            sizeBytes={saving.sizeBytes}
-            savedAt={saving.savedAt}
-            editor={editor}
-            storageHref={storageHref}
-          />
-        }
-        toolbar={<DocToolbar editor={editor} />}
-        outline={<DocOutline editor={editor} />}
-      />
-      <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:**:scroll-mt-[112px]">
-        {saving.status === 'storageFull' && (
-          <StorageFullBanner storageHref={storageHref} />
-        )}
-        <DocTitle
-          id={doc.id}
-          title={title}
-          onGoToBody={() => editor?.commands.focus('start')}
+    <CardStatusesContext value={doc.cardStatuses}>
+      <div className="@container flex flex-1 flex-col">
+        <DocBar
+          place={<DocBreadcrumb {...place} />}
+          status={
+            <DocSaveStatus
+              status={saving.status}
+              sizeBytes={saving.sizeBytes}
+              savedAt={saving.savedAt}
+              editor={editor}
+              storageHref={storageHref}
+            />
+          }
+          toolbar={<DocToolbar editor={editor} />}
+          outline={<DocOutline editor={editor} />}
         />
-        <EditorContent editor={editor} className={BODY_CLASS_NAME} />
-      </article>
-      <ConflictDialog
-        isOpen={saving.isAskingAboutAConflict}
-        onReload={saving.reload}
-        onKeepMine={saving.keepMine}
-        onDecideLater={saving.decideLater}
-      />
-    </div>
+        <article className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2 px-6 pt-6 md:**:scroll-mt-[112px]">
+          {saving.status === 'storageFull' && (
+            <StorageFullBanner storageHref={storageHref} />
+          )}
+          <DocTitle
+            id={doc.id}
+            title={title}
+            onGoToBody={() => editor?.commands.focus('start')}
+          />
+          <DocCardCounts editor={editor} />
+          <EditorContent editor={editor} className={BODY_CLASS_NAME} />
+        </article>
+        <ConflictDialog
+          isOpen={saving.isAskingAboutAConflict}
+          onReload={saving.reload}
+          onKeepMine={saving.keepMine}
+          onDecideLater={saving.decideLater}
+        />
+      </div>
+    </CardStatusesContext>
   );
 }

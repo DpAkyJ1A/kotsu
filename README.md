@@ -47,8 +47,9 @@ empty line takes that line; on a line with text it goes below it. A card is a qu
 under it: `??` and a space, the Card button or ⌘⇧Enter turn the line you are on into its question, and with several
 blocks selected the first becomes the question and the rest the answer (`/card` makes an empty one). Enter in the question goes into the answer, Enter on its empty last line leaves the card, and the
 arrow beside the question (or ⌘⇧Enter) shows and hides the answer; a doc opens with its cards folded. Each card shows its
-status (every card is New until practice arrives), and a card cut and pasted back stays the same card, while a copy is
-a new one. On a wider screen a row of buttons above the title does the same with a click: three headings, bold,
+status (every card is New until practice arrives), and a line under the title counts the doc's cards by status as you
+type («3 cards · 1 got it · 1 to review · 1 new»). Every save keeps a row per card in the card index, with the answer as
+Markdown; a card cut and pasted back within seven days keeps its status, while a copy in another doc is a new card. On a wider screen a row of buttons above the title does the same with a click: three headings, bold,
 italic, strike and code, the three lists, a quote, a code block and a line, the card (last, in violet), and colour: «A» opens a row of nine text colours and a row of nine backgrounds (gray to red, as in Notion, each
 readable in the light and the dark theme), each with Default to take it off, and the button beside it paints the
 selection with the last colour picked (red text until the first pick; ⌘⇧H does the same). It lights up what the caret
