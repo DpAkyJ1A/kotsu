@@ -118,6 +118,11 @@ describe('markdownToDoc', () => {
     );
   });
 
+  test('reads a long run of empty comments with text after them at once', () => {
+    const html = `${'<!---->'.repeat(30)}x`;
+    readsAs(html, docOf(paragraph(html)));
+  });
+
   test('an empty checklist line is a checklist item', () => {
     readsAs(
       '- [ ]\n- [x] done\n- plain\n',

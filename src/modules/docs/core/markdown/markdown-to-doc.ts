@@ -172,7 +172,7 @@ function tableRows(table: Tokens.Table): JSONContent[] {
 
 function htmlLines(raw: string): JSONContent[] {
   const html = raw.trim();
-  if (/^(<br\s*\/?>|<!--[\s\S]*?-->)+$/i.test(html)) {
+  if (/^(?:<br\s*\/?>|<!--(?:(?!-->)[\s\S])*-->)+$/i.test(html)) {
     return inlineFromMarkdown(lexInline(html));
   }
   return lines(html);
