@@ -24,6 +24,16 @@ function paragraph(...content: JSONContent[]): JSONContent {
   return { type: 'paragraph', content };
 }
 
+function card(question: JSONContent[], ...answer: JSONContent[]): JSONContent {
+  return {
+    type: 'details',
+    content: [
+      { type: 'detailsSummary', content: question },
+      { type: 'detailsContent', content: answer },
+    ],
+  };
+}
+
 function docOf(...content: JSONContent[]): JSONContent {
   return { type: 'doc', content };
 }
@@ -78,6 +88,25 @@ const EVERY_BLOCK = docOf(
   { type: 'codeBlock', content: [text('yo hablo\ntú hablas')] },
   { type: 'horizontalRule' },
   paragraph(text('Line one'), { type: 'hardBreak' }, text('line two')),
+  card(
+    [text('¿Qué significa '), text('hablar', ['italic']), text('?')],
+    paragraph(text('to speak')),
+    {
+      type: 'bulletList',
+      content: [{ type: 'listItem', content: [paragraph(text('hablo'))] }],
+    },
+    {
+      type: 'taskList',
+      content: [
+        {
+          type: 'taskItem',
+          attrs: { checked: false },
+          content: [paragraph(text('say it out loud'))],
+        },
+      ],
+    },
+    { type: 'codeBlock', content: [text('hablar()')] },
+  ),
 );
 
 test('builds the schema in Node, without a DOM, with the blocks and marks of Markdown and the colours of text', () => {
@@ -86,6 +115,9 @@ test('builds the schema in Node, without a DOM, with the blocks and marks of Mar
     'blockquote',
     'bulletList',
     'codeBlock',
+    'details',
+    'detailsContent',
+    'detailsSummary',
     'doc',
     'hardBreak',
     'heading',
@@ -106,7 +138,7 @@ test('builds the schema in Node, without a DOM, with the blocks and marks of Mar
   ]);
 });
 
-test('gives a blockId to every block that holds text and to every list item, and to nothing else', () => {
+test('gives a blockId to every block that holds text, to every list item and to every card, and to nothing else', () => {
   const withBlockId = Object.values(schema.nodes)
     .filter((type) => 'blockId' in (type.spec.attrs ?? {}))
     .map(({ name }) => name)
@@ -115,6 +147,7 @@ test('gives a blockId to every block that holds text and to every list item, and
   expect(withBlockId).toEqual([
     'blockquote',
     'codeBlock',
+    'details',
     'heading',
     'listItem',
     'paragraph',
@@ -146,6 +179,31 @@ test.each<[string, JSONContent]>([
     docOf({ type: 'codeBlock', content: [text('hola', ['bold'])] }),
   ],
   ['a doc with no block at all', docOf()],
+  [
+    'a heading in the answer of a card',
+    docOf(card([text('¿Qué?')], { type: 'heading', attrs: { level: 2 } })),
+  ],
+  [
+    'a quote in the answer of a card',
+    docOf(
+      card([text('¿Qué?')], { type: 'blockquote', content: [paragraph()] }),
+    ),
+  ],
+  [
+    'a card in the answer of a card',
+    docOf(card([text('¿Qué?')], card([text('¿Y?')], paragraph()))),
+  ],
+  [
+    'a card without an answer',
+    docOf({
+      type: 'details',
+      content: [{ type: 'detailsSummary', content: [text('¿Qué?')] }],
+    }),
+  ],
+  [
+    'a block in the question of a card',
+    docOf(card([paragraph(text('¿Qué?'))], paragraph())),
+  ],
 ])('refuses %s', (_, json) => {
   expect(() => parse(json)).toThrow();
 });

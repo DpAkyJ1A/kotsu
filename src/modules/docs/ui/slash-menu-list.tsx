@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { useTranslations } from 'next-intl';
 import {
   type Ref,
@@ -25,6 +26,7 @@ export type SlashMenuListHandle = {
 
 export type SlashMenuListProps = {
   query: string;
+  available: readonly SlashBlock[];
   editorElement: HTMLElement;
   onPick: (block: SlashBlock) => void;
   ref?: Ref<SlashMenuListHandle>;
@@ -32,6 +34,7 @@ export type SlashMenuListProps = {
 
 export function SlashMenuList({
   query,
+  available,
   editorElement,
   onPick,
   ref,
@@ -39,7 +42,11 @@ export function SlashMenuList({
   const t = useTranslations('docs.slashMenu');
   const id = useId();
   const listRef = useRef<HTMLDivElement>(null);
-  const blocks = findSlashBlocks(query, (block) => t(`${block}.label`));
+  const blocks = findSlashBlocks(
+    query,
+    (block) => t(`${block}.label`),
+    available,
+  );
   const [highlight, setHighlight] = useState({ query, index: 0 });
   const activeIndex = highlight.query === query ? highlight.index : 0;
   const active = blocks[activeIndex];
@@ -112,7 +119,12 @@ export function SlashMenuList({
                   onPick(block);
                 }}
               >
-                <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground group-aria-selected:bg-violet group-aria-selected:text-violet-foreground">
+                <span
+                  className={cn(
+                    'grid size-7 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground group-aria-selected:bg-violet group-aria-selected:text-violet-foreground',
+                    block === 'card' && 'bg-violet text-violet-foreground',
+                  )}
+                >
                   <Icon className="size-3.5" />
                 </span>
                 <span className="grid min-w-0">

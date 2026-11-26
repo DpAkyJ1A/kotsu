@@ -1,7 +1,9 @@
 import { CommandManager, type Editor, type SingleCommands } from '@tiptap/core';
 
+import { blocksAt } from './blocks-at';
 import { type Format, isToggle, type Toggle } from './formats';
 import { insertBlock } from './insert-block';
+import { canMakeCard, makeCard } from './make-card';
 
 const TOGGLES: Record<Toggle, (commands: SingleCommands) => boolean> = {
   heading1: (commands) => commands.toggleHeading({ level: 1 }),
@@ -25,8 +27,12 @@ const HEADING_LEVELS: Partial<Record<Toggle, number>> = {
 };
 
 export function applyFormat(editor: Editor, format: Format) {
+  if (format === 'card') {
+    makeCard(editor);
+    return;
+  }
   if (!isToggle(format)) {
-    insertDividerUnderTheLine(editor);
+    insertUnderTheLine(editor, format);
     return;
   }
   editor
@@ -45,7 +51,10 @@ export function isFormatOn(editor: Editor, format: Format) {
 }
 
 export function canApplyFormat(editor: Editor, format: Format) {
-  if (!isToggle(format)) return true;
+  if (format === 'card') return canMakeCard(editor.state);
+  if (!isToggle(format)) {
+    return blocksAt(editor.state.selection.$from).includes(format);
+  }
   const trial = new CommandManager({ editor, state: editor.state });
   return trial
     .createChain()
@@ -53,8 +62,8 @@ export function canApplyFormat(editor: Editor, format: Format) {
     .run();
 }
 
-function insertDividerUnderTheLine(editor: Editor) {
+function insertUnderTheLine(editor: Editor, block: Exclude<Format, Toggle>) {
   const { from } = editor.state.selection;
   editor.commands.focus();
-  insertBlock(editor, { from, to: from }, 'horizontalRule');
+  insertBlock(editor, { from, to: from }, block);
 }

@@ -11,6 +11,7 @@ import type { Doc } from '../core/doc';
 import { useDocEditor } from '../hooks/use-doc-editor';
 
 const EVERY_BLOCK = [
+  'Card',
   'Text',
   'Heading 1',
   'Heading 2',
@@ -111,7 +112,7 @@ function linesOf(body: Locator) {
 }
 
 describe('opening', () => {
-  test('“/” on an empty line opens the menu with every block, the first one highlighted', async () => {
+  test('“/” on an empty line opens the menu with every block, the card first and highlighted', async () => {
     const body = await renderNewDoc();
 
     await userEvent.keyboard('/');
@@ -125,7 +126,7 @@ describe('opening', () => {
       EVERY_BLOCK.map((label) => expect.stringContaining(label) as string),
     );
     await expect
-      .element(option('Text'))
+      .element(option('Card'))
       .toHaveAttribute('aria-selected', 'true');
     await expect
       .element(option('Text'))
@@ -135,7 +136,7 @@ describe('opening', () => {
       .toHaveAttribute('aria-controls', menu().element().id);
     await expect
       .element(body)
-      .toHaveAttribute('aria-activedescendant', option('Text').element().id);
+      .toHaveAttribute('aria-activedescendant', option('Card').element().id);
   });
 
   test('“/” after a space opens the menu', async () => {
@@ -361,11 +362,11 @@ describe('the keyboard', () => {
     await userEvent.keyboard('/');
 
     await userEvent.keyboard('{ArrowDown}');
-    const heading1 = option('Heading 1');
-    await expect.element(heading1).toHaveAttribute('aria-selected', 'true');
+    const text = option('Text');
+    await expect.element(text).toHaveAttribute('aria-selected', 'true');
     await expect
       .element(body)
-      .toHaveAttribute('aria-activedescendant', heading1.element().id);
+      .toHaveAttribute('aria-activedescendant', text.element().id);
 
     await userEvent.keyboard('{ArrowUp}{ArrowUp}');
     await expect
@@ -374,7 +375,7 @@ describe('the keyboard', () => {
 
     await userEvent.keyboard('{ArrowDown}');
     await expect
-      .element(option('Text'))
+      .element(option('Card'))
       .toHaveAttribute('aria-selected', 'true');
   });
 
@@ -425,7 +426,7 @@ describe('the keyboard', () => {
 
     await userEvent.keyboard('/{ArrowDown}{ArrowDown}{Enter}Verbs');
 
-    expect(linesOf(body)).toEqual(['h2:Verbs', 'p:']);
+    expect(linesOf(body)).toEqual(['h1:Verbs', 'p:']);
   });
 
   test('Enter in an empty list item picks the block instead of ending the list', async () => {

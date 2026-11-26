@@ -1,4 +1,8 @@
 const SLASH_BLOCKS = [
+  {
+    name: 'card',
+    keywords: ['card', 'flashcard', 'question', 'answer', 'toggle'],
+  },
   { name: 'text', keywords: ['text', 'paragraph', 'plain'] },
   { name: 'heading1', keywords: ['h1', 'heading 1', 'title'] },
   { name: 'heading2', keywords: ['h2', 'heading 2', 'subheading'] },
@@ -21,19 +25,42 @@ export type SlashBlock = (typeof SLASH_BLOCKS)[number]['name'];
 
 type LabelOf = (block: SlashBlock) => string;
 
-type SlashQuery = { query: string; wasOpen: boolean; labelOf: LabelOf };
+type SlashQuery = {
+  query: string;
+  wasOpen: boolean;
+  labelOf: LabelOf;
+  available?: readonly SlashBlock[];
+};
 
-export function findSlashBlocks(query: string, labelOf: LabelOf): SlashBlock[] {
+export const EVERY_SLASH_BLOCK: readonly SlashBlock[] = SLASH_BLOCKS.map(
+  ({ name }) => name,
+);
+
+export function findSlashBlocks(
+  query: string,
+  labelOf: LabelOf,
+  available = EVERY_SLASH_BLOCK,
+): SlashBlock[] {
   const wanted = wordsOf(query);
-  return SLASH_BLOCKS.filter(({ name, keywords }) =>
-    [labelOf(name), ...keywords].some((term) => matches(wordsOf(term), wanted)),
+  return SLASH_BLOCKS.filter(
+    ({ name, keywords }) =>
+      available.includes(name) &&
+      [labelOf(name), ...keywords].some((term) =>
+        matches(wordsOf(term), wanted),
+      ),
   ).map(({ name }) => name);
 }
 
-export function isSlashMenuOpen({ query, wasOpen, labelOf }: SlashQuery) {
+export function isSlashMenuOpen({
+  query,
+  wasOpen,
+  labelOf,
+  available = EVERY_SLASH_BLOCK,
+}: SlashQuery) {
+  if (available.length === 0) return false;
   if (!/\s/.test(query)) return true;
   if (/^\s/.test(query)) return false;
-  return wasOpen && findSlashBlocks(query, labelOf).length > 0;
+  return wasOpen && findSlashBlocks(query, labelOf, available).length > 0;
 }
 
 function wordsOf(text: string) {

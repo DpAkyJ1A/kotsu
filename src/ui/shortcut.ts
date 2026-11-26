@@ -28,12 +28,14 @@ const APPLE_MODIFIERS: Partial<Record<string, string>> = {
   Mod: '⌘',
   Alt: '⌥',
   Shift: '⇧',
+  Enter: '↵',
 };
 
 const OTHER_MODIFIERS: Partial<Record<string, string>> = {
   Mod: 'Ctrl',
   Alt: 'Alt',
   Shift: 'Shift',
+  Enter: 'Enter',
 };
 
 export function shortcutKeys(

@@ -28,6 +28,10 @@ describe('markdownOf', () => {
       expect(markdownOf(format, 'texto')).toBe(markdown);
     },
   );
+
+  test('the card starts a line with ??', () => {
+    expect(markdownOf('card', 'texto')).toBe('??');
+  });
 });
 
 describe('kinds of format', () => {
@@ -45,8 +49,9 @@ describe('kinds of format', () => {
     },
   );
 
-  test('the divider is the one format that is not a toggle', () => {
+  test('the divider and the card go under the line instead of turning into a toggle', () => {
     expect(isToggle('horizontalRule')).toBe(false);
+    expect(isToggle('card')).toBe(false);
     expect(isToggle('bold')).toBe(true);
     expect(isToggle('codeBlock')).toBe(true);
   });

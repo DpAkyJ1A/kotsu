@@ -39,13 +39,17 @@ shelf opens its own page with its docs as tiles. The dashed + tile first in line
 the doc opens with the caret in its text (on a phone, tap the page: the keyboard opens only for a tap). A doc is a
 column of text with its title on top, and a click or tap anywhere under the text goes on at its end: type and use
 Markdown as you go (`#`, `##` and `###` for headings, `-` or `*` for a list, `1.` for a numbered one, `[]` for a
-checklist, `>` for a quote, three backticks for code, `---` for a line, and `**bold**`, `*italic*`, `~~strike~~`,
+checklist, `>` for a quote, three backticks for code, `---` for a line, `??` for a card, and `**bold**`, `*italic*`, `~~strike~~`,
 `` `code` ``), or type `/` at the start of a line or after a space to pick a block from a menu (a new doc says so, and
 so does the empty line you are on: "Type / for blocks"): what follows narrows it (`/h2`, `/todo`, `/heading 2`; a space
 that leaves nothing to find closes it), the arrows and Enter pick, Escape leaves the text as it is. A block picked on an
-empty line takes that line; on a line with text it goes below it. On a wider screen a row of buttons above the title
-does the same with a click: three headings, bold, italic, strike and code, the three lists, a quote, a code block and a
-line, and colour: «A» opens a row of nine text colours and a row of nine backgrounds (gray to red, as in Notion, each
+empty line takes that line; on a line with text it goes below it. A card is a question with its answer folded away
+under it: `??` and a space, the Card button or ⌘⇧Enter turn the line you are on into its question, and with several
+blocks selected the first becomes the question and the rest the answer (`/card` makes an empty one). Enter in the question goes into the answer, Enter on its empty last line leaves the card, and the
+arrow beside the question (or ⌘⇧Enter) shows and hides the answer; a doc opens with its cards folded. Each card shows its
+status (every card is New until practice arrives), and a card cut and pasted back stays the same card, while a copy is
+a new one. On a wider screen a row of buttons above the title does the same with a click: three headings, bold,
+italic, strike and code, the three lists, a quote, a code block and a line, the card (last, in violet), and colour: «A» opens a row of nine text colours and a row of nine backgrounds (gray to red, as in Notion, each
 readable in the light and the dark theme), each with Default to take it off, and the button beside it paints the
 selection with the last colour picked (red text until the first pick; ⌘⇧H does the same). It lights up what the caret
 is in, and each button's tooltip shows its shortcut and its Markdown ("Bold ⌘B **text**"). It shares one bar with where the doc is ("Spanish › Verbs") and whether it is saved, and the bar stays at

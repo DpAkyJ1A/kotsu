@@ -54,6 +54,26 @@ test('puts every block on a line of its own, so words of two blocks never run to
   );
 });
 
+test('puts the question and each line of the answer of a card on lines of their own', () => {
+  expect(
+    plainTextOf({
+      type: 'doc',
+      content: [
+        {
+          type: 'details',
+          content: [
+            { type: 'detailsSummary', content: [text('¿Qué significa?')] },
+            {
+              type: 'detailsContent',
+              content: [paragraph(text('to speak')), paragraph(text('hablar'))],
+            },
+          ],
+        },
+      ],
+    }),
+  ).toBe('¿Qué significa?\nto speak\nhablar');
+});
+
 test('leaves out empty lines and dividers', () => {
   expect(
     plainTextOf({

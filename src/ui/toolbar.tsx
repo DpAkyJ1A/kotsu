@@ -13,7 +13,7 @@ export function Toolbar({
   return (
     <ToolbarPrimitive.Root
       data-slot="toolbar"
-      className={cn('flex flex-wrap items-center gap-0.5', className)}
+      className={cn('flex flex-wrap items-center gap-px', className)}
       {...props}
     />
   );
@@ -46,7 +46,7 @@ export function ToolbarSeparator({
   return (
     <ToolbarPrimitive.Separator
       data-slot="toolbar-separator"
-      className={cn('mx-1 h-5 w-px bg-border', className)}
+      className={cn('mx-0.5 h-5 w-px bg-border', className)}
       {...props}
     />
   );

@@ -14,6 +14,7 @@ const ENGLISH: Record<SlashBlock, string> = {
   bulletList: 'Bulleted list',
   orderedList: 'Numbered list',
   taskList: 'Checklist',
+  card: 'Card',
   blockquote: 'Quote',
   codeBlock: 'Code',
   horizontalRule: 'Divider',
@@ -27,6 +28,7 @@ const RUSSIAN: Record<SlashBlock, string> = {
   bulletList: 'Маркированный список',
   orderedList: 'Нумерованный список',
   taskList: 'Чеклист',
+  card: 'Карточка',
   blockquote: 'Цитата',
   codeBlock: 'Код',
   horizontalRule: 'Разделитель',
@@ -49,8 +51,9 @@ function isOpenInEnglish(query: string, { wasOpen }: { wasOpen: boolean }) {
 }
 
 describe('findSlashBlocks', () => {
-  test('lists every block, in the menu’s order, before anything is typed', () => {
+  test('lists every block, the card first, before anything is typed', () => {
     expect(inEnglish('')).toEqual([
+      'card',
       'text',
       'heading1',
       'heading2',

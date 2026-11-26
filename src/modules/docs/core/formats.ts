@@ -6,12 +6,17 @@ export type Mark = (typeof MARKS)[number];
 
 export type Format = Exclude<SlashBlock, 'text'> | Mark;
 
-export type Toggle = Exclude<Format, 'horizontalRule'>;
+const INSERTS = ['horizontalRule', 'card'] as const;
 
-type Shortcut = { keys?: string; markdown: string };
+type Insert = (typeof INSERTS)[number];
+
+export type Toggle = Exclude<Format, Insert>;
+
+type Shortcut = { keys?: string; markdown?: string };
 
 export const SHORTCUTS: Record<Format, Shortcut> & {
   lastColour: { keys: string };
+  card: { keys: string; markdown: string };
 } = {
   heading1: { keys: 'Mod-Alt-1', markdown: '#' },
   heading2: { keys: 'Mod-Alt-2', markdown: '##' },
@@ -26,6 +31,7 @@ export const SHORTCUTS: Record<Format, Shortcut> & {
   blockquote: { keys: 'Mod-Shift-b', markdown: '>' },
   codeBlock: { keys: 'Mod-Alt-c', markdown: '```' },
   horizontalRule: { markdown: '---' },
+  card: { keys: 'Mod-Shift-Enter', markdown: '??' },
   lastColour: { keys: 'Mod-Shift-h' },
 };
 
@@ -34,10 +40,11 @@ export function isMark(format: Format): format is Mark {
 }
 
 export function isToggle(format: Format): format is Toggle {
-  return format !== 'horizontalRule';
+  return !INSERTS.some((insert) => insert === format);
 }
 
 export function markdownOf(format: Format, text: string) {
   const { markdown } = SHORTCUTS[format];
+  if (markdown === undefined) return null;
   return isMark(format) ? `${markdown}${text}${markdown}` : markdown;
 }

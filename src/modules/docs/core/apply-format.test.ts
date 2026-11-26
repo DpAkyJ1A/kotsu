@@ -18,6 +18,7 @@ const EVERY_FORMAT: Format[] = [
   'bulletList',
   'orderedList',
   'taskList',
+  'card',
   'blockquote',
   'codeBlock',
   'horizontalRule',
@@ -79,6 +80,18 @@ function codeBlock(value: string): JSONContent {
 
 const LINE: JSONContent = { type: 'horizontalRule' };
 
+const EMPTY_LINE: JSONContent = { type: 'paragraph' };
+
+function card(question: string, ...answer: JSONContent[]): JSONContent {
+  return {
+    type: 'details',
+    content: [
+      { type: 'detailsSummary', content: text(question) },
+      { type: 'detailsContent', content: answer },
+    ],
+  };
+}
+
 function editorWith(content: JSONContent[]) {
   const editor = new Editor({
     element: null,
@@ -106,6 +119,13 @@ function positionOf(editor: Editor, wanted: string) {
 function select(editor: Editor, word: string) {
   const from = positionOf(editor, word);
   editor.commands.setTextSelection({ from, to: from + word.length });
+}
+
+function selectFrom(editor: Editor, first: string, last: string) {
+  editor.commands.setTextSelection({
+    from: positionOf(editor, first),
+    to: positionOf(editor, last) + last.length,
+  });
 }
 
 function type(editor: Editor, value: string) {
@@ -296,6 +316,193 @@ describe('the divider goes under the whole line, with a new line under it for th
   });
 });
 
+describe('the card button makes a card of the line or of the selected blocks', () => {
+  test('the line with the caret becomes the question, the caret at its end', () => {
+    const editor = editorWith([paragraph(`¿Qué ${CARET}es?`), paragraph('tú')]);
+
+    applyFormat(editor, 'card');
+    type(editor, '!');
+
+    expect(blocksOf(editor)).toEqual([
+      card('¿Qué es?!', EMPTY_LINE),
+      paragraph('tú'),
+    ]);
+  });
+
+  test('a piece of text selected in a line makes the whole line the question', () => {
+    const editor = editorWith([paragraph(`${CARET}¿Qué significa hablar?`)]);
+    select(editor, 'hablar');
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      card('¿Qué significa hablar?', EMPTY_LINE),
+    ]);
+  });
+
+  test('an empty line becomes an empty card', () => {
+    const editor = editorWith([paragraph('Verbs'), paragraph(CARET)]);
+
+    applyFormat(editor, 'card');
+    type(editor, '¿hablar?');
+
+    expect(blocksOf(editor)).toEqual([
+      paragraph('Verbs'),
+      card('¿hablar?', EMPTY_LINE),
+    ]);
+  });
+
+  test('of the selected blocks, a heading becomes the question and the rest the answer', () => {
+    const editor = editorWith([
+      heading(2, `${CARET}Hablar`),
+      paragraph('to speak'),
+      paragraph('yo hablo'),
+      paragraph('after'),
+    ]);
+    selectFrom(editor, 'Hablar', 'yo hablo');
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      card('Hablar', paragraph('to speak'), paragraph('yo hablo')),
+      paragraph('after'),
+    ]);
+  });
+
+  test('empty lines at the ends of the selection and of the answer are left out', () => {
+    const editor = editorWith([
+      paragraph(CARET),
+      heading(2, 'Hablar'),
+      EMPTY_LINE,
+      paragraph('to speak'),
+      EMPTY_LINE,
+      paragraph('yo hablo'),
+      EMPTY_LINE,
+    ]);
+    editor.commands.selectAll();
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      card('Hablar', paragraph('to speak'), EMPTY_LINE, paragraph('yo hablo')),
+    ]);
+  });
+
+  test('a line break in the question line turns into a space', () => {
+    const editor = editorWith([
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: `${CARET}¿Qué` },
+          { type: 'hardBreak' },
+          { type: 'text', text: 'es?' },
+        ],
+      },
+      paragraph('Ya'),
+    ]);
+    selectFrom(editor, '¿Qué', 'Ya');
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([card('¿Qué es?', paragraph('Ya'))]);
+  });
+
+  test('blocks an answer cannot hold turn into ones it can: a heading into text, a quote into its lines, a divider goes', () => {
+    const editor = editorWith([
+      paragraph(`${CARET}¿Qué?`),
+      heading(3, 'Hablar'),
+      quote(paragraph('Poco a poco')),
+      LINE,
+      bulletList('yo', 'tú'),
+    ]);
+    selectFrom(editor, '¿Qué?', 'tú');
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      card(
+        '¿Qué?',
+        paragraph('Hablar'),
+        paragraph('Poco a poco'),
+        bulletList('yo', 'tú'),
+      ),
+    ]);
+  });
+
+  test('a selection that starts in a list makes a card with an empty question and the blocks as its answer', () => {
+    const editor = editorWith([
+      bulletList(`${CARET}yo`, 'tú'),
+      paragraph('él'),
+    ]);
+    selectFrom(editor, 'yo', 'él');
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      {
+        type: 'details',
+        content: [
+          { type: 'detailsSummary' },
+          {
+            type: 'detailsContent',
+            content: [bulletList('yo', 'tú'), paragraph('él')],
+          },
+        ],
+      },
+    ]);
+  });
+
+  test('in a list item the card goes under the line and parts the list, as the slash menu does', () => {
+    const editor = editorWith([bulletList(`y${CARET}o`, 'tú')]);
+
+    applyFormat(editor, 'card');
+    type(editor, '¿hablar?');
+
+    expect(blocksOf(editor)).toEqual([
+      bulletList('yo'),
+      card('¿hablar?', EMPTY_LINE),
+      bulletList('tú'),
+    ]);
+  });
+
+  test('a selection that ends at the start of a line leaves that line out', () => {
+    const editor = editorWith([
+      paragraph(`${CARET}¿Qué?`),
+      paragraph('Ya'),
+      paragraph('después'),
+    ]);
+    editor.commands.setTextSelection({
+      from: positionOf(editor, '¿Qué?'),
+      to: positionOf(editor, 'después'),
+    });
+
+    applyFormat(editor, 'card');
+
+    expect(blocksOf(editor)).toEqual([
+      card('¿Qué?', paragraph('Ya')),
+      paragraph('después'),
+    ]);
+  });
+
+  test('is off for a selected divider, which has nothing to ask', () => {
+    const editor = editorWith([paragraph(`y${CARET}o`), LINE, paragraph('tú')]);
+    editor.commands.setNodeSelection('yo'.length + 2);
+
+    expect(canApplyFormat(editor, 'card')).toBe(false);
+  });
+
+  test('is off for a selection that holds a card', () => {
+    const editor = editorWith([
+      paragraph(`${CARET}Intro`),
+      card('¿Qué?', paragraph('Ya')),
+      paragraph('End'),
+    ]);
+    selectFrom(editor, 'Intro', 'End');
+
+    expect(canApplyFormat(editor, 'card')).toBe(false);
+  });
+});
+
 describe('what is on where the caret is', () => {
   test.each<[string, JSONContent[], Format[]]>([
     ['plain text', [paragraph(`yo ha${CARET}blo`)], []],
@@ -347,6 +554,40 @@ describe('what applies where the caret is', () => {
     expect(
       formatsThatDontApply(editorWith([paragraph(`ha${CARET}blo`, 'code')])),
     ).toEqual(['bold', 'italic', 'strike']);
+  });
+
+  test('only marks in the question of a card', () => {
+    expect(
+      formatsThatDontApply(
+        editorWith([card(`¿Qu${CARET}é?`, paragraph('Ya'))]),
+      ),
+    ).toEqual([
+      'heading1',
+      'heading2',
+      'heading3',
+      'bulletList',
+      'orderedList',
+      'taskList',
+      'card',
+      'blockquote',
+      'codeBlock',
+      'horizontalRule',
+    ]);
+  });
+
+  test('marks, lists and code in the answer of a card', () => {
+    expect(
+      formatsThatDontApply(
+        editorWith([card('¿Qué?', paragraph(`Y${CARET}a`))]),
+      ),
+    ).toEqual([
+      'heading1',
+      'heading2',
+      'heading3',
+      'card',
+      'blockquote',
+      'horizontalRule',
+    ]);
   });
 
   test('no quote in a list item, which must start with a paragraph', () => {

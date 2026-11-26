@@ -2,6 +2,7 @@
 
 import type { Editor } from '@tiptap/core';
 import { useEditorState } from '@tiptap/react';
+import { cn } from 'cn';
 import { useTranslations } from 'next-intl';
 import { Fragment, type MouseEvent } from 'react';
 
@@ -29,6 +30,7 @@ const TEXT_GROUPS: Format[][] = [
 const BLOCK_GROUPS: Format[][] = [
   ['bulletList', 'orderedList', 'taskList'],
   ['blockquote', 'codeBlock', 'horizontalRule'],
+  ['card'],
 ];
 
 const FORMATS = [...TEXT_GROUPS, ...BLOCK_GROUPS].flat();
@@ -104,6 +106,7 @@ function FormatButton({ format, isOn, canApply, onApply }: FormatButtonProps) {
     ? t(`toolbar.${format}`)
     : t(`slashMenu.${format}.label`);
   const { keys } = SHORTCUTS[format];
+  const markdown = markdownOf(format, t('toolbar.sampleText'));
   const Icon = ICONS[format];
 
   return (
@@ -113,17 +116,30 @@ function FormatButton({ format, isOn, canApply, onApply }: FormatButtonProps) {
           label={label}
           aria-pressed={isToggle(format) ? isOn : undefined}
           disabled={!canApply}
+          className={cn(
+            format === 'card' &&
+              'w-auto bg-violet px-2 text-violet-foreground hover:bg-violet/80 hover:text-violet-foreground @max-3xl:w-7 @max-3xl:px-0',
+          )}
           onMouseDown={keepTheFocusInTheEditor}
           onClick={onApply}
         >
-          <Icon className="size-4" />
+          {format === 'card' ? (
+            <span className="flex items-center gap-1.5">
+              <Icon className="size-4" />
+              <span aria-hidden className="@max-3xl:hidden">
+                {label}
+              </span>
+            </span>
+          ) : (
+            <Icon className="size-4" />
+          )}
         </ToolbarButton>
       </TooltipTrigger>
       <TooltipContent>
         {label} {keys && <PlatformKeys binding={keys} />}{' '}
-        <span className="font-mono text-background/70">
-          {markdownOf(format, t('toolbar.sampleText'))}
-        </span>
+        {markdown && (
+          <span className="font-mono text-background/70">{markdown}</span>
+        )}
       </TooltipContent>
     </Tooltip>
   );

@@ -13,6 +13,7 @@ import { COLOURS } from '../core/colours';
 import type { Doc } from '../core/doc';
 import { LARGEST_DOC_BYTES, SAVE_AFTER_MS } from '../core/save-limits';
 import { ROOM_UNDER_THE_DOC_BAR_PX } from '../hooks/use-doc-editor';
+import { CardStatusesContext } from './card-statuses';
 import { DocEditor } from './doc-editor';
 
 const SPANISH = {
@@ -381,7 +382,7 @@ export const SlashMenu: Story = {
 
     const menu = await blocksMenu();
     await expect(
-      within(menu).getByRole('option', { name: /^Text / }),
+      within(menu).getByRole('option', { name: /^Card / }),
     ).toHaveAttribute('aria-selected', 'true');
   },
 };
@@ -1775,5 +1776,129 @@ export const TheColourPopoverColoursTheSelection: Story = {
     const span = body.querySelector('[data-color="red"][data-bg="yellow"]');
     await expect(span).toHaveTextContent('past tense');
     await expect(screen.getByRole('dialog', { name: 'Colour' })).toBeVisible();
+  },
+};
+
+const CARD_IDS = {
+  aboutMe: '019a9c3e-0201-7000-8000-000000000201',
+  newRole: '019a9c3e-0202-7000-8000-000000000202',
+  thisCompany: '019a9c3e-0203-7000-8000-000000000203',
+};
+
+function card(
+  blockId: string,
+  question: string,
+  ...answer: JSONContent[]
+): JSONContent {
+  return {
+    type: 'details',
+    attrs: { blockId },
+    content: [
+      { type: 'detailsSummary', content: [text(question)] },
+      { type: 'detailsContent', content: answer },
+    ],
+  };
+}
+
+const CARDS_BODY: JSONContent = {
+  type: 'doc',
+  content: [
+    paragraph(
+      text(
+        'Answers I want to give calmly. Say it out loud, then open the card and compare.',
+      ),
+    ),
+    heading(2, 'About me & motivation'),
+    card(
+      CARD_IDS.aboutMe,
+      'Tell me about yourself.',
+      paragraph(
+        text('Frontend engineer, eight years, motion and performance.'),
+      ),
+    ),
+    card(
+      CARD_IDS.newRole,
+      'Why are you looking for a new role, and what should the next one give you that this one does not?',
+      list(
+        'bulletList',
+        'A product team where frontend owns the experience end to end',
+        'Go deeper into motion and performance work',
+        'Only about where I am going, nothing negative about the last place',
+      ),
+    ),
+    card(
+      CARD_IDS.thisCompany,
+      'Why this company?',
+      paragraph(text('Their editor is the product, and it shows.')),
+    ),
+    paragraph(text('Next: questions about React.')),
+  ],
+};
+
+const withCardStatuses: Decorator = (Story) => (
+  <CardStatusesContext
+    value={{ [CARD_IDS.aboutMe]: 'got_it', [CARD_IDS.newRole]: 'review' }}
+  >
+    <Story />
+  </CardStatusesContext>
+);
+
+async function openedCards(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+) {
+  const body = await canvas.findByRole('textbox', {
+    name: /^(Doc text|Текст дока)$/,
+  });
+  await waitFor(() => expect(body).toHaveTextContent('Why this company?'));
+  return body;
+}
+
+export const Cards: Story = {
+  args: { content: CARDS_BODY },
+  decorators: [withCardStatuses],
+  play: async ({ canvas, userEvent }) => {
+    const body = await openedCards(canvas);
+
+    await userEvent.click(
+      canvas.getAllByRole('button', { name: 'Show answer' })[1] ?? body,
+    );
+
+    await expect(
+      canvas.getByRole('button', { name: 'Hide answer' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    await expect(canvas.getByText('Got it')).toBeVisible();
+    await expect(canvas.getByText('Review')).toBeVisible();
+    await expect(canvas.getByText('New')).toBeVisible();
+  },
+};
+
+export const CardsOnAPhone: Story = {
+  ...Cards,
+  globals: { viewport: { value: 'mobile2' } },
+};
+
+export const CardsInRussian: Story = {
+  ...Cards,
+  globals: { locale: 'ru' },
+  play: async ({ canvas }) => {
+    await openedCards(canvas);
+
+    await expect(canvas.getByText('Знаю')).toBeVisible();
+    await expect(canvas.getByText('Повторить')).toBeVisible();
+    await expect(canvas.getByText('Новая')).toBeVisible();
+  },
+};
+
+export const ANewCardHintsAtItsQuestion: Story = {
+  args: { content: null },
+  play: async ({ canvas, userEvent }) => {
+    const body = await canvas.findByRole('textbox', { name: 'Doc text' });
+    await waitFor(() => expect(body).toHaveFocus());
+
+    await userEvent.keyboard('/card{Enter}');
+
+    await expect(canvas.getByText('Question')).toBeVisible();
+    await userEvent.keyboard('¿Qué');
+    await expect(canvas.queryByText('Question')).not.toBeInTheDocument();
   },
 };
