@@ -12,7 +12,7 @@ import { TextColour } from './text-colour';
 
 export const HEADING_LEVELS = [1, 2, 3] as const;
 
-const BLOCKS_WITH_AN_ID = [
+export const BLOCKS_WITH_AN_ID = [
   'paragraph',
   'heading',
   'listItem',

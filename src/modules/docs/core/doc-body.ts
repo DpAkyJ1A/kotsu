@@ -1,11 +1,10 @@
-import { getSchema, type JSONContent } from '@tiptap/core';
+import type { JSONContent } from '@tiptap/core';
 import { Node } from '@tiptap/pm/model';
 import { z } from 'zod';
 
 import { COLOURS } from './colours';
-import { DocKit, HEADING_LEVELS } from './doc-kit';
-
-const schema = getSchema([DocKit]);
+import { HEADING_LEVELS } from './doc-kit';
+import { DOC_SCHEMA } from './doc-schema';
 
 const ORDERED_LIST_STYLES = ['1', 'a', 'A', 'i', 'I'];
 
@@ -43,7 +42,7 @@ function storedBodyOf(json: JSONContent): JSONContent | null {
 
 function parsed(json: JSONContent) {
   try {
-    const doc = Node.fromJSON(schema, json);
+    const doc = Node.fromJSON(DOC_SCHEMA, json);
     doc.check();
     return doc;
   } catch {
