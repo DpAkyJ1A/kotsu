@@ -1,6 +1,9 @@
 import { expect, type Page, type Request } from '@playwright/test';
+import { eq } from 'drizzle-orm';
 
-import { actionAnswered, signInWithCode, test } from './fixtures';
+import { card } from '@/server/db/schema/cards';
+
+import { actionAnswered, signInWithCode, test, userIdOf } from './fixtures';
 
 const DOC_URL = /\/docs\/[\da-f-]{36}$/;
 const MISSING_DOC_ID = '019a9c3e-0000-7000-8000-000000000000';
@@ -436,6 +439,30 @@ test('a rename waits for the one before it, so a slow first save cannot land aft
     .toEqual(['sent', 'answered', 'sent', 'answered']);
   await page.reload();
   await expect(title).toHaveValue('Verbs in the present');
+});
+
+test("a card's status comes from the index, on its chip and in the counts under the title", async ({
+  page,
+  db,
+  visitor,
+}) => {
+  await createDocOnANewShelf(page, 'Spanish', 'Kitchen');
+  await expect(page.getByText(/^\d+ cards?$/)).toBeHidden();
+  await page.keyboard.type('/card');
+  await page.keyboard.press('Enter');
+  await typeAndSave(page, 'la cocina');
+  await expect(page.getByText('1 card', { exact: true })).toBeVisible();
+  await expect(page.getByText('1 new', { exact: true })).toBeVisible();
+
+  await db
+    .update(card)
+    .set({ status: 'got_it' })
+    .where(eq(card.userId, await userIdOf(db, visitor.email)));
+  await page.reload();
+
+  await expect(bodyOf(page).getByText('Got it', { exact: true })).toBeVisible();
+  await expect(page.getByText('1 got it', { exact: true })).toBeVisible();
+  await expect(page.getByText('1 new', { exact: true })).toBeHidden();
 });
 
 test('a doc that is not there, or not a doc id at all, is not found', async ({

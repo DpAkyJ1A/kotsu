@@ -1,5 +1,4 @@
 import type { Editor } from '@tiptap/core';
-import { useEditorState } from '@tiptap/react';
 import { cn } from 'cn';
 import Link, { type LinkProps } from 'next/link';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
@@ -10,6 +9,7 @@ import { saveIndicatorOf, shownSizeOf } from '../core/save-indicator';
 import { LARGEST_DOC_BYTES } from '../core/save-limits';
 import type { SaveStatus } from '../core/save-state';
 import { textCountsOf } from '../core/text-counts';
+import { useEditorDoc } from '../hooks/use-editor-doc';
 import { DocCeiling } from './doc-ceiling';
 import { DocFillBar } from './doc-fill-bar';
 
@@ -33,11 +33,7 @@ export function DocDetails({
   const t = useTranslations('docs.details');
   const format = useFormatter();
   const formatSize = useFormatSize();
-  const doc = useEditorState({
-    editor,
-    selector: (snapshot) => snapshot.editor?.state.doc ?? null,
-    equalityFn: Object.is,
-  });
+  const doc = useEditorDoc(editor);
   const counts = doc && textCountsOf(doc);
   const { mark, warnsTheDocIsAlmostFull } = saveIndicatorOf(status, sizeBytes);
 

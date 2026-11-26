@@ -144,6 +144,7 @@ describe('saveDoc', () => {
       content,
       version: 3,
       sizeBytes: new TextEncoder().encode(JSON.stringify(content)).byteLength,
+      cardStatuses: {},
     });
   });
 

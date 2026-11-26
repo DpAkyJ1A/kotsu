@@ -248,6 +248,17 @@ Details' own view, its open attribute and two of its keys are replaced:
   selection reaching into the answer takes the caret to the end of the question; outside a card it makes one, as the
   Card button does. Details' Backspace at the start of the question stays: it turns the card
   back into lines.
+
+**The card index** (task 1.8). Every save writes the doc's cards into the `card` table in the same transaction
+(`saveDoc` is a `command.tx`): `core/cards-in-doc.ts` lists them in doc order, the question as plain text and the answer
+as Markdown, and refuses (`VALIDATION`) a doc in which a card has no `blockId` or shares one with another card; then
+`syncCards` from `cards/api.ts` writes them (see `cards/README.md`). The status lives only in the table, so `getDoc`
+also gives `cardStatuses` (block id → status of the doc's live cards), which `DocEditor` hands to the chips through
+`ui/card-statuses.ts`. A card the table hasn't seen yet is New. The line under the title (`ui/doc-card-counts.tsx`)
+counts the cards in the editor, not in the table (`core/card-counts.ts`), so a new card counts at once and a deleted one
+drops out at once; it shows only when the doc has cards, and leaves out a status with none. `hooks/use-editor-doc.ts`
+is the editor's current doc for the three readers that redraw on it: the outline, the details popover and the counts.
+
 - **Making one** (`core/make-card.ts`), with the Card button, ⌘⇧Enter or `/card`: the caret's line, or a selection
   inside it, becomes the question, the caret at its end (a line break turns into a space). A selection over several
   blocks becomes one card: the first block is its question if it is a line (a paragraph or a heading), and the rest its

@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core';
 import { z } from 'zod';
 
+import type { CardStatuses } from './card-status';
 import { DocBody } from './doc-body';
 
 export type Doc = {
@@ -8,6 +9,7 @@ export type Doc = {
   content: JSONContent | null;
   version: number;
   sizeBytes: number;
+  cardStatuses: CardStatuses;
 };
 
 export type SavedDoc = { version: number };

@@ -62,7 +62,13 @@ function textOf(content: JSONContent) {
 }
 
 function serverDoc(line: string, version: number, sizeBytes = 0) {
-  return { id: DOC_ID, content: bodyOf(line), version, sizeBytes };
+  return {
+    id: DOC_ID,
+    content: bodyOf(line),
+    version,
+    sizeBytes,
+    cardStatuses: {},
+  };
 }
 
 function openDoc({ line = 'hablo', version = 1, sizeBytes = 0 } = {}) {

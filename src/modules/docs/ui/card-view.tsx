@@ -9,13 +9,14 @@ import { cn } from 'cn';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, use } from 'react';
 
+import type { CardStatus } from '@/lib/card-statuses';
 import { Chip } from '@/ui/chip';
 import { IconButton } from '@/ui/icon-button';
 import { ChevronRightIcon, GalleryVerticalEndIcon } from '@/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/tooltip';
 
 import { toggleTheCard } from '../core/card-commands';
-import { type CardStatus, statusOf } from '../core/card-status';
+import { statusOf } from '../core/card-status';
 import { SHORTCUTS } from '../core/formats';
 import { isOpenIn } from '../core/open-cards';
 import { CardStatusesContext } from './card-statuses';

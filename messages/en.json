@@ -233,6 +233,12 @@
         "new": "New",
         "review": "Review",
         "got_it": "Got it"
+      },
+      "counts": {
+        "cards": "{count, plural, one {# card} other {# cards}}",
+        "got_it": "{count, plural, other {# got it}}",
+        "review": "{count, plural, other {# to review}}",
+        "new": "{count, plural, other {# new}}"
       }
     }
   },

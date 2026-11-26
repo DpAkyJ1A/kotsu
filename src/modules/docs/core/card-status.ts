@@ -1,4 +1,4 @@
-export type CardStatus = 'new' | 'review' | 'got_it';
+import type { CardStatus } from '@/lib/card-statuses';
 
 export type CardStatuses = Readonly<Partial<Record<string, CardStatus>>>;
 

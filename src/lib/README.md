@@ -6,7 +6,8 @@ swaps in `__mocks__/auth-client.ts`), and the way to the sign-in page and back (
 `/sign-in?next=`, and the header in which `src/proxy.ts` tells server code the path that was asked for).
 
 The palette's colours (`palette-colors.ts`), shared by the database enum and the shelves, and the kinds of item on a
-shelf (`item-kinds.ts`: doc, sheet), shared by the database enum and the items' schemas.
+shelf (`item-kinds.ts`: doc, sheet), shared by the database enum and the items' schemas. The card statuses (`card-statuses.ts`: new,
+review, got it), shared by the database enum and the docs' chips and counts.
 
 `run-action.ts` calls a Server Action from the browser and boils its answer down to `null` or a failure code: the
 action's own, `OFFLINE` when the browser is offline (then nothing is sent), or `INTERNAL` when the call itself fails.
