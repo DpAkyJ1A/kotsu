@@ -33,6 +33,7 @@
       "deleted": "{title} deleted",
       "toggle": "Docs on {name}",
       "newDocOn": "New doc on {name}",
+      "cardCounts": "{cards, plural, one {# card} other {# cards}}{toReview, plural, =0 {} other { · # to review}}",
       "move": {
         "instructions": "Press Space to pick it up, the arrow keys to move it, Space again to drop it, or Escape to cancel.",
         "handle": "Move {title}",

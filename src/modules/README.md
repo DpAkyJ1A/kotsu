@@ -32,7 +32,7 @@ module has only the doors it needs. Doors re-export by name; there are no other 
 | Module                    | Depends on                                                |
 | ------------------------- | --------------------------------------------------------- |
 | [account](account/)       | —                                                         |
-| [shelves](shelves/)       | —                                                         |
+| [shelves](shelves/)       | cards                                                     |
 | [cards](cards/)           | —                                                         |
 | [docs](docs/)             | shelves, cards                                            |
 | [sheets](sheets/)         | shelves                                                   |

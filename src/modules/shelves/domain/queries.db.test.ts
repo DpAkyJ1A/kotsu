@@ -1,17 +1,19 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { describe, expect } from 'vitest';
 
+import { syncCards } from '@/modules/cards/api';
 import { createUser } from '@/server/auth/testing';
 import type { Ctx } from '@/server/ctx/load-ctx';
 import { ctxOf, withStorageQuota } from '@/server/ctx/testing';
 import type { Db } from '@/server/db/client';
+import { card } from '@/server/db/schema/cards';
 import { item } from '@/server/db/schema/shelves';
 import { dbTest as test } from '@/server/db/testing';
 
 import { ITEM_ROW_BYTES, LARGEST_LISTED } from '../core/storage';
 import { createShelf } from './commands';
 import { createItem, moveItem } from './item-commands';
-import { getNavigation, getStorage } from './queries';
+import { getNavigation, getShelf, getStorage } from './queries';
 
 const NOW = new Date('2026-11-19T09:00:00Z');
 
@@ -215,6 +217,131 @@ describe('getStorage', () => {
       quotaBytes: 50_000_000,
       shelves: [],
       docs: [],
+    });
+  });
+});
+
+function cardsIn(ctx: Ctx, itemId: string, fronts: string[]) {
+  return syncCards(
+    ctx,
+    itemId,
+    fronts.map((front, position) => ({
+      blockId: blockIdOf(itemId, position),
+      position,
+      front,
+      back: '',
+    })),
+  );
+}
+
+function blockIdOf(itemId: string, position: number) {
+  return `${itemId.slice(0, -2)}${String(position).padStart(2, '0')}`;
+}
+
+async function toReview(ctx: Ctx, itemId: string, position: number) {
+  await ctx.db
+    .update(card)
+    .set({ status: 'review' })
+    .where(
+      and(
+        eq(card.itemId, itemId),
+        eq(card.blockId, blockIdOf(itemId, position)),
+      ),
+    );
+}
+
+describe('getShelf', () => {
+  test("counts each doc's live cards and those to review, only for the docs on that shelf that have cards", async ({
+    db,
+  }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+    const spanish = await createShelf(ada, { name: 'Spanish' });
+    const guitar = await createShelf(ada, { name: 'Guitar' });
+    const kitchen = await createItem(ada, {
+      shelfId: spanish.id,
+      kind: 'doc',
+      title: 'Kitchen',
+    });
+    const numbers = await createItem(ada, {
+      shelfId: spanish.id,
+      kind: 'doc',
+      title: 'Numbers',
+    });
+    await createItem(ada, { shelfId: spanish.id, kind: 'doc', title: 'Notes' });
+    const chords = await createItem(ada, {
+      shelfId: guitar.id,
+      kind: 'doc',
+      title: 'Chords',
+    });
+    await cardsIn(ada, kitchen.id, ['la cocina', 'la nevera', 'el horno']);
+    await toReview(ada, kitchen.id, 0);
+    await toReview(ada, kitchen.id, 2);
+    await cardsIn(ada, numbers.id, ['uno', 'dos']);
+    await cardsIn(ada, chords.id, ['C major']);
+
+    expect(await getShelf(ada, { id: spanish.id })).toEqual({
+      cardCounts: {
+        [kitchen.id]: { cards: 3, toReview: 2 },
+        [numbers.id]: { cards: 2, toReview: 0 },
+      },
+    });
+  });
+
+  test('stops counting a card the moment it leaves its doc, though its row stays for a week', async ({
+    db,
+  }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+    const spanish = await createShelf(ada, { name: 'Spanish' });
+    const kitchen = await createItem(ada, {
+      shelfId: spanish.id,
+      kind: 'doc',
+      title: 'Kitchen',
+    });
+    const numbers = await createItem(ada, {
+      shelfId: spanish.id,
+      kind: 'doc',
+      title: 'Numbers',
+    });
+    await cardsIn(ada, kitchen.id, ['la cocina', 'la nevera']);
+    await toReview(ada, kitchen.id, 1);
+    await cardsIn(ada, kitchen.id, ['la cocina']);
+    await cardsIn(ada, numbers.id, ['uno']);
+    await cardsIn(ada, numbers.id, []);
+
+    expect(await getShelf(ada, { id: spanish.id })).toEqual({
+      cardCounts: { [kitchen.id]: { cards: 1, toReview: 0 } },
+    });
+    expect(
+      await db.select().from(card).where(eq(card.itemId, numbers.id)),
+    ).toHaveLength(1);
+  });
+
+  test("answers NOT_FOUND for a missing shelf or another user's", async ({
+    db,
+  }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+    const bea = await ctxOf(db, await createUser(db, 'bea@example.com'), NOW);
+    const chess = await createShelf(bea, { name: 'Chess' });
+    const openings = await createItem(bea, {
+      shelfId: chess.id,
+      kind: 'doc',
+      title: 'Openings',
+    });
+    await cardsIn(bea, openings.id, ['e4']);
+
+    await expect(getShelf(ada, { id: chess.id })).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
+    await expect(
+      getShelf(ada, { id: '019a9c3e-0000-7000-8000-000000000000' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  test('answers VALIDATION for an id that is not a uuid', async ({ db }) => {
+    const ada = await ctxOf(db, await createUser(db, 'ada@example.com'), NOW);
+
+    await expect(getShelf(ada, { id: 'spanish' })).rejects.toMatchObject({
+      code: 'VALIDATION',
     });
   });
 });

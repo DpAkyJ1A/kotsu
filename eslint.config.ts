@@ -12,7 +12,7 @@ import tseslint from 'typescript-eslint';
 // The module graph from src/modules/README.md; eslint.config.test.ts checks it has no cycles.
 export const MODULE_DEPENDENCIES: Record<string, readonly string[]> = {
   account: [],
-  shelves: [],
+  shelves: ['cards'],
   cards: [],
   docs: ['shelves', 'cards'],
   sheets: ['shelves'],

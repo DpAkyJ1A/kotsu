@@ -1,13 +1,16 @@
 import 'server-only';
 
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
+import { liveCards } from '@/modules/cards/api';
 import type { Ctx } from '@/server/ctx/load-ctx';
+import { card } from '@/server/db/schema/cards';
 import { item, shelf } from '@/server/db/schema/shelves';
+import { AppError, query } from '@/server/domain';
 import { storageQuotaOf } from '@/server/storage-quota';
 
 import type { Item } from '../core/item';
-import type { Shelf } from '../core/shelf';
+import { GetShelfInput, type Shelf, type ShelfContents } from '../core/shelf';
 import { ITEM_ROW_BYTES, LARGEST_LISTED, type Storage } from '../core/storage';
 import { itemDto, shelfDto } from './dto';
 import { bytesOf, usedBytes } from './storage';
@@ -28,6 +31,41 @@ export async function getNavigation(
       .orderBy(item.shelfId, item.position, item.id),
   ]);
   return { shelves, items };
+}
+
+export const getShelf = query(
+  GetShelfInput,
+  async (ctx, { id }): Promise<ShelfContents> => {
+    const [[found], counts] = await Promise.all([
+      ctx.db
+        .select({ id: shelf.id })
+        .from(shelf)
+        .where(and(eq(shelf.id, id), eq(shelf.userId, ctx.userId))),
+      cardCountsOn(ctx, id),
+    ]);
+    if (!found) throw new AppError('NOT_FOUND');
+    return {
+      cardCounts: Object.fromEntries(
+        counts.map(({ itemId, ...docCounts }) => [itemId, docCounts]),
+      ),
+    };
+  },
+);
+
+function cardCountsOn(ctx: Ctx, shelfId: string) {
+  return ctx.db
+    .select({
+      itemId: item.id,
+      cards: count(),
+      toReview:
+        sql<number>`count(*) filter (where ${card.status} = 'review')`.mapWith(
+          Number,
+        ),
+    })
+    .from(item)
+    .innerJoin(card, and(eq(card.itemId, item.id), liveCards(ctx)))
+    .where(and(eq(item.userId, ctx.userId), eq(item.shelfId, shelfId)))
+    .groupBy(item.id);
 }
 
 export async function getStorage(ctx: Ctx): Promise<Storage> {

@@ -33,6 +33,7 @@
       "deleted": "Док {title} удалён",
       "toggle": "Доки на полке {name}",
       "newDocOn": "Новый док на полке {name}",
+      "cardCounts": "{cards, plural, one {# карточка} few {# карточки} many {# карточек} other {# карточки}}{toReview, plural, =0 {} other { · # повторить}}",
       "move": {
         "instructions": "Нажми пробел, чтобы взять, стрелки — чтобы двигать, пробел ещё раз — чтобы отпустить, Escape — чтобы отменить.",
         "handle": "Переместить док {title}",

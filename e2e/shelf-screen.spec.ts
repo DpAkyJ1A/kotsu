@@ -1,6 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { eq } from 'drizzle-orm';
 
-import { actionAnswered, signInWithCode, test } from './fixtures';
+import { card } from '@/server/db/schema/cards';
+
+import { actionAnswered, signInWithCode, test, userIdOf } from './fixtures';
 
 const PHONE = { width: 390, height: 844 };
 const UNDO_DELAY_MS = 5_000;
@@ -101,6 +104,39 @@ test.describe('on a wide screen', () => {
 
     await page.reload();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Verbs');
+  });
+
+  test("a tile counts its doc's cards and those to review", async ({
+    page,
+    db,
+    visitor,
+  }) => {
+    await createShelf(page, 'Spanish');
+    await openShelf(page, 'Spanish');
+    await createDoc(page, 'Kitchen');
+    await page.keyboard.type('/card');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('la cocina');
+    const status = page.getByRole('main').getByRole('status');
+    await expect(status).toHaveText('Saving…');
+    await expect(status).toHaveText('Saved');
+
+    await openShelf(page, 'Spanish');
+    await expect(
+      page.getByRole('link', { name: 'Kitchen 1 card', exact: true }),
+    ).toBeVisible();
+
+    await db
+      .update(card)
+      .set({ status: 'review' })
+      .where(eq(card.userId, await userIdOf(db, visitor.email)));
+    await page.reload();
+    await expect(
+      page.getByRole('link', {
+        name: 'Kitchen 1 card · 1 to review',
+        exact: true,
+      }),
+    ).toBeVisible();
   });
 
   test('renames a doc on a double-click on its title, with the caret where the click was', async ({
