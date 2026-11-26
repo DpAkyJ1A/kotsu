@@ -125,6 +125,10 @@
         "label": "Checklist",
         "description": "Things to tick off"
       },
+      "card": {
+        "label": "Card",
+        "description": "Question with a hidden answer"
+      },
       "blockquote": {
         "label": "Quote",
         "description": "Set a quote apart"
@@ -220,6 +224,16 @@
     "ceiling": "One doc holds up to {largest}, about 100–350 thousand characters.",
     "outline": {
       "label": "Outline"
+    },
+    "card": {
+      "question": "Question",
+      "show": "Show answer",
+      "hide": "Hide answer",
+      "status": {
+        "new": "New",
+        "review": "Review",
+        "got_it": "Got it"
+      }
     }
   },
   "onboarding": {

@@ -19,6 +19,7 @@ const TURN_PLAIN_LINE_INTO: Record<
   bulletList: (commands) => startList(commands, 'bulletList'),
   orderedList: (commands) => startList(commands, 'orderedList'),
   taskList: (commands) => startList(commands, 'taskList'),
+  card: (commands) => commands.setDetails(),
   blockquote: (commands) => commands.setBlockquote(),
   codeBlock: (commands) => commands.setCodeBlock(),
   horizontalRule: (commands) =>

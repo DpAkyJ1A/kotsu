@@ -10,7 +10,7 @@ import { isApplePlatform } from '@/ui/shortcut';
 import { TooltipProvider } from '@/ui/tooltip';
 
 import type { Doc } from '../core/doc';
-import { type Format, markdownOf, SHORTCUTS } from '../core/formats';
+import { type Format, isToggle, markdownOf, SHORTCUTS } from '../core/formats';
 import { useDocEditor } from '../hooks/use-doc-editor';
 import { DocToolbar } from './doc-toolbar';
 
@@ -32,6 +32,7 @@ const LABELS: Record<Format, string> = {
   bulletList: 'Bulleted list',
   orderedList: 'Numbered list',
   taskList: 'Checklist',
+  card: 'Card',
   blockquote: 'Quote',
   codeBlock: 'Code',
   horizontalRule: 'Divider',
@@ -51,6 +52,7 @@ const FORMATS: Format[] = [
   'blockquote',
   'codeBlock',
   'horizontalRule',
+  'card',
 ];
 
 afterEach(() => {
@@ -399,11 +401,11 @@ describe('the keyboard', () => {
     await userEvent.keyboard('{ArrowRight}');
     await expect.element(button('heading2')).toHaveFocus();
     await userEvent.keyboard('{End}');
-    await expect.element(button('horizontalRule')).toHaveFocus();
+    await expect.element(button('card')).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect.element(button('heading1')).toHaveFocus();
     await userEvent.keyboard('{ArrowLeft}');
-    await expect.element(button('horizontalRule')).toHaveFocus();
+    await expect.element(button('card')).toHaveFocus();
     await userEvent.keyboard('{Home}');
     await expect.element(button('heading1')).toHaveFocus();
 
@@ -481,27 +483,26 @@ describe('a tooltip', () => {
 });
 
 describe('what a tooltip promises', () => {
-  test.each(FORMATS.filter((format) => SHORTCUTS[format].keys))(
-    'the shortcut of %s does what its button does',
-    async (format) => {
-      const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
-      await select(body, 'hablo');
+  test.each(
+    FORMATS.filter((format) => isToggle(format) && SHORTCUTS[format].keys),
+  )('the shortcut of %s does what its button does', async (format) => {
+    const body = await renderDoc(docOf(paragraph(text('yo hablo'))));
+    await select(body, 'hablo');
 
-      await userEvent.keyboard(keysToPress(SHORTCUTS[format].keys ?? ''));
+    await userEvent.keyboard(keysToPress(SHORTCUTS[format].keys ?? ''));
 
-      await expect
-        .element(button(format))
-        .toHaveAttribute('aria-pressed', 'true');
-    },
-  );
+    await expect
+      .element(button(format))
+      .toHaveAttribute('aria-pressed', 'true');
+  });
 
-  test.each(FORMATS.filter((format) => format !== 'horizontalRule'))(
+  test.each(FORMATS.filter(isToggle))(
     'the Markdown of %s makes what its button makes',
     async (format) => {
       const body = await renderDoc(null);
       await expect.element(body).toHaveFocus();
 
-      const markdown = markdownOf(format, 'hablo');
+      const markdown = markdownOf(format, 'hablo') ?? '';
       await userEvent.keyboard(
         markdown.includes('hablo')
           ? `${typed(markdown)}{ArrowLeft}{ArrowLeft}`
@@ -518,7 +519,7 @@ describe('what a tooltip promises', () => {
     const body = await renderDoc(null);
     await expect.element(body).toHaveFocus();
 
-    await userEvent.keyboard(markdownOf('horizontalRule', 'hablo'));
+    await userEvent.keyboard(markdownOf('horizontalRule', 'hablo') ?? '');
 
     expect(linesOf(body)[0]).toBe('hr:');
   });

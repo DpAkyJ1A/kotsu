@@ -5,11 +5,13 @@ The doc editor, autosave, and conversion between docs and Markdown.
 A doc's body is ProseMirror JSON in `item.content`, edited with Tiptap. `DocKit` (`core/doc-kit.ts`) is the one list of
 what a doc may hold, and the editor and the server build their schema from it alike (`getSchema([DocKit])` runs in Node
 without a DOM): paragraphs, headings 1 to 3, bulleted, numbered and checklist lists (checklist items nest like the
-others), quotes, code blocks, lines and line breaks; bold, italic, strike, code and colour. Underline (Markdown has no way to
+others), quotes, code blocks, lines, line breaks and cards (below); bold, italic, strike, code and colour. Underline (Markdown has no way to
 write it) and the starter kit's link (Kotsu's own links come later) are left out. Every paragraph, heading, list and
-checklist item, quote and code block carries a `blockId`, a uuid set by Tiptap's UniqueID, so a link can point at a
-place in a doc and a card keeps its identity: Enter keeps the id with the text that stays, and a pasted copy gets a new
-one, so no two blocks in a doc share an id.
+checklist item, quote, code block and card carries a `blockId`, a uuid set by Tiptap's UniqueID, so a link can point at a
+place in a doc and a card keeps its identity: Enter keeps the id with the text that stays, and no two blocks in a doc
+share an id. A paste keeps the ids the doc doesn't have yet and drops the others (`core/block-ids.ts`, which replaces
+UniqueID's own paste rule of dropping every id), so a block cut and pasted back, or dragged to another place, is the
+same block, and a copy pasted into the same doc is a new one.
 
 A body to save goes through `DocBody` (`core/doc-body.ts`), which adds what the schema check leaves out
 (`Node.fromJSON` and `check()` refuse unknown nodes and marks and a block in the wrong place, but not these): an
@@ -103,7 +105,10 @@ which part around it, as far as they can part without breaking a list; choosing 
 keeps it there. A new list under a list of its kind joins it, as `- ` does; a divider always leaves a new line under it
 for the caret. A pick is an undo step of its own, so ⌘Z right after it brings the typed `/h2` back as text (and with it
 the menu; after a query with a space, such as `/heading 2`, the text comes back without the menu, since a space doesn't
-open it). Adding a block to the menu takes four entries: its keywords in `SLASH_BLOCKS`, what it does in
+open it). The menu offers only the blocks that can go where the caret is (`core/blocks-at.ts`, asked of the schema):
+in a card's answer, text, the three lists and code; in a card's question, nothing, so it doesn't open there. The card
+comes first, on a violet tile, since it is the block docs are for. Adding a
+block to the menu takes five entries: its keywords in `SLASH_BLOCKS`, its node in `NODE_OF`, what it does in
 `TURN_PLAIN_LINE_INTO`, its icon and its label and description in `messages`.
 
 The doc bar (`ui/doc-bar.tsx`) holds where the doc is, the formatting toolbar and the save status, over the title. From
@@ -149,15 +154,19 @@ built here rather than with `@tiptap/extension-table-of-contents`, which writes 
 would save itself on open), measures `offsetTop` with no reading line and reads the layout on every scroll event.
 
 The formatting toolbar (`ui/doc-toolbar.tsx`) is in the doc bar from the `md` breakpoint up (a phone, with its tab bar,
-has none): headings 1 to 3 | bold, italic, strike, inline code | colour and the last colour (below) | the three lists | quote, code block, divider, the
-blocks with the slash menu's icons and labels (`ui/format-icons.ts`, `docs.slashMenu`; the marks have theirs in
+has none): headings 1 to 3 | bold, italic, strike, inline code | colour and the last colour (below) | the three lists |
+quote, code block, divider | and last, set apart, the card: a violet button with its label (only the icon while the
+column is narrower than the `3xl` container size). The blocks have the slash menu's icons and labels (`ui/format-icons.ts`, `docs.slashMenu`; the marks have theirs in
 `docs.toolbar`). A button acts on the text, never on the title: a click keeps the focus where it is (the button takes no
 `mousedown`), and from the title or from the keyboard the button first gives the text the focus back at its old caret.
 Each toggle runs the command its Tiptap shortcut runs (`core/apply-format.ts`), so a button and its shortcut always
-agree, and a second press undoes it: a block turns back into a paragraph, a list item leaves its list. The divider isn't
-a toggle: it goes under the line, with a new line under it for the caret, through the slash menu's `insertBlock`. A
-button lights up (`aria-pressed`) while the caret is in its format, and turns off (disabled, not hidden) where its
-toggle can't run: no mark in a code block, no other mark in inline code, no quote in a list item. Whether it can run is
+agree, and a second press undoes it: a block turns back into a paragraph, a list item leaves its list. The divider
+isn't a toggle: it goes under the line with a new line under it for the caret, through the slash menu's `insertBlock`.
+The card isn't either: it makes a card of the line or of the selected blocks (below). A button lights up (`aria-pressed`) while the caret is in
+its format, and turns off (disabled, not hidden) where its toggle can't run or its block can't go: no mark in a code
+block, no other mark in inline code, no quote in a list item, only marks in a card's question, and in its answer no
+heading, quote, divider or card. The buttons sit 1 px apart and the separators 2 px from them, so the row, card
+included, still fits the column of a page beside the sidebar at 768 px. Whether it can run is
 asked by running it on a command manager over the current state, which leaves the doc alone, and not with
 `editor.can()`: that says no to a heading or a code block in a list item and to a list on a heading or in code, although
 their shortcuts do them (its dry run skips the step that first takes the line out of its list). The toolbar is an ARIA
@@ -193,6 +202,39 @@ that colour on its «A», and its name and tooltip say it ("Last colour: blue te
 colour is kept on the device (`localStorage`, `hooks/use-last-colour.ts`, read again by the shortcut on every press
 and shared between tabs); where storage is blocked it stays red text. There are no colours in the slash menu: colour
 goes on selected text, where the menu doesn't open.
+
+A card (`core/card.ts`) is a question with an answer folded away under it, the block practice will draw from.
+It is Tiptap's Details (`@tiptap/extension-details`): a `details` node holding a `detailsSummary` (the question, plain
+text with marks) and a `detailsContent` (the answer: paragraphs, the three lists and code blocks, no headings, quotes,
+dividers or cards). The names stay Tiptap's, since its keyboard handling looks the parts up by them, and they match the
+`<details><summary>` the Markdown converter will write (1.7); `core/card-parts.ts` names them for the rest of the code.
+Details' own view, its open attribute and two of its keys are replaced:
+
+- **Open or folded** is not in the doc, so opening a card is never an edit and never saves. `core/open-cards.ts` keeps
+  the open cards in a plugin's state (a node decoration per open card, mapped through every edit) and gives every
+  folded card's answer the `hidden` attribute (a card pasted into a list inside an answer too), which hides it with or without a stylesheet; Details' caret handling
+  reads that from the page. Every doc opens with its cards folded.
+- **The view** (`ui/card-view.tsx`, a React node view redrawn whenever its decorations change, since Tiptap's skips a
+  redraw when only they do): the arrow (a button with a tooltip, «Show answer ⌘⇧↵» / «Hide answer», and
+  `aria-expanded`), the card icon, the question with a «Question» hint while it is empty, and the status chip. The
+  arrow toggles the card and leaves the caret where it was.
+- **The keys** (`core/card-commands.ts`): Enter in the question opens the card and moves the caret to the start of the
+  answer, adding nothing; Enter on the empty last line of an answer that has more leaves the
+  card for the line under it (Details' own check never matches, because UniqueID gives that line an id);
+  ⌘⇧Enter (`SHORTCUTS.card`) folds or opens the card around the caret, and a fold with the caret or the
+  selection reaching into the answer takes the caret to the end of the question; outside a card it makes one, as the
+  Card button does. Details' Backspace at the start of the question stays: it turns the card
+  back into lines.
+- **Making one** (`core/make-card.ts`), with the Card button, ⌘⇧Enter or `/card`: the caret's line, or a selection
+  inside it, becomes the question, the caret at its end (a line break turns into a space). A selection over several
+  blocks becomes one card: the first block is its question if it is a line (a paragraph or a heading), and the rest its
+  answer, which the card opens on; what an answer can't hold turns into what it can (a heading into a paragraph, a
+  quote into its lines, a divider goes), and empty lines at the ends are left out. A caret in a list, a quote or code
+  gets an empty card under its line, as `/card` does; a selection that holds a card, or only
+  dividers and empty lines, makes none. One ⌘Z brings the
+  lines back. `??` and a space at the start of a line (`SHORTCUTS.card.markdown`) turn the line into a card too.
+- **The status chip** shows New, Review or Got it from a map of `blockId → status` that `CardStatusesContext`
+  (`ui/card-statuses.ts`) hands down; until the card index (task 1.8) fills it, every card is New.
 
 The body saves itself (`hooks/save-queue.ts`, `hooks/use-doc-saving.ts`). Every edit restarts an 800 ms timer, and
 the save goes when it runs out, with the version the doc was opened at or last saved at. Only typing counts as an

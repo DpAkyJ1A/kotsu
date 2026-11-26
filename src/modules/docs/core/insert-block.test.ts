@@ -55,6 +55,16 @@ function codeBlock(value = ''): JSONContent {
 
 const LINE: JSONContent = { type: 'horizontalRule' };
 
+function card(question: string): JSONContent {
+  return {
+    type: 'details',
+    content: [
+      { type: 'detailsSummary', content: text(question) },
+      { type: 'detailsContent', content: [{ type: 'paragraph' }] },
+    ],
+  };
+}
+
 function editorWith(content: JSONContent[]) {
   return new Editor({
     element: null,
@@ -113,6 +123,7 @@ describe('on a line that holds only the query, the line becomes the block', () =
     ['bulletList', [bulletList([paragraph('hablo')])]],
     ['orderedList', [orderedList([paragraph('hablo')])]],
     ['taskList', [checklist([false, 'hablo'])]],
+    ['card', [card('hablo')]],
     ['blockquote', [quote(paragraph('hablo'))]],
     ['codeBlock', [codeBlock('hablo')]],
     ['horizontalRule', [LINE, paragraph('hablo')]],
@@ -142,6 +153,7 @@ describe('on a line with text, the block goes below it and takes the caret', () 
     ['bulletList', bulletList([paragraph('hablo')])],
     ['orderedList', orderedList([paragraph('hablo')])],
     ['taskList', checklist([false, 'hablo'])],
+    ['card', card('hablo')],
     ['blockquote', quote(paragraph('hablo'))],
     ['codeBlock', codeBlock('hablo')],
   ])('%s', (block, below) => {

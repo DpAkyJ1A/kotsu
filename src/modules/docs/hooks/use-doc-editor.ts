@@ -3,7 +3,7 @@ import { Placeholder } from '@tiptap/extensions';
 import type { Node } from '@tiptap/pm/model';
 import { Selection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
-import { useEditor } from '@tiptap/react';
+import { ReactNodeViewRenderer, useEditor } from '@tiptap/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +11,7 @@ import { TOUCH_SCREEN, useMediaQuery, WIDE_SCREEN } from '@/ui/use-media-query';
 
 import type { Doc } from '../core/doc';
 import { DocKit } from '../core/doc-kit';
+import { CardView } from '../ui/card-view';
 import { SlashMenu } from '../ui/slash-menu';
 import { readLastColour } from './use-last-colour';
 
@@ -47,6 +48,9 @@ export function useDocEditor(content: Doc['content']) {
         checklistItemLabel: (item) =>
           item.textContent || words.get().emptyChecklistItem,
         lastColour: readLastColour,
+        cardView: ReactNodeViewRenderer(CardView, {
+          update: redrawWithTheOpenState,
+        }),
       }),
       Placeholder.configure({
         emptyNodeClass: ({ editor, node }) =>
@@ -115,6 +119,11 @@ function showsAHint(editor: Editor, line: Node) {
       editor.state.selection.empty &&
       line.type.name === 'paragraph')
   );
+}
+
+function redrawWithTheOpenState({ updateProps }: { updateProps: () => void }) {
+  updateProps();
+  return true;
 }
 
 function isSame(shown: Words, next: Words) {

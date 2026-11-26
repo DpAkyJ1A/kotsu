@@ -76,6 +76,7 @@ describe('shortcut keys', () => {
     ['Mod-Alt-2', '⌘⌥2', 'Ctrl Alt 2'],
     ['Mod-Shift-s', '⌘⇧S', 'Ctrl Shift S'],
     ['Mod-\\', '⌘\\', 'Ctrl \\'],
+    ['Mod-Shift-Enter', '⌘⇧↵', 'Ctrl Shift Enter'],
   ])(
     '%s reads %s on a Mac and %s elsewhere, modifiers in the order of the binding',
     (binding, apple, other) => {

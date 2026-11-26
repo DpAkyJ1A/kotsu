@@ -1,6 +1,7 @@
 import {
   BoldIcon,
   CodeIcon,
+  GalleryVerticalEndIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
@@ -30,6 +31,7 @@ export const ICONS: Record<SlashBlock | Mark, typeof TypeIcon> = {
   bulletList: ListIcon,
   orderedList: ListOrderedIcon,
   taskList: SquareCheckIcon,
+  card: GalleryVerticalEndIcon,
   blockquote: TextQuoteIcon,
   codeBlock: SquareCodeIcon,
   horizontalRule: MinusIcon,

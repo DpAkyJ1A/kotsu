@@ -44,7 +44,19 @@ const EVERY_BLOCK_AT_ITS_DEFAULTS = docOf(
   { type: 'blockquote', content: [paragraph('Poco a poco.')] },
   { type: 'codeBlock', content: [text('yo hablo')] },
   { type: 'horizontalRule' },
+  card(),
 );
+
+function card(attrs?: Record<string, unknown>) {
+  return {
+    type: 'details',
+    ...(attrs && { attrs }),
+    content: [
+      { type: 'detailsSummary', content: [text('¿Qué significa hablar?')] },
+      { type: 'detailsContent', content: [paragraph('to speak')] },
+    ],
+  };
+}
 
 describe('DocBody', () => {
   test('takes a doc with every block, each attribute at its default, and gives back the doc as the schema reads it', () => {
@@ -56,6 +68,13 @@ describe('DocBody', () => {
       content: [text('Verbs')],
     });
     expect(body.content?.[3]?.attrs).toEqual({ start: 1, type: null });
+    expect(body.content?.[8]?.attrs).toEqual({ blockId: null });
+  });
+
+  test('takes a card with its id', () => {
+    expect(DocBody.safeParse(docOf(card({ blockId: BLOCK_ID }))).success).toBe(
+      true,
+    );
   });
 
   test('takes the values its attributes may have', () => {
@@ -136,6 +155,7 @@ describe('DocBody', () => {
       'a block id that is not a uuid',
       docOf(paragraph('hola', { blockId: 'x' })),
     ],
+    ['a card id that is not a uuid', docOf(card({ blockId: 'x' }))],
     [
       'a checklist item ticked with a string',
       docOf({

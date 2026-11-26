@@ -34,6 +34,7 @@
     "@floating-ui/dom": "1.8.0",
     "@simplewebauthn/browser": "13.3.0",
     "@tiptap/core": "3.34.0",
+    "@tiptap/extension-details": "3.34.0",
     "@tiptap/extension-list": "3.34.0",
     "@tiptap/extension-text-style": "3.34.0",
     "@tiptap/extension-unique-id": "3.34.0",

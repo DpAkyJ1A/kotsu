@@ -9,6 +9,7 @@ import {
   type SuggestionProps,
 } from '@tiptap/suggestion';
 
+import { blocksAt } from '../core/blocks-at';
 import { insertBlock } from '../core/insert-block';
 import { isSlashMenuOpen, type SlashBlock } from '../core/slash-blocks';
 import {
@@ -45,6 +46,7 @@ export const SlashMenu = Extension.create<SlashMenuOptions>({
             query: queryIn(state, range),
             wasOpen: isActive ?? false,
             labelOf,
+            available: blocksAt(state.doc.resolve(range.from)),
           }),
         command: ({ editor, range, props }) => {
           insertBlock(editor, range, props);
@@ -124,8 +126,14 @@ function keepTheFocusInTheEditor(event: MouseEvent) {
 
 function listPropsOf({
   query,
+  range,
   editor,
   command,
 }: SuggestionProps<SlashBlock, SlashBlock>): SlashMenuListProps {
-  return { query, editorElement: editor.view.dom, onPick: command };
+  return {
+    query,
+    available: blocksAt(editor.state.doc.resolve(range.from)),
+    editorElement: editor.view.dom,
+    onPick: command,
+  };
 }
