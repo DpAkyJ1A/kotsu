@@ -20,6 +20,29 @@ that came in; attribute values, of nodes and of marks alike, are checked against
 7, a `blockId` that isn't a uuid, a checked state that isn't a boolean or a colour outside the palette are refused); and
 the root must be a `doc`.
 
+Docs go to and from Markdown through `core/markdown/`, for MCP, export and the answers in the card index:
+`docToMarkdown(doc)` and `markdownToDoc(markdown, { newId })`, both pure (the caller passes `newId`, a uuid maker).
+Reading uses the lexer of `marked` and the rest is Kotsu's own ([ADR 0005](../../../docs/adr/0005-own-markdown-converter.md)).
+The Markdown is CommonMark with GitHub's strikethrough and checklists, plain wherever Markdown can say it: `#` to
+`###`, `**bold**`, `_italic_`, `~~strike~~`, `` `code` ``, `-` and `1.` lists, `- [x]`, `>` quotes, fenced code and
+`---`. HTML only where it can't: a colour is `<span data-color="blue" data-bg="yellow">`, a card is `<details>` with
+the question in `<summary>` and the answer as Markdown under it, a line break is `<br>`, the empty first line of a list
+item with more under it is `<!-- -->`, and a mark Markdown can't hold (a bold word that ends in a space, an italic one
+inside a word) is `<strong>`, `<em>` or `<s>`: the writer tries the delimiters, reads the line back, and writes tags when
+the two differ. Text that would read as Markdown is escaped (a `<` before a letter as `&lt;`, so no text can close a tag), a space at either end of a line is `&#32;`, a code fence is
+longer than any run of backticks in the code, and two lists in a row change marker (`-` then `*`, `.` then `)`), so they
+stay two lists. One blank line parts two blocks and each blank line more is an empty line in the doc (other renderers
+fold them away); empty lines at the start and end of a doc, a quote, a list item or an answer are left out. Not in the Markdown:
+block ids (reading gives every block a new one, so a card read from Markdown is a new card) and a numbered list's letter
+or roman style (Markdown has only numbers). Reading never refuses, and it keeps the words of what a doc can't hold:
+`####` and deeper become `###`, a link its text with the address in brackets (only the text when the text is the
+address), a picture its alt text, a table one line per row with `|` between the cells, `<b>`, `<i>` and `<del>` the
+marks, a colour outside the palette and any other HTML its text as written, `- [ ]` with nothing after it a checklist
+item; in a card's answer a heading becomes a line, a quote its lines, a divider goes, and a card inside gives its
+question and answer as lines. An address in the text stays text (GitHub's bare-address links are off), so the `_` in
+`snake_case` survives it. A round trip changes nothing but the ids, which the tests show for every block and, with
+fast-check, for any text under any marks and any arrangement of lists, quotes, cards and empty lines.
+
 The domain: `getDoc({ id })` gives a doc's body, `version` and `sizeBytes`, or `null` for a doc that was never saved; another user's
 item, a missing one and a sheet answer `NOT_FOUND`, and an id that isn't a uuid `VALIDATION`. `saveDoc({ id, version,
 content })` stores a body only on top of the version it was based on: one `update … where version = $v returning

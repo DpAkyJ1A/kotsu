@@ -10,18 +10,10 @@ import {
   leaveTheCard,
   toggleTheCardAtTheCaret,
 } from './card-commands';
-import { CARD } from './card-parts';
+import { ANSWER_BLOCKS, CARD } from './card-parts';
 import { SHORTCUTS } from './formats';
 import { makeCard, turnTheLineIntoACard } from './make-card';
 import { openCards } from './open-cards';
-
-const ANSWER_BLOCKS = [
-  'paragraph',
-  'bulletList',
-  'orderedList',
-  'taskList',
-  'codeBlock',
-];
 
 type CardOptions = {
   view: NodeViewRenderer | null;
